@@ -5,7 +5,7 @@ class MockChatRepository implements ChatRepository {
   final Set<String> _failedOnce = {};
 
   @override
-  Future<ChatMessage> sendTextMessage(String message) async {
+  Stream<ChatMessage> sendTextMessage(String message) async* {
     await Future<void>.delayed(const Duration(milliseconds: 1700));
     final normalized = message.trim().toLowerCase();
     if ((normalized.contains('#fail') || normalized.contains('#lỗi')) &&
@@ -16,7 +16,7 @@ class MockChatRepository implements ChatRepository {
         normalized.contains('chuyển') ||
         normalized.contains('transfer') ||
         normalized.contains('gửi tiền');
-    return _assistantMessage(
+    yield _assistantMessage(
       isTransfer
           ? 'Tôi cần thêm thông tin để thực hiện giao dịch.\n\nBạn muốn chuyển từ tài khoản nào?'
           : 'Tôi đã hiểu yêu cầu của bạn. Đây là phản hồi mô phỏng từ AI. Bạn có thể bổ sung thông tin để tôi hỗ trợ chính xác hơn.',
@@ -24,10 +24,17 @@ class MockChatRepository implements ChatRepository {
   }
 
   @override
-  Future<ChatMessage> sendVoiceMessage(String audioPath) async {
+  Stream<ChatMessage> sendVoiceMessage(String transcript) async* {
     await Future<void>.delayed(const Duration(milliseconds: 1900));
-    return _assistantMessage(
-      'Tôi nghe được: “Chuyển 500k cho Nguyễn Văn A”.\n\nBạn muốn chuyển từ tài khoản nào?',
+    final normalized = transcript.trim().toLowerCase();
+    final isTransfer =
+        normalized.contains('chuyển') ||
+        normalized.contains('transfer') ||
+        normalized.contains('gửi tiền');
+    yield _assistantMessage(
+      isTransfer
+          ? 'Tôi cần thêm thông tin để thực hiện giao dịch.\n\nBạn muốn chuyển từ tài khoản nào?'
+          : 'Tôi đã nhận được yêu cầu bằng giọng nói của bạn. Bạn muốn tôi hỗ trợ thêm điều gì?',
     );
   }
 
@@ -39,9 +46,7 @@ class MockChatRepository implements ChatRepository {
     createdAt: DateTime.now(),
     status: MessageStatus.success,
   );
-}
 
-class ChatRepositoryException implements Exception {
-  const ChatRepositoryException(this.message);
-  final String message;
+  @override
+  void close() {}
 }

@@ -1,5 +1,7 @@
+import 'package:chatbot_project/core/constants/app_constants.dart';
 import 'package:chatbot_project/features/chat/bloc/chat_bloc.dart';
 import 'package:chatbot_project/features/chat/data/mock_chat_repository.dart';
+import 'package:chatbot_project/features/chat/data/speech_to_text_repository.dart';
 import 'package:chatbot_project/features/chat/pages/chat_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,14 +13,15 @@ void main() {
       MaterialApp(
         home: BlocProvider(
           create: (_) =>
-              ChatBloc(MockChatRepository())..add(const ChatStarted()),
+              ChatBloc(MockChatRepository(), FakeSpeechToTextRepository())
+                ..add(const ChatStarted()),
           child: const ChatPage(),
         ),
       ),
     );
     await tester.pump();
 
-    expect(find.text('AI Assistant'), findsOneWidget);
+    expect(find.text(AppConstants.chatbotName), findsOneWidget);
     expect(find.textContaining('Xin chào'), findsOneWidget);
 
     await tester.enterText(
@@ -36,6 +39,8 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pump(const Duration(milliseconds: 800));
     expect(find.textContaining('Tôi đã hiểu yêu cầu'), findsOneWidget);
+    expect(find.byKey(const Key('copy-welcome')), findsOneWidget);
+    expect(find.byTooltip('Sao chép'), findsNWidgets(2));
   });
 
   testWidgets('failed request offers retry and succeeds', (tester) async {
@@ -43,7 +48,8 @@ void main() {
       MaterialApp(
         home: BlocProvider(
           create: (_) =>
-              ChatBloc(MockChatRepository())..add(const ChatStarted()),
+              ChatBloc(MockChatRepository(), FakeSpeechToTextRepository())
+                ..add(const ChatStarted()),
           child: const ChatPage(),
         ),
       ),
@@ -65,4 +71,30 @@ void main() {
     await tester.pump(const Duration(milliseconds: 800));
     expect(find.textContaining('Tôi đã hiểu yêu cầu'), findsOneWidget);
   });
+}
+
+class FakeSpeechToTextRepository implements SpeechToTextRepository {
+  @override
+  Stream<String> get errors => const Stream.empty();
+
+  @override
+  Stream<SpeechSessionStatus> get statuses => const Stream.empty();
+
+  @override
+  Stream<SpeechTranscript> get transcripts => const Stream.empty();
+
+  @override
+  Future<void> cancelListening() async {}
+
+  @override
+  Future<void> close() async {}
+
+  @override
+  Future<bool> initialize() async => true;
+
+  @override
+  Future<void> startListening() async {}
+
+  @override
+  Future<String> stopListening() async => '';
 }

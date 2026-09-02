@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:record/record.dart';
 
 import '../data/chat_repository.dart';
-import '../data/mock_chat_repository.dart';
+import '../data/speech_to_text_repository.dart';
 import '../models/chat_message.dart';
 import 'chat_event.dart';
 import 'chat_state.dart';
@@ -15,9 +13,8 @@ export 'chat_event.dart';
 export 'chat_state.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
-  ChatBloc(this._repository, {AudioRecorder? recorder})
-    : _recorder = recorder ?? AudioRecorder(),
-      super(const ChatState()) {
+  ChatBloc(this._chatRepository, this._speechRepository)
+    : super(const ChatState()) {
     on<ChatStarted>(_onStarted);
     on<MessageChanged>(_onMessageChanged);
     on<SendTextMessage>(_onSendText);
@@ -27,11 +24,32 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<SendVoiceMessage>(_onSendVoice);
     on<RetryMessage>(_onRetry);
     on<RecordingTicked>(_onRecordingTicked);
+    on<SpeechRecognitionUpdated>(_onSpeechRecognitionUpdated);
+    on<SpeechRecognitionFailed>(_onSpeechRecognitionFailed);
+    on<SpeechRecognitionCompleted>(_onSpeechRecognitionCompleted);
+
+    _transcriptSubscription = _speechRepository.transcripts.listen((result) {
+      _latestTranscript = result.text;
+      if (!isClosed) add(SpeechRecognitionUpdated(result.text));
+    });
+    _statusSubscription = _speechRepository.statuses.listen((status) {
+      if (status == SpeechSessionStatus.done && !isClosed) {
+        add(const SpeechRecognitionCompleted());
+      }
+    });
+    _errorSubscription = _speechRepository.errors.listen((message) {
+      if (!isClosed) add(SpeechRecognitionFailed(message));
+    });
   }
 
-  final ChatRepository _repository;
-  final AudioRecorder _recorder;
+  final ChatRepository _chatRepository;
+  final SpeechToTextRepository _speechRepository;
+  late final StreamSubscription<SpeechTranscript> _transcriptSubscription;
+  late final StreamSubscription<SpeechSessionStatus> _statusSubscription;
+  late final StreamSubscription<String> _errorSubscription;
   Timer? _recordingTimer;
+  String _latestTranscript = '';
+  bool _isStopping = false;
 
   void _onStarted(ChatStarted event, Emitter<ChatState> emit) {
     emit(
@@ -89,26 +107,24 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(
       state.copyWith(
         recordingState: RecordingState.requestingPermission,
+        recognizedText: '',
         clearError: true,
       ),
     );
     try {
-      if (!await _recorder.hasPermission()) {
+      final available = await _speechRepository.initialize();
+      if (!available) {
         emit(
           state.copyWith(
             recordingState: RecordingState.idle,
-            error: 'Vui lòng cấp quyền microphone để gửi tin nhắn thoại.',
+            error:
+                'Nhận dạng giọng nói không khả dụng. Hãy kiểm tra quyền microphone và speech recognition.',
           ),
         );
         return;
       }
-      final directory = await getTemporaryDirectory();
-      final path =
-          '${directory.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
-      await _recorder.start(
-        const RecordConfig(encoder: AudioEncoder.aacLc),
-        path: path,
-      );
+      _latestTranscript = '';
+      await _speechRepository.startListening();
       _recordingTimer?.cancel();
       _recordingTimer = Timer.periodic(
         const Duration(seconds: 1),
@@ -118,13 +134,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         state.copyWith(
           recordingState: RecordingState.recording,
           recordingDuration: Duration.zero,
+          recognizedText: '',
         ),
       );
     } catch (_) {
       emit(
         state.copyWith(
           recordingState: RecordingState.idle,
-          error: 'Không thể bắt đầu ghi âm. Vui lòng thử lại.',
+          error: 'Không thể bắt đầu nhận dạng giọng nói. Vui lòng thử lại.',
         ),
       );
     }
@@ -145,30 +162,42 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     StopRecording event,
     Emitter<ChatState> emit,
   ) async {
-    if (!state.isRecording) return;
+    if (!state.isRecording || _isStopping) return;
+    _isStopping = true;
     _recordingTimer?.cancel();
     try {
       final duration = state.recordingDuration;
-      final path = await _recorder.stop();
+      final repositoryTranscript = await _speechRepository.stopListening();
+      final transcript = repositoryTranscript.isNotEmpty
+          ? repositoryTranscript
+          : _latestTranscript.trim();
       emit(
         state.copyWith(
           recordingState: RecordingState.idle,
           recordingDuration: Duration.zero,
+          recognizedText: '',
         ),
       );
-      if (path == null || duration < const Duration(seconds: 1)) {
-        emit(state.copyWith(error: 'Bản ghi âm quá ngắn. Vui lòng thử lại.'));
+      if (transcript.isEmpty) {
+        emit(
+          state.copyWith(
+            error: 'Không nhận diện được nội dung. Vui lòng nói lại.',
+          ),
+        );
         return;
       }
-      add(SendVoiceMessage(path, duration));
+      add(SendVoiceMessage(transcript, duration));
     } catch (_) {
       emit(
         state.copyWith(
           recordingState: RecordingState.idle,
           recordingDuration: Duration.zero,
-          error: 'Không thể hoàn tất bản ghi âm.',
+          recognizedText: '',
+          error: 'Không thể hoàn tất nhận dạng giọng nói.',
         ),
       );
+    } finally {
+      _isStopping = false;
     }
   }
 
@@ -178,19 +207,20 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ) async {
     if (!state.isRecording) return;
     _recordingTimer?.cancel();
+    _isStopping = true;
     try {
-      final path = await _recorder.stop();
-      if (path != null) {
-        final file = File(path);
-        if (await file.exists()) await file.delete();
-      }
+      await _speechRepository.cancelListening();
     } catch (_) {
-      // Audio cleanup failure does not need to block the conversation.
+      // The UI can still safely return to idle if platform cleanup fails.
+    } finally {
+      _isStopping = false;
     }
+    _latestTranscript = '';
     emit(
       state.copyWith(
         recordingState: RecordingState.idle,
         recordingDuration: Duration.zero,
+        recognizedText: '',
         clearError: true,
       ),
     );
@@ -205,7 +235,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       id: 'user-${DateTime.now().microsecondsSinceEpoch}',
       type: MessageType.audio,
       sender: MessageSender.user,
-      audioPath: event.audioPath,
+      content: event.transcript,
       duration: event.duration,
       createdAt: DateTime.now(),
       status: MessageStatus.sending,
@@ -245,32 +275,58 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     ChatMessage userMessage,
     Emitter<ChatState> emit,
   ) async {
+    String? assistantMessageId;
     try {
-      final responseFuture = userMessage.type == MessageType.audio
-          ? _repository.sendVoiceMessage(userMessage.audioPath!)
-          : _repository.sendTextMessage(userMessage.content!);
+      final responseStream = userMessage.type == MessageType.audio
+          ? _chatRepository.sendVoiceMessage(userMessage.content!)
+          : _chatRepository.sendTextMessage(userMessage.content!);
       await Future<void>.delayed(const Duration(milliseconds: 450));
-      emit(state.copyWith(aiProcessingState: AiProcessingState.understanding));
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-      emit(state.copyWith(aiProcessingState: AiProcessingState.callingApi));
-      final response = await responseFuture;
-      final delivered = state.messages
-          .map(
-            (item) => item.id == userMessage.id
-                ? item.copyWith(status: MessageStatus.sent)
-                : item,
-          )
-          .toList();
       emit(
-        state.copyWith(
-          messages: [...delivered, response],
-          isLoading: false,
-          aiProcessingState: AiProcessingState.idle,
-          clearError: true,
-        ),
+        state.copyWith(aiProcessingState: AiProcessingState.generatingResponse),
       );
+      var receivedResponse = false;
+      await for (final response in responseStream) {
+        if (kDebugMode) {
+          debugPrint(
+            '[ChatBloc] message update: id=${response.id}, '
+            'status=${response.status.name}, '
+            'chars=${response.content?.length ?? 0}',
+          );
+        }
+        receivedResponse = true;
+        assistantMessageId = response.id;
+        final updated = state.messages
+            .map(
+              (item) => item.id == userMessage.id
+                  ? item.copyWith(status: MessageStatus.sent)
+                  : item.id == response.id
+                  ? response
+                  : item,
+            )
+            .toList();
+        if (!updated.any((item) => item.id == response.id)) {
+          updated.add(response);
+        }
+        final completed = response.status == MessageStatus.success;
+        emit(
+          state.copyWith(
+            messages: updated,
+            isLoading: !completed,
+            aiProcessingState: completed
+                ? AiProcessingState.idle
+                : AiProcessingState.generatingResponse,
+            clearError: true,
+          ),
+        );
+      }
+      if (!receivedResponse) {
+        throw const ChatRepositoryException(
+          'Phản hồi chatbot không có nội dung.',
+        );
+      }
     } catch (error) {
       final failed = state.messages
+          .where((item) => item.id != assistantMessageId)
           .map(
             (item) => item.id == userMessage.id
                 ? item.copyWith(status: MessageStatus.failed)
@@ -290,10 +346,46 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
+  void _onSpeechRecognitionUpdated(
+    SpeechRecognitionUpdated event,
+    Emitter<ChatState> emit,
+  ) {
+    if (state.isRecording) {
+      emit(state.copyWith(recognizedText: event.transcript));
+    }
+  }
+
+  void _onSpeechRecognitionFailed(
+    SpeechRecognitionFailed event,
+    Emitter<ChatState> emit,
+  ) async {
+    _recordingTimer?.cancel();
+    _isStopping = false;
+    emit(
+      state.copyWith(
+        recordingState: RecordingState.idle,
+        recordingDuration: Duration.zero,
+        recognizedText: '',
+        error: event.message,
+      ),
+    );
+  }
+
+  void _onSpeechRecognitionCompleted(
+    SpeechRecognitionCompleted event,
+    Emitter<ChatState> emit,
+  ) {
+    if (state.isRecording && !_isStopping) {
+      add(const StopRecording());
+    }
+  }
+
   @override
   Future<void> close() async {
     _recordingTimer?.cancel();
-    await _recorder.dispose();
+    await _transcriptSubscription.cancel();
+    await _statusSubscription.cancel();
+    await _errorSubscription.cancel();
     return super.close();
   }
 }

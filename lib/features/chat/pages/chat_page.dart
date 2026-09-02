@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../bloc/chat_bloc.dart';
+import '../models/chat_message.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/chat_input.dart';
 import '../widgets/typing_indicator.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+  const ChatPage({super.key, this.showCloseButton = false});
+
+  final bool showCloseButton;
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -37,7 +41,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return BlocListener<ChatBloc, ChatState>(
       listenWhen: (previous, current) =>
-          previous.messages.length != current.messages.length ||
+          previous.messages != current.messages ||
           previous.isLoading != current.isLoading ||
           previous.aiProcessingState != current.aiProcessingState ||
           previous.error != current.error,
@@ -46,16 +50,11 @@ class _ChatPageState extends State<ChatPage> {
         if (state.error != null) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(state.error!),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+            ..showSnackBar(SnackBar(content: Text(state.error!), behavior: SnackBarBehavior.floating));
         }
       },
       child: Scaffold(
-        appBar: const _ChatAppBar(),
+        appBar: _ChatAppBar(showCloseButton: widget.showCloseButton),
         body: SafeArea(
           top: false,
           child: Column(
@@ -67,22 +66,22 @@ class _ChatPageState extends State<ChatPage> {
                       previous.isLoading != current.isLoading ||
                       previous.aiProcessingState != current.aiProcessingState,
                   builder: (context, state) {
-                    final itemCount =
-                        state.messages.length + (state.isLoading ? 1 : 0);
+                    final hasStreamingMessage =
+                        state.messages.isNotEmpty &&
+                        state.messages.last.sender == MessageSender.assistant &&
+                        state.messages.last.status == MessageStatus.processing;
+                    final showTypingIndicator = state.isLoading && !hasStreamingMessage;
+                    final itemCount = state.messages.length + (showTypingIndicator ? 1 : 0);
                     return ListView.separated(
                       key: const Key('chat-list'),
                       controller: _scrollController,
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                       padding: const EdgeInsets.fromLTRB(16, 22, 16, 16),
                       itemCount: itemCount,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 16),
+                      separatorBuilder: (context, index) => const SizedBox(height: 16),
                       itemBuilder: (context, index) {
-                        if (index == state.messages.length) {
-                          return TypingIndicator(
-                            stage: state.aiProcessingState,
-                          );
+                        if (showTypingIndicator && index == state.messages.length) {
+                          return TypingIndicator(stage: state.aiProcessingState);
                         }
                         return ChatBubble(message: state.messages[index]);
                       },
@@ -91,17 +90,8 @@ class _ChatPageState extends State<ChatPage> {
                 ),
               ),
               Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  border: Border(
-                    top: BorderSide(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.outlineVariant.withValues(alpha: .45),
-                    ),
-                  ),
-                ),
-                padding: const EdgeInsets.fromLTRB(14, 11, 14, 10),
+                color: Theme.of(context).colorScheme.surface,
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
                 child: const ChatInput(),
               ),
             ],
@@ -113,7 +103,9 @@ class _ChatPageState extends State<ChatPage> {
 }
 
 class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _ChatAppBar();
+  const _ChatAppBar({required this.showCloseButton});
+
+  final bool showCloseButton;
 
   @override
   Size get preferredSize => const Size.fromHeight(70);
@@ -125,6 +117,7 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       surfaceTintColor: Colors.transparent,
       scrolledUnderElevation: 0,
       titleSpacing: 16,
+      automaticallyImplyLeading: false,
       title: Row(
         children: [
           Container(
@@ -138,20 +131,13 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(
-              Icons.auto_awesome_rounded,
-              color: Colors.white,
-              size: 21,
-            ),
+            child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 21),
           ),
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'AI Assistant',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-              ),
+              const Text(AppConstants.chatbotName, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               const SizedBox(height: 2),
               BlocBuilder<ChatBloc, ChatState>(
                 buildWhen: (previous, current) =>
@@ -159,10 +145,7 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                     previous.recordingState != current.recordingState ||
                     previous.aiProcessingState != current.aiProcessingState,
                 builder: (context, state) {
-                  final (label, color) = _status(
-                    state,
-                    Theme.of(context).colorScheme,
-                  );
+                  final (label, color) = _status(state, Theme.of(context).colorScheme);
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 180),
                     child: Row(
@@ -172,19 +155,12 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                         Container(
                           width: 7,
                           height: 7,
-                          decoration: BoxDecoration(
-                            color: color,
-                            shape: BoxShape.circle,
-                          ),
+                          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
                         ),
                         const SizedBox(width: 6),
                         Text(
                           label,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: color,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),
@@ -196,21 +172,20 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
         ],
       ),
       actions: [
-        IconButton(
-          tooltip: 'Tùy chọn',
-          onPressed: () {},
-          icon: const Icon(Icons.more_horiz_rounded),
-        ),
+        if (showCloseButton)
+          IconButton(
+            key: const Key('close-assistant'),
+            tooltip: 'Đóng trợ lý',
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close_rounded),
+          )
+        else
+          IconButton(tooltip: 'Tùy chọn', onPressed: () {}, icon: const Icon(Icons.more_horiz_rounded)),
         const SizedBox(width: 6),
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Divider(
-          height: 1,
-          color: Theme.of(
-            context,
-          ).colorScheme.outlineVariant.withValues(alpha: .45),
-        ),
+        child: Divider(height: 1, color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: .45)),
       ),
     );
   }
@@ -222,7 +197,7 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     return switch (state.aiProcessingState) {
       AiProcessingState.thinking => ('Thinking...', colors.primary),
       AiProcessingState.understanding => ('Processing...', colors.primary),
-      AiProcessingState.callingApi => ('Processing...', colors.primary),
+      AiProcessingState.generatingResponse => ('Processing...', colors.primary),
       AiProcessingState.idle => ('Online', const Color(0xFF2EAD72)),
     };
   }

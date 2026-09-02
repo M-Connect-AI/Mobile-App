@@ -1,9 +1,10 @@
 import 'package:equatable/equatable.dart';
+
 import '../models/chat_message.dart';
 
 enum RecordingState { idle, requestingPermission, recording }
 
-enum AiProcessingState { idle, thinking, understanding, callingApi }
+enum AiProcessingState { idle, thinking, understanding, generatingResponse }
 
 class ChatState extends Equatable {
   const ChatState({
@@ -11,6 +12,7 @@ class ChatState extends Equatable {
     this.inputText = '',
     this.recordingState = RecordingState.idle,
     this.recordingDuration = Duration.zero,
+    this.recognizedText = '',
     this.isLoading = false,
     this.aiProcessingState = AiProcessingState.idle,
     this.error,
@@ -20,6 +22,7 @@ class ChatState extends Equatable {
   final String inputText;
   final RecordingState recordingState;
   final Duration recordingDuration;
+  final String recognizedText;
   final bool isLoading;
   final AiProcessingState aiProcessingState;
   final String? error;
@@ -32,6 +35,7 @@ class ChatState extends Equatable {
     String? inputText,
     RecordingState? recordingState,
     Duration? recordingDuration,
+    String? recognizedText,
     bool? isLoading,
     AiProcessingState? aiProcessingState,
     String? error,
@@ -41,6 +45,7 @@ class ChatState extends Equatable {
     inputText: inputText ?? this.inputText,
     recordingState: recordingState ?? this.recordingState,
     recordingDuration: recordingDuration ?? this.recordingDuration,
+    recognizedText: recognizedText ?? this.recognizedText,
     isLoading: isLoading ?? this.isLoading,
     aiProcessingState: aiProcessingState ?? this.aiProcessingState,
     error: clearError ? null : error ?? this.error,
@@ -52,6 +57,7 @@ class ChatState extends Equatable {
     inputText,
     recordingState,
     recordingDuration,
+    recognizedText,
     isLoading,
     aiProcessingState,
     error,

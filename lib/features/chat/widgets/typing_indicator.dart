@@ -33,7 +33,7 @@ class _TypingIndicatorState extends State<TypingIndicator> {
     final label = switch (widget.stage) {
       AiProcessingState.thinking => 'Thinking...',
       AiProcessingState.understanding => 'Understanding request...',
-      AiProcessingState.callingApi => 'Calling API...',
+      AiProcessingState.generatingResponse => 'Preparing response...',
       AiProcessingState.idle => 'Thinking...',
     };
     final colors = Theme.of(context).colorScheme;

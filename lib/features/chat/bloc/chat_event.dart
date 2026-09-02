@@ -34,11 +34,11 @@ final class CancelRecording extends ChatEvent {
 }
 
 final class SendVoiceMessage extends ChatEvent {
-  const SendVoiceMessage(this.audioPath, this.duration);
-  final String audioPath;
+  const SendVoiceMessage(this.transcript, this.duration);
+  final String transcript;
   final Duration duration;
   @override
-  List<Object?> get props => [audioPath, duration];
+  List<Object?> get props => [transcript, duration];
 }
 
 final class RetryMessage extends ChatEvent {
@@ -50,4 +50,24 @@ final class RetryMessage extends ChatEvent {
 
 final class RecordingTicked extends ChatEvent {
   const RecordingTicked();
+}
+
+final class SpeechRecognitionUpdated extends ChatEvent {
+  const SpeechRecognitionUpdated(this.transcript);
+  final String transcript;
+
+  @override
+  List<Object?> get props => [transcript];
+}
+
+final class SpeechRecognitionFailed extends ChatEvent {
+  const SpeechRecognitionFailed(this.message);
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
+}
+
+final class SpeechRecognitionCompleted extends ChatEvent {
+  const SpeechRecognitionCompleted();
 }

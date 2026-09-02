@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../bloc/chat_bloc.dart';
 import 'voice_recorder.dart';
 
@@ -39,6 +40,7 @@ class _ChatInputState extends State<ChatInput> {
         if (state.isRecording) {
           return VoiceRecorder(
             duration: state.recordingDuration,
+            transcript: state.recognizedText,
             onCancel: () =>
                 context.read<ChatBloc>().add(const CancelRecording()),
             onSend: () => context.read<ChatBloc>().add(const StopRecording()),
@@ -52,15 +54,12 @@ class _ChatInputState extends State<ChatInput> {
             Expanded(
               child: Container(
                 constraints: const BoxConstraints(
-                  minHeight: 52,
-                  maxHeight: 132,
+                  minHeight: 60,
+                  maxHeight: 148,
                 ),
                 decoration: BoxDecoration(
                   color: colors.surfaceContainerHighest.withValues(alpha: .7),
-                  borderRadius: BorderRadius.circular(25),
-                  border: Border.all(
-                    color: colors.outlineVariant.withValues(alpha: .6),
-                  ),
+                  borderRadius: BorderRadius.circular(30),
                 ),
                 child: TextField(
                   key: const Key('chat-text-field'),
@@ -68,16 +67,17 @@ class _ChatInputState extends State<ChatInput> {
                   focusNode: _focusNode,
                   minLines: 1,
                   maxLines: 5,
+                  style: const TextStyle(fontSize: 15.5),
                   textCapitalization: TextCapitalization.sentences,
                   textInputAction: TextInputAction.newline,
                   onChanged: (value) =>
                       context.read<ChatBloc>().add(MessageChanged(value)),
                   decoration: const InputDecoration(
-                    hintText: 'Nhắn tin cho AI Assistant...',
+                    hintText: 'Nhắn tin cho ${AppConstants.chatbotName}...',
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 14,
+                      horizontal: 20,
+                      vertical: 18,
                     ),
                   ),
                 ),
@@ -87,6 +87,10 @@ class _ChatInputState extends State<ChatInput> {
             IconButton.filled(
               key: const Key('chat-action-button'),
               tooltip: hasText ? 'Gửi tin nhắn' : 'Ghi âm',
+              style: IconButton.styleFrom(
+                minimumSize: const Size.square(60),
+                iconSize: 27,
+              ),
               onPressed:
                   state.isLoading ||
                       state.recordingState ==

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:waveform_flutter/waveform_flutter.dart';
 
 class VoiceRecorder extends StatefulWidget {
   const VoiceRecorder({
     super.key,
     required this.duration,
+    required this.transcript,
     required this.onCancel,
     required this.onSend,
   });
   final Duration duration;
+  final String transcript;
   final VoidCallback onCancel;
   final VoidCallback onSend;
 
@@ -15,23 +18,13 @@ class VoiceRecorder extends StatefulWidget {
   State<VoiceRecorder> createState() => _VoiceRecorderState();
 }
 
-class _VoiceRecorderState extends State<VoiceRecorder>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _animation;
+class _VoiceRecorderState extends State<VoiceRecorder> {
+  late final Stream<Amplitude> _amplitudeStream;
 
   @override
   void initState() {
     super.initState();
-    _animation = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _animation.dispose();
-    super.dispose();
+    _amplitudeStream = createRandomAmplitudeStream();
   }
 
   @override
@@ -41,62 +34,98 @@ class _VoiceRecorderState extends State<VoiceRecorder>
     final seconds = (widget.duration.inSeconds % 60).toString().padLeft(2, '0');
     return Container(
       key: const Key('voice-recorder'),
-      padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+      padding: const EdgeInsets.fromLTRB(16, 14, 10, 10),
       decoration: BoxDecoration(
         color: colors.errorContainer.withValues(alpha: .42),
         border: Border.all(color: colors.error.withValues(alpha: .15)),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: 9,
-            height: 9,
-            decoration: BoxDecoration(
-              color: colors.error,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            '$minutes:$seconds',
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontFeatures: [FontFeature.tabularFigures()],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: AnimatedBuilder(
-              animation: _animation,
-              builder: (context, child) => Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(18, (index) {
-                  final wave = ((index % 5) + 1) / 5;
-                  final height = 5 + 22 * ((_animation.value + wave) % 1);
-                  return Container(
-                    width: 2.5,
-                    height: height,
-                    margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                    decoration: BoxDecoration(
-                      color: colors.error.withValues(alpha: .65),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  );
-                }),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 160),
+            child: Text(
+              widget.transcript.isEmpty
+                  ? 'Đang lắng nghe...'
+                  : widget.transcript,
+              key: ValueKey(widget.transcript),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: colors.onSurface,
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
-          TextButton(onPressed: widget.onCancel, child: const Text('Hủy')),
-          IconButton.filled(
-            key: const Key('stop-send-voice'),
-            tooltip: 'Dừng và gửi',
-            onPressed: widget.onSend,
-            style: IconButton.styleFrom(
-              backgroundColor: colors.error,
-              foregroundColor: colors.onError,
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 54,
+            child: ClipRect(
+              child: AnimatedWaveList(
+                stream: _amplitudeStream,
+                barBuilder: (animation, amplitude) => SizedBox(
+                  width: 10,
+                  height: 54,
+                  child: Center(
+                    child: ScaleTransition(
+                      scale: animation,
+                      alignment: Alignment.center,
+                      child: Container(
+                        width: 5,
+                        height: 6 + (amplitude.current / amplitude.max) * 46,
+                        decoration: BoxDecoration(
+                          color: colors.error.withValues(alpha: .65),
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
-            icon: const Icon(Icons.stop_rounded),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Container(
+                width: 9,
+                height: 9,
+                decoration: BoxDecoration(
+                  color: colors.error,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '$minutes:$seconds',
+                style: TextStyle(
+                  color: colors.onSurface,
+                  fontWeight: FontWeight.w600,
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: widget.onCancel,
+                style: TextButton.styleFrom(
+                  foregroundColor: colors.onSurfaceVariant,
+                ),
+                child: const Text('Hủy'),
+              ),
+              IconButton.filled(
+                key: const Key('stop-send-voice'),
+                tooltip: 'Dừng và gửi',
+                onPressed: widget.onSend,
+                style: IconButton.styleFrom(
+                  backgroundColor: colors.error,
+                  foregroundColor: colors.onError,
+                ),
+                icon: const Icon(Icons.stop_rounded),
+              ),
+            ],
           ),
         ],
       ),
