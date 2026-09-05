@@ -1,4 +1,4 @@
-import 'package:chatbot_project/features/chat/prompts/business_trip_prompt.dart';
+import 'package:chatbot_project/domain/usecase/business_trip_prompt.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

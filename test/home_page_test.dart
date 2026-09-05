@@ -1,8 +1,8 @@
-import 'package:chatbot_project/core/constants/app_constants.dart';
-import 'package:chatbot_project/features/chat/bloc/chat_bloc.dart';
-import 'package:chatbot_project/features/chat/data/mock_chat_repository.dart';
-import 'package:chatbot_project/features/chat/data/speech_to_text_repository.dart';
-import 'package:chatbot_project/features/home/pages/home_page.dart';
+import 'package:chatbot_project/data/repository/mock_chat_repository.dart';
+import 'package:chatbot_project/domain/repository/speech_to_text_repository.dart';
+import 'package:chatbot_project/presentation/pages/chat/bloc/chat_bloc.dart';
+import 'package:chatbot_project/presentation/pages/page2/home_page.dart';
+import 'package:chatbot_project/resources/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';

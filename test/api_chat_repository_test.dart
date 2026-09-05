@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:chatbot_project/features/chat/data/api_chat_repository.dart';
-import 'package:chatbot_project/features/chat/data/chat_repository.dart';
-import 'package:chatbot_project/features/chat/models/chat_message.dart';
+import 'package:chatbot_project/data/repository/api_chat_repository.dart';
+import 'package:chatbot_project/data/source/remote/client/api_chat_client.dart';
+import 'package:chatbot_project/domain/model/chat_message.dart';
+import 'package:chatbot_project/domain/repository/chat_repository.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -40,11 +41,10 @@ void main() {
       );
     });
     final repository = ApiChatRepository(
-      baseUrl: 'https://maas.example.com/v1/',
-      apiKey: 'test-api-key',
-      model: 'test-model',
-      systemPromptBuilder: () => 'business-trip-system-prompt',
-      dio: dio,
+      client: _client(
+        dio,
+        systemPromptBuilder: () => 'business-trip-system-prompt',
+      ),
     );
 
     final response = await repository
@@ -68,11 +68,10 @@ void main() {
       ),
     );
     final repository = ApiChatRepository(
-      baseUrl: 'https://maas.example.com/v1',
-      apiKey: 'test-api-key',
-      model: 'test-model',
-      systemPromptBuilder: () => 'business-trip-system-prompt',
-      dio: dio,
+      client: _client(
+        dio,
+        systemPromptBuilder: () => 'business-trip-system-prompt',
+      ),
     );
 
     await expectLater(
@@ -121,12 +120,7 @@ void main() {
         },
       ),
     );
-    final repository = ApiChatRepository(
-      baseUrl: 'https://maas.example.com/v1',
-      apiKey: 'test-api-key',
-      model: 'test-model',
-      dio: dio,
-    );
+    final repository = ApiChatRepository(client: _client(dio));
 
     final responses = await repository
         .sendTextMessage('Tạo đơn công tác')
@@ -163,12 +157,7 @@ void main() {
           },
         ),
       );
-      final repository = ApiChatRepository(
-        baseUrl: 'https://maas.example.com/v1',
-        apiKey: 'test-api-key',
-        model: 'test-model',
-        dio: dio,
-      );
+      final repository = ApiChatRepository(client: _client(dio));
 
       final response = await repository.sendTextMessage('Tạo đơn').last;
 
@@ -179,6 +168,16 @@ void main() {
       );
       repository.close();
     },
+  );
+}
+
+ApiChatClient _client(Dio dio, {String Function()? systemPromptBuilder}) {
+  return ApiChatClient(
+    baseUrl: 'https://maas.example.com/v1/',
+    apiKey: 'test-api-key',
+    model: 'test-model',
+    systemPromptBuilder: systemPromptBuilder,
+    dio: dio,
   );
 }
 
