@@ -1,12 +1,20 @@
-import '../model/chat_message.dart';
+import '../model/chat_stream_event.dart';
+import '../model/chat_thread.dart';
 
 abstract interface class ChatRepository {
-  Stream<ChatMessage> sendTextMessage(String message);
-  Stream<ChatMessage> sendVoiceMessage(String transcript);
+  Stream<ChatStreamEvent> sendMessage({
+    required String message,
+    String? threadId,
+    bool confirm = false,
+  });
+
+  Future<ChatThreadDetail> getThread(String threadId);
+
   void close();
 }
 
 class ChatRepositoryException implements Exception {
-  const ChatRepositoryException(this.message);
+  const ChatRepositoryException(this.message, {this.sessionExpired = false});
   final String message;
+  final bool sessionExpired;
 }

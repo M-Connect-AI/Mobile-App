@@ -1,12 +1,24 @@
+import 'package:awesome_extensions/awesome_extensions.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../common/components/app_text_style.dart';
+import '../../../../common/extensions/responsive_extension.dart';
+import '../../../../common/themes/theme_extensions/app_color_scheme.dart';
+import '../../../../generated/l10n.dart';
 import '../../../../resources/app_constants.dart';
 import '../bloc/chat_bloc.dart';
 import 'voice_recorder.dart';
 
 class ChatInput extends StatefulWidget {
-  const ChatInput({super.key});
+  const ChatInput({super.key, this.autofocus = false}) : onTap = null;
+
+  const ChatInput.launcher({super.key, required this.onTap})
+    : autofocus = false;
+
+  final VoidCallback? onTap;
+  final bool autofocus;
 
   @override
   State<ChatInput> createState() => _ChatInputState();
@@ -17,6 +29,22 @@ class _ChatInputState extends State<ChatInput> {
   final _focusNode = FocusNode();
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.onTap == null) {
+      _syncController(context.read<ChatBloc>().state.inputText);
+    }
+  }
+
+  void _syncController(String inputText) {
+    if (_controller.text == inputText) return;
+    _controller.value = TextEditingValue(
+      text: inputText,
+      selection: TextSelection.collapsed(offset: inputText.length),
+    );
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     _focusNode.dispose();
@@ -25,15 +53,16 @@ class _ChatInputState extends State<ChatInput> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.onTap != null) {
+      return _ChatInputLauncher(onTap: widget.onTap!);
+    }
     return BlocConsumer<ChatBloc, ChatState>(
       listenWhen: (previous, current) =>
           previous.inputText != current.inputText,
       listener: (_, state) {
-        if (_controller.text != state.inputText) {
-          _controller.value = TextEditingValue(
-            text: state.inputText,
-            selection: TextSelection.collapsed(offset: state.inputText.length),
-          );
+        _syncController(state.inputText);
+        if (state.inputText.isEmpty && state.isLoading) {
+          _focusNode.unfocus();
         }
       },
       builder: (context, state) {
@@ -65,6 +94,8 @@ class _ChatInputState extends State<ChatInput> {
                   key: const Key('chat-text-field'),
                   controller: _controller,
                   focusNode: _focusNode,
+                  autofocus: widget.autofocus,
+                  onTapOutside: (_) => _focusNode.unfocus(),
                   minLines: 1,
                   maxLines: 5,
                   style: const TextStyle(fontSize: 15.5),
@@ -128,4 +159,84 @@ class _ChatInputState extends State<ChatInput> {
       },
     );
   }
+}
+
+class _ChatInputLauncher extends StatelessWidget {
+  const _ChatInputLauncher({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColorScheme;
+    return Semantics(
+      button: true,
+      label: S.of(context).openChat,
+      child: CupertinoButton(
+        minimumSize: Size.zero,
+        padding: EdgeInsets.zero,
+        borderRadius: BorderRadius.circular(28),
+        onPressed: onTap,
+        child: Container(
+          height: 56.height,
+          decoration: BoxDecoration(
+            color: colors.surfaceTemary,
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: Row(
+            children: [
+              Text(
+                S.of(context).chatInputHint,
+                style: AppTextStyle.r16.copyWith(color: colors.textTertiary),
+              ).expanded(),
+              Container(
+                width: 40.width,
+                height: 40.width,
+                decoration: BoxDecoration(
+                  color: colors.iconBrand,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: CustomPaint(
+                  size: Size(20.sp, 20.sp),
+                  painter: _SendArrowPainter(color: colors.surfaceSecondary),
+                ),
+              ),
+            ],
+          ).paddingSymmetric(horizontal: 16.width),
+        ),
+      ),
+    );
+  }
+}
+
+class _SendArrowPainter extends CustomPainter {
+  const _SendArrowPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = size.width * .1
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+    final centerX = size.width / 2;
+    canvas.drawLine(
+      Offset(centerX, size.height * .8),
+      Offset(centerX, size.height * .2),
+      paint,
+    );
+    final path = Path()
+      ..moveTo(size.width * .24, size.height * .44)
+      ..lineTo(centerX, size.height * .2)
+      ..lineTo(size.width * .76, size.height * .44);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SendArrowPainter oldDelegate) =>
+      oldDelegate.color != color;
 }

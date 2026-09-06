@@ -16,6 +16,9 @@ class ChatState extends Equatable {
     this.isLoading = false,
     this.aiProcessingState = AiProcessingState.idle,
     this.error,
+    this.activeThreadId,
+    this.isRestoring = false,
+    this.sessionExpired = false,
   });
 
   final List<ChatMessage> messages;
@@ -26,6 +29,9 @@ class ChatState extends Equatable {
   final bool isLoading;
   final AiProcessingState aiProcessingState;
   final String? error;
+  final String? activeThreadId;
+  final bool isRestoring;
+  final bool sessionExpired;
 
   bool get isRecording => recordingState == RecordingState.recording;
   bool get canSendText => inputText.trim().isNotEmpty && !isLoading;
@@ -40,6 +46,9 @@ class ChatState extends Equatable {
     AiProcessingState? aiProcessingState,
     String? error,
     bool clearError = false,
+    String? activeThreadId,
+    bool? isRestoring,
+    bool? sessionExpired,
   }) => ChatState(
     messages: messages ?? this.messages,
     inputText: inputText ?? this.inputText,
@@ -49,6 +58,9 @@ class ChatState extends Equatable {
     isLoading: isLoading ?? this.isLoading,
     aiProcessingState: aiProcessingState ?? this.aiProcessingState,
     error: clearError ? null : error ?? this.error,
+    activeThreadId: activeThreadId ?? this.activeThreadId,
+    isRestoring: isRestoring ?? this.isRestoring,
+    sessionExpired: sessionExpired ?? this.sessionExpired,
   );
 
   @override
@@ -61,5 +73,8 @@ class ChatState extends Equatable {
     isLoading,
     aiProcessingState,
     error,
+    activeThreadId,
+    isRestoring,
+    sessionExpired,
   ];
 }

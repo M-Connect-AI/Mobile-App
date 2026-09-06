@@ -9,9 +9,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'common/theme/app_theme.dart';
 import 'di/app_dependencies.dart';
 import 'domain/repository/chat_repository.dart';
+import 'domain/repository/chat_thread_repository.dart';
+import 'domain/repository/auth_repository.dart';
+import 'domain/repository/credential_repository.dart';
+import 'domain/repository/home_repository.dart';
 import 'domain/repository/speech_to_text_repository.dart';
 import 'generated/l10n.dart';
-import 'presentation/pages/chat/bloc/chat_bloc.dart';
 import 'resources/app_constants.dart';
 import 'route/go_router.dart';
 
@@ -31,40 +34,46 @@ class AiAssistantApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
+        RepositoryProvider<AuthRepository>(
+          create: (_) => dependencies.authRepository,
+        ),
+        RepositoryProvider<CredentialRepository>(
+          create: (_) => dependencies.credentialRepository,
+        ),
         RepositoryProvider<ChatRepository>(
           create: (_) => dependencies.chatRepository,
           dispose: (repository) => repository.close(),
+        ),
+        RepositoryProvider<ChatThreadRepository>(
+          create: (_) => dependencies.chatThreadRepository,
+        ),
+        RepositoryProvider<HomeRepository>(
+          create: (_) => dependencies.homeRepository,
         ),
         RepositoryProvider<SpeechToTextRepository>(
           create: (_) => dependencies.speechToTextRepository,
           dispose: (repository) => unawaited(repository.close()),
         ),
       ],
-      child: BlocProvider(
-        create: (context) => ChatBloc(
-          context.read<ChatRepository>(),
-          context.read<SpeechToTextRepository>(),
-        )..add(const ChatStarted()),
-        child: ScreenUtilInit(
-          designSize: const Size(390, 844),
-          minTextAdapt: true,
-          splitScreenMode: true,
-          builder: (context, child) => MaterialApp.router(
-            title: AppConstants.chatbotName,
-            debugShowCheckedModeBanner: false,
-            themeMode: ThemeMode.system,
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            routerConfig: appRouter,
-            locale: const Locale('vi'),
-            supportedLocales: S.delegate.supportedLocales,
-            localizationsDelegates: const [
-              S.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-          ),
+      child: ScreenUtilInit(
+        designSize: const Size(390, 844),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (context, child) => MaterialApp.router(
+          title: AppConstants.chatbotName,
+          debugShowCheckedModeBanner: false,
+          themeMode: ThemeMode.system,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          routerConfig: appRouter,
+          locale: const Locale('vi'),
+          supportedLocales: S.delegate.supportedLocales,
+          localizationsDelegates: const [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
         ),
       ),
     );

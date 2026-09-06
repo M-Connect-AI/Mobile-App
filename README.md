@@ -9,34 +9,34 @@ Project này chỉ chứa Flutter client, không chứa source backend.
 
 ## Cấu trúc màn hình
 
-- `lib/presentation/pages/login`: màn đăng nhập mockup, chưa xác thực thật.
+- `lib/presentation/pages/login`: màn đăng nhập bằng tài khoản backend và danh sách tài khoản gợi ý.
 - `lib/presentation/pages/home`: màn trang chủ và điểm mở trợ lý.
 - `lib/presentation/pages/chat`: màn hội thoại với trợ lý AI.
 - `lib/common/`: design system, typography Roboto và responsive extensions.
 - `lib/l10n/`: nội dung bản địa hóa tiếng Việt/tiếng Anh.
 - `lib/route/go_router.dart`: typed routes cho ba màn hình.
 
-Ứng dụng khởi động ở màn đăng nhập. Hiện tại nút **Đăng nhập** chuyển thẳng
-sang trang chủ để phục vụ dựng giao diện và kiểm thử luồng.
+Ứng dụng khởi động ở màn đăng nhập và chỉ chuyển sang trang chủ sau khi backend
+xác thực thành công.
 
 Roboto được nhúng trong `assets/fonts/` và cấu hình làm font mặc định của toàn
 bộ light/dark theme, không phụ thuộc font có sẵn trên thiết bị.
 
-## Cấu hình AI Platform
+## Cấu hình backend
 
 ```bash
 cp .env.example .env
 ```
 
-Điền API key vào file `.env`:
+Điền địa chỉ HR và Agent service vào file `.env`:
 
 ```dotenv
-AI_PLATFORM_API_KEY=your-api-key
-AI_PLATFORM_BASE_URL=https://your-ai-platform.example/v1
-AI_PLATFORM_MODEL=your-model-id
+HR_API_BASE_URL=http://localhost:3002
+AGENT_API_BASE_URL=http://localhost:3001
 ```
 
-`.env` đã được git-ignore. Tuy nhiên, đây là Flutter asset nên key vẫn được đóng gói trong APK/IPA và có thể bị trích xuất. Không nên phân phối bản production chứa API key dùng chung có quyền hạn lớn.
+Với production gateway, cấu hình origin; ứng dụng tự thêm `/api/hr` và
+`/api/agent`. Chat dùng JWT nhận từ Login, không đóng gói model API key trong app.
 
 ## Chạy ứng dụng
 
@@ -45,70 +45,40 @@ fvm flutter pub get
 fvm flutter run
 ```
 
-Nếu `AI_PLATFORM_API_KEY` trống, ứng dụng dùng `MockChatRepository`. Khi có key, `ApiChatRepository` gọi:
+Chat luôn gọi Agent backend thật:
 
 ```text
-POST <AI_PLATFORM_BASE_URL>/chat/completions
-Authorization: Bearer <AI_PLATFORM_API_KEY>
+GET  <AGENT_API_BASE_URL>/chat/threads
+GET  <AGENT_API_BASE_URL>/chat/threads/:threadId
+POST <AGENT_API_BASE_URL>/chat/stream
+Authorization: Bearer <accessToken>
 ```
 
 Payload:
 
 ```json
 {
-  "model": "<AI_PLATFORM_MODEL>",
-  "messages": [
-    {
-      "role": "assistant",
-      "content": "You are an AI assistant tasked with providing information to users."
-    },
-    {
-      "role": "user",
-      "content": "Chuyển 500k cho Nguyễn Văn A"
-    }
-  ],
-  "max_tokens": 4096,
-  "temperature": 1,
-  "top_p": 0.95,
-  "stream": true
+  "message": "Tôi muốn xin nghỉ phép",
+  "threadId": "optional",
+  "confirm": false
 }
 ```
 
-Repository đọc từng SSE event từ `choices[0].delta.content` cho đến `data: [DONE]`, ghép JSON hoàn chỉnh và chỉ hiển thị `confirmation_question`. JSON gốc vẫn được lưu trong tối đa 20 message gần nhất để duy trì ngữ cảnh hội thoại.
-
-Speech-to-text và text nhập tay đều được gửi tới cùng Chat Completions API dưới role `user`.
-
-Custom business-trip prompt được gửi tại `messages[0].content` với role `assistant`. Transcript nằm ở message role `user`, nên prompt không bị nối trực tiếp vào transcript hoặc lưu lặp lại trong conversation history.
-
-Mỗi lần ứng dụng khởi động, `BusinessTripPromptBuilder` sinh một `transaction_id` ngẫu nhiên mới. ID này giữ nguyên trong suốt phiên chạy và được yêu cầu trả lại trong JSON để tách cache/ngữ cảnh giữa các lần mở ứng dụng.
-
-Business data được truyền qua `BusinessTripPromptData`:
-
-```dart
-final promptBuilder = BusinessTripPromptBuilder(
-  data: const BusinessTripPromptData(
-    locations: ['Đà Nẵng', 'Hà Nội'],
-    employees: [
-      BusinessEntity(id: 'employee-1', name: 'Nguyễn Văn A'),
-    ],
-    customers: [
-      BusinessEntity(id: 'customer-1', name: 'Công ty ABC'),
-    ],
-    transportationOptions: ['Máy bay', 'Ô tô'],
-  ),
-);
-```
-
-Nếu chưa có dữ liệu nghiệp vụ, truyền danh sách rỗng. Prompt builder tự chèn ngày hiện tại theo định dạng `YYYY-MM-DD`.
+Repository đọc named SSE, ghép token, giữ `threadId` do server cấp và xử lý
+confirmation, result, citation. Lịch sử do backend quản lý; mobile không gửi lại
+history, model setting hoặc system prompt.
 
 Ví dụ response streaming:
 
 ```text
-data: {"choices":[{"delta":{"content":"{\\"confirmation_question\\":"}}]}
+event: token
+data: {"text":"Bạn có muốn gửi đơn nghỉ phép?"}
 
-data: {"choices":[{"delta":{"content":"\\"Bạn muốn chuyển từ tài khoản nào?\\"}"}}]}
+event: confirm
+data: {"tool":"create_leave","args":{},"summary":"Gửi đơn nghỉ phép"}
 
-data: [DONE]
+event: done
+data: {"threadId":"...","citations":[]}
 ```
 
 Khi nhấn microphone lần đầu, hãy cấp cả quyền microphone và speech recognition. `DeviceSpeechToTextRepository` ưu tiên locale tiếng Việt, phát partial transcript qua stream và `ChatBloc` gửi transcript cuối cùng qua `ChatRepository`.

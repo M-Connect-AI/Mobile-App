@@ -21,6 +21,8 @@ class IrhTextField extends StatelessWidget {
     this.autofillHints,
     this.validator,
     this.onSubmitted,
+    this.readOnly = false,
+    this.onTap,
   });
 
   final BuildContext context;
@@ -36,6 +38,8 @@ class IrhTextField extends StatelessWidget {
   final Iterable<String>? autofillHints;
   final FormFieldValidator<String>? validator;
   final ValueChanged<String?>? onSubmitted;
+  final bool readOnly;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +53,8 @@ class IrhTextField extends StatelessWidget {
       autofillHints: autofillHints,
       validator: validator,
       onSubmitted: onSubmitted,
+      readOnly: readOnly,
+      onTap: onTap,
       style: AppTextStyle.r16.copyWith(color: colors.textPrimary),
       decoration: InputDecoration(
         labelText: labelText,
@@ -96,5 +102,7 @@ class AppTextField extends IrhTextField {
     super.autofillHints,
     super.validator,
     super.onSubmitted,
+    super.readOnly,
+    super.onTap,
   });
 }

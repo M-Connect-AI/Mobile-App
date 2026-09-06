@@ -1,176 +1,133 @@
-import 'dart:convert';
-
 import '../../domain/model/chat_message.dart';
+import '../../domain/model/chat_stream_event.dart';
+import '../../domain/model/chat_thread.dart';
 import '../../domain/repository/chat_repository.dart';
-import '../source/remote/client/api_chat_client.dart';
+import '../../domain/repository/chat_thread_repository.dart';
+import '../../domain/repository/credential_repository.dart';
+import '../model/chat/chat_api_models.dart';
+import '../source/remote/agent_chat_remote_data_source.dart';
 
-class ApiChatRepository implements ChatRepository {
-  ApiChatRepository({required ApiChatClient client}) : _client = client;
+class ApiChatRepository implements ChatRepository, ChatThreadRepository {
+  const ApiChatRepository(this._remote, this._sessions);
 
-  final ApiChatClient _client;
-  final List<Map<String, String>> _history = [];
-
-  @override
-  Stream<ChatMessage> sendTextMessage(String message) {
-    return _send(message);
-  }
+  final AgentChatRemoteDataSource _remote;
+  final CredentialRepository _sessions;
 
   @override
-  Stream<ChatMessage> sendVoiceMessage(String transcript) {
-    return _send(transcript);
-  }
-
-  Stream<ChatMessage> _send(String message) async* {
-    final userMessage = {'role': 'user', 'content': message};
+  Stream<ChatStreamEvent> sendMessage({required String message, String? threadId, bool confirm = false}) async* {
+    final token = await _accessToken();
     try {
-      final contentBuffer = StringBuffer();
-      final responseId = 'assistant-${DateTime.now().microsecondsSinceEpoch}';
-      final responseCreatedAt = DateTime.now();
-      var lastDisplayedContent = '';
-      await for (final content in _client.streamChatCompletion([
-        ..._history,
-        userMessage,
-      ])) {
-        contentBuffer.write(content);
+      await for (final event in _remote.streamTurn(
+        token,
+        ChatTurnRequestDto(message: message, threadId: threadId, confirm: confirm ? true : null),
+      )) {
+        yield switch (event) {
+          AgentTokenEvent() => ChatStreamToken(event.text),
+          AgentConfirmationEvent() => ChatStreamConfirmation(_mapConfirmation(event.confirmation)),
+          AgentResultEvent() => ChatStreamResult(event.executed),
+          AgentDoneEvent() => ChatStreamDone(threadId: event.threadId, citations: event.citations),
+          AgentErrorEvent() => ChatStreamFailure(event.message),
+          AgentInterruptedEvent() => const ChatStreamFailure(
+            'Kết nối bị gián đoạn. Hãy tải lại hội thoại trước khi thử lại.',
+            interrupted: true,
+          ),
+        };
+      }
+    } on AgentRemoteException catch (error) {
+      await _handleRemoteError(error);
+    }
+  }
 
-        final partialQuestion = _partialConfirmationQuestion(
-          contentBuffer.toString(),
-        );
-        if (partialQuestion != null &&
-            partialQuestion.isNotEmpty &&
-            partialQuestion != lastDisplayedContent) {
-          lastDisplayedContent = partialQuestion;
-          yield ChatMessage(
-            id: responseId,
+  @override
+  Future<List<ChatThread>> getThreads() async {
+    final token = await _accessToken();
+    try {
+      final items = await _remote.getThreads(token);
+      return items
+          .map((item) {
+            final updatedAt = DateTime.tryParse(item.updatedAt);
+            if (updatedAt == null) {
+              throw const ChatRepositoryException('Thời gian cập nhật hội thoại không hợp lệ.');
+            }
+            return ChatThread(threadId: item.threadId, title: item.title, preview: item.preview, updatedAt: updatedAt);
+          })
+          .toList(growable: false);
+    } on AgentRemoteException catch (error) {
+      await _handleRemoteError(error);
+    } catch (error) {
+      throw const ChatRepositoryException('Đã xảy ra lỗi khi lấy danh sách hội thoại.');
+    }
+  }
+
+  @override
+  Future<ChatThreadDetail> getThread(String threadId) async {
+    final token = await _accessToken();
+    try {
+      final detail = await _remote.getThread(token, threadId);
+      final restoredAt = DateTime.now();
+      final messages = <ChatMessage>[
+        for (var index = 0; index < detail.messages.length; index++)
+          ChatMessage(
+            id: 'persisted-$index',
             type: MessageType.text,
-            sender: MessageSender.assistant,
-            content: partialQuestion,
-            createdAt: responseCreatedAt,
-            status: MessageStatus.processing,
-          );
+            sender: switch (detail.messages[index].role) {
+              'user' => MessageSender.user,
+              'assistant' => MessageSender.assistant,
+              _ => throw const ChatRepositoryException('Vai trò tin nhắn không hợp lệ.'),
+            },
+            content: detail.messages[index].content,
+            createdAt: restoredAt,
+            status: MessageStatus.success,
+          ),
+      ];
+      final pending = detail.pendingAction;
+      if (pending != null) {
+        final lastAssistant = messages.lastIndexWhere((message) => message.sender == MessageSender.assistant);
+        if (lastAssistant >= 0) {
+          messages[lastAssistant] = messages[lastAssistant].copyWith(confirmation: _mapConfirmation(pending));
         }
       }
-
-      final content = contentBuffer.toString().trim();
-      if (content.isEmpty) {
-        throw const ChatRepositoryException(
-          'Phản hồi chatbot không có nội dung.',
-        );
-      }
-      _history
-        ..add(userMessage)
-        ..add({'role': 'assistant', 'content': content});
-      _trimHistory();
-      yield ChatMessage(
-        id: responseId,
-        type: MessageType.text,
-        sender: MessageSender.assistant,
-        content: _userFacingContent(content),
-        createdAt: responseCreatedAt,
-        status: MessageStatus.success,
+      return ChatThreadDetail(
+        threadId: detail.threadId,
+        messages: messages,
+        pendingAction: pending == null ? null : _mapConfirmation(pending),
       );
-    } on ApiChatClientException catch (error) {
-      throw ChatRepositoryException(error.message);
+    } on AgentRemoteException catch (error) {
+      await _handleRemoteError(error);
     }
   }
 
-  void _trimHistory() {
-    const maxHistoryItems = 20;
-    if (_history.length > maxHistoryItems) {
-      _history.removeRange(0, _history.length - maxHistoryItems);
+  Future<String> _accessToken() async {
+    final session = await _sessions.read();
+    if (session == null || session.accessToken.isEmpty) {
+      throw const ChatRepositoryException('Phiên đăng nhập đã hết hạn.', sessionExpired: true);
     }
+    return session.accessToken;
   }
 
-  String _userFacingContent(String rawContent) {
-    final trimmed = rawContent.trim();
-    final jsonContent = trimmed
-        .replaceFirst(RegExp(r'^```(?:json)?\s*', caseSensitive: false), '')
-        .replaceFirst(RegExp(r'\s*```$'), '');
-
-    dynamic decoded;
-    try {
-      decoded = jsonDecode(jsonContent);
-    } catch (_) {
-      return trimmed;
-    }
-    if (decoded is! Map) return trimmed;
-
-    final result = Map<String, dynamic>.from(decoded);
-    final confirmationQuestion = result['confirmation_question'];
-    if (confirmationQuestion is String &&
-        confirmationQuestion.trim().isNotEmpty) {
-      return confirmationQuestion.trim();
-    }
-
-    return _fallbackConfirmationQuestion(result);
+  Never _throwMapped(AgentRemoteException error) {
+    throw ChatRepositoryException(error.message, sessionExpired: error.type == AgentRemoteErrorType.unauthorized);
   }
 
-  String _fallbackConfirmationQuestion(Map<String, dynamic> result) {
-    const labels = <String, String>{
-      'destination': 'điểm đến',
-      'start_date': 'ngày bắt đầu',
-      'end_date': 'ngày kết thúc',
-      'duration_days': 'số ngày đi',
-      'purpose': 'mục đích chuyến công tác',
-      'employee': 'nhân viên thực hiện',
-      'customer': 'khách hàng',
-      'transportation': 'phương tiện di chuyển',
-    };
-
-    final missingFields = result['missing_fields'];
-    final missingLabels = missingFields is List
-        ? missingFields
-              .whereType<String>()
-              .map((field) => labels[field] ?? field)
-              .toList()
-        : <String>[];
-
-    final ambiguousFields = result['ambiguous_fields'];
-    final ambiguousLabels = ambiguousFields is List
-        ? ambiguousFields
-              .whereType<Map>()
-              .map((item) => item['field'])
-              .whereType<String>()
-              .map((field) => labels[field] ?? field)
-              .toSet()
-              .toList()
-        : <String>[];
-
-    final questions = <String>[];
-    if (missingLabels.isNotEmpty) {
-      questions.add(
-        'Vui lòng cung cấp thêm ${_joinVietnamese(missingLabels)}.',
-      );
+  Future<Never> _handleRemoteError(AgentRemoteException error) async {
+    if (error.type == AgentRemoteErrorType.unauthorized) {
+      await _sessions.clear();
     }
-    if (ambiguousLabels.isNotEmpty) {
-      questions.add(
-        'Vui lòng xác nhận lại ${_joinVietnamese(ambiguousLabels)}.',
-      );
-    }
-    if (questions.isNotEmpty) return questions.join(' ');
-
-    return 'Vui lòng xác nhận thông tin chuyến công tác trên có chính xác không?';
+    _throwMapped(error);
   }
 
-  String _joinVietnamese(List<String> values) {
-    if (values.length < 2) return values.single;
-    return '${values.sublist(0, values.length - 1).join(', ')} và ${values.last}';
-  }
-
-  String? _partialConfirmationQuestion(String rawContent) {
-    final match = RegExp(
-      r'"confirmation_question"\s*:\s*"((?:\\.|[^"\\])*)',
-    ).firstMatch(rawContent);
-    final encodedValue = match?.group(1);
-    if (encodedValue == null || encodedValue.isEmpty) return null;
-    try {
-      return jsonDecode('"$encodedValue"') as String;
-    } catch (_) {
-      // Wait for the next chunk when it ends in an incomplete JSON escape.
-      return null;
-    }
-  }
+  ChatConfirmAction _mapConfirmation(ChatConfirmationDto dto) => ChatConfirmAction(
+    tool: switch (dto.tool) {
+      'create_leave' => ChatConfirmationTool.createLeave,
+      'create_trip' => ChatConfirmationTool.createTrip,
+      'cancel_leave' => ChatConfirmationTool.cancelLeave,
+      'approve_leaves' => ChatConfirmationTool.approveLeaves,
+      _ => ChatConfirmationTool.unknown,
+    },
+    args: Map<String, dynamic>.unmodifiable(dto.args),
+    summary: dto.summary,
+  );
 
   @override
-  void close() => _client.close();
+  void close() => _remote.close();
 }

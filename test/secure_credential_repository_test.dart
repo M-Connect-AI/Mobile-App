@@ -1,0 +1,78 @@
+import 'package:chatbot_project/data/repository/auth/secure_credential_repository.dart';
+import 'package:chatbot_project/domain/model/auth_session.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  test('stores session and removes legacy raw credentials', () async {
+    FlutterSecureStorage.setMockInitialValues({
+      'login_email': 'legacy@msb.vn',
+      'login_password': 'plain-text-password',
+    });
+    final repository = SecureCredentialRepository();
+
+    await repository.save(_session, persist: true);
+
+    expect(await repository.read(), _session);
+    const storage = FlutterSecureStorage();
+    expect(await storage.read(key: 'login_email'), isNull);
+    expect(await storage.read(key: 'login_password'), isNull);
+    expect(await storage.read(key: 'auth_session'), isNotEmpty);
+  });
+
+  test('treats invalid persisted session as empty state', () async {
+    FlutterSecureStorage.setMockInitialValues({'auth_session': '{broken'});
+    final repository = SecureCredentialRepository();
+
+    expect(await repository.read(), isNull);
+    expect(
+      await const FlutterSecureStorage().read(key: 'auth_session'),
+      isNull,
+    );
+  });
+
+  test('removes legacy raw credentials while loading an empty state', () async {
+    FlutterSecureStorage.setMockInitialValues({
+      'login_email': 'legacy@msb.vn',
+      'login_password': 'plain-text-password',
+    });
+    final repository = SecureCredentialRepository();
+
+    expect(await repository.read(), isNull);
+    const storage = FlutterSecureStorage();
+    expect(await storage.read(key: 'login_email'), isNull);
+    expect(await storage.read(key: 'login_password'), isNull);
+  });
+
+  test(
+    'keeps a non-persistent session available for the current run',
+    () async {
+      FlutterSecureStorage.setMockInitialValues({});
+      final repository = SecureCredentialRepository();
+
+      await repository.save(_session, persist: false);
+
+      expect(await repository.read(), _session);
+      expect(
+        await const FlutterSecureStorage().read(key: 'auth_session'),
+        isNull,
+      );
+    },
+  );
+}
+
+const _session = AuthSession(
+  accessToken: 'jwt',
+  user: AuthUser(
+    id: 'user-id',
+    employeeCode: 'EMP001',
+    email: 'a.nguyen@msb.vn',
+    fullName: 'Nguyễn Văn A',
+    role: UserRole.staff,
+    department: 'Khối bán lẻ',
+    managerEmployeeCode: null,
+    annualRemaining: 9,
+    annualTotal: 12,
+    sickRemaining: 30,
+  ),
+);

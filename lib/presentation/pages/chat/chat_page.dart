@@ -2,17 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../common/components/app_toast.dart';
 import '../../../domain/model/chat_message.dart';
 import '../../../resources/app_constants.dart';
+import '../../../route/go_router.dart';
 import 'bloc/chat_bloc.dart';
 import 'widgets/chat_bubble.dart';
 import 'widgets/chat_input.dart';
 import 'widgets/typing_indicator.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key, this.showCloseButton = false});
+  const ChatPage({
+    super.key,
+    this.showCloseButton = false,
+    this.autofocusInput = false,
+  });
 
   final bool showCloseButton;
+  final bool autofocusInput;
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -20,6 +27,19 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final _scrollController = ScrollController();
+  bool _initialThreadScrollScheduled = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final state = context.read<ChatBloc>().state;
+    if (!_initialThreadScrollScheduled &&
+        state.activeThreadId != null &&
+        !state.isRestoring) {
+      _initialThreadScrollScheduled = true;
+      _scrollToBottom(immediately: true);
+    }
+  }
 
   @override
   void dispose() {
@@ -27,11 +47,16 @@ class _ChatPageState extends State<ChatPage> {
     super.dispose();
   }
 
-  void _scrollToBottom() {
+  void _scrollToBottom({bool immediately = false}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients) return;
+      final target = _scrollController.position.maxScrollExtent;
+      if (immediately) {
+        _scrollController.jumpTo(target);
+        return;
+      }
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
+        target,
         duration: const Duration(milliseconds: 320),
         curve: Curves.easeOutCubic,
       );
@@ -44,19 +69,22 @@ class _ChatPageState extends State<ChatPage> {
       listenWhen: (previous, current) =>
           previous.messages != current.messages ||
           previous.isLoading != current.isLoading ||
+          previous.isRestoring != current.isRestoring ||
           previous.aiProcessingState != current.aiProcessingState ||
           previous.error != current.error,
       listener: (context, state) {
-        _scrollToBottom();
+        final restoredThread =
+            state.activeThreadId != null &&
+            !state.isLoading &&
+            !state.isRestoring;
+        if (restoredThread) _initialThreadScrollScheduled = true;
+        _scrollToBottom(immediately: restoredThread);
+        if (state.sessionExpired) {
+          const LoginRoute().go(context);
+          return;
+        }
         if (state.error != null) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(state.error!),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+          AppToast.failed(context, state.error!);
         }
       },
       child: Scaffold(
@@ -105,7 +133,7 @@ class _ChatPageState extends State<ChatPage> {
               Container(
                 color: Theme.of(context).colorScheme.surface,
                 padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                child: const ChatInput(),
+                child: ChatInput(autofocus: widget.autofocusInput),
               ),
             ],
           ),

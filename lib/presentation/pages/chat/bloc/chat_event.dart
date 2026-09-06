@@ -7,7 +7,18 @@ sealed class ChatEvent extends Equatable {
 }
 
 final class ChatStarted extends ChatEvent {
-  const ChatStarted();
+  const ChatStarted({
+    this.threadId,
+    this.initialMessage,
+    this.autoSendInitialMessage = false,
+  });
+
+  final String? threadId;
+  final String? initialMessage;
+  final bool autoSendInitialMessage;
+
+  @override
+  List<Object?> get props => [threadId, initialMessage, autoSendInitialMessage];
 }
 
 final class MessageChanged extends ChatEvent {
@@ -46,6 +57,19 @@ final class RetryMessage extends ChatEvent {
   final String messageId;
   @override
   List<Object?> get props => [messageId];
+}
+
+final class ConfirmationResponded extends ChatEvent {
+  const ConfirmationResponded({
+    required this.messageId,
+    required this.confirmed,
+  });
+
+  final String messageId;
+  final bool confirmed;
+
+  @override
+  List<Object?> get props => [messageId, confirmed];
 }
 
 final class RecordingTicked extends ChatEvent {

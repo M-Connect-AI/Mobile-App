@@ -1,218 +1,168 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:typed_data';
-
+import 'package:chatbot_project/data/model/chat/chat_api_models.dart';
 import 'package:chatbot_project/data/repository/api_chat_repository.dart';
-import 'package:chatbot_project/data/source/remote/client/api_chat_client.dart';
-import 'package:chatbot_project/domain/model/chat_message.dart';
+import 'package:chatbot_project/data/source/remote/agent_chat_remote_data_source.dart';
+import 'package:chatbot_project/domain/model/auth_session.dart';
+import 'package:chatbot_project/domain/model/chat_stream_event.dart';
 import 'package:chatbot_project/domain/repository/chat_repository.dart';
-import 'package:dio/dio.dart';
+import 'package:chatbot_project/domain/repository/credential_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('sends speech transcript to VNG AI Platform chat completions', () async {
-    final dio = _mockDio((request) {
-      expect(request.method, 'POST');
-      expect(
-        request.uri.toString(),
-        'https://maas.example.com/v1/chat/completions',
-      );
-      expect(request.headers['Authorization'], 'Bearer test-api-key');
-      final body = request.data as Map<String, dynamic>;
-      expect(body['model'], 'test-model');
-      expect(body['max_tokens'], 1536);
-      expect(body['temperature'], 0.2);
-      expect(body['top_p'], 0.95);
-      expect(body['stream'], isTrue);
-      expect(body['response_format'], {'type': 'json_object'});
-      final messages = body['messages'] as List<dynamic>;
-      expect(messages.first['role'], 'system');
-      expect(messages.first['content'], 'business-trip-system-prompt');
-      expect(messages.last, {
-        'role': 'user',
-        'content': 'Chuyển 500k cho Nguyễn Văn A',
-      });
-      return ResponseBody.fromString(
-        _sse(['Bạn muốn chuyển ', 'từ tài khoản nào?']),
-        200,
-        headers: {
-          Headers.contentTypeHeader: ['text/event-stream; charset=utf-8'],
-        },
-      );
-    });
-    final repository = ApiChatRepository(
-      client: _client(
-        dio,
-        systemPromptBuilder: () => 'business-trip-system-prompt',
-      ),
+  test('maps thread list and detail with pending confirmation', () async {
+    final repository = ApiChatRepository(_FakeAgentRemote(), _SessionStore());
+
+    final threads = await repository.getThreads();
+    final detail = await repository.getThread('thread-1');
+
+    expect(threads.single.threadId, 'thread-1');
+    expect(detail.messages, hasLength(2));
+    expect(
+      detail.messages.last.confirmation?.tool,
+      ChatConfirmationTool.createLeave,
     );
-
-    final response = await repository
-        .sendVoiceMessage('Chuyển 500k cho Nguyễn Văn A')
-        .single;
-
-    expect(response.content, 'Bạn muốn chuyển từ tài khoản nào?');
-    repository.close();
   });
 
-  test('exposes API error message for retry flow', () async {
-    final dio = _mockDio(
-      (_) => ResponseBody.fromString(
-        jsonEncode({
-          'error': {'message': 'Không thể gửi tin nhắn'},
-        }),
-        503,
-        headers: {
-          Headers.contentTypeHeader: ['application/json'],
-        },
+  test('maps all SSE event types and keeps server thread id', () async {
+    final repository = ApiChatRepository(_FakeAgentRemote(), _SessionStore());
+
+    final events = await repository
+        .sendMessage(message: 'Tạo đơn', threadId: 'thread-1')
+        .toList();
+
+    expect(events[0], const ChatStreamToken('Xin chào'));
+    expect(events[1], isA<ChatStreamConfirmation>());
+    expect(events[2], isA<ChatStreamResult>());
+    expect(
+      events[3],
+      const ChatStreamDone(
+        threadId: 'server-thread',
+        citations: ['Quy định nghỉ phép'],
       ),
     );
+  });
+
+  test('clears session when Agent returns 401', () async {
+    final sessions = _SessionStore();
     final repository = ApiChatRepository(
-      client: _client(
-        dio,
-        systemPromptBuilder: () => 'business-trip-system-prompt',
+      _FakeAgentRemote(
+        error: const AgentRemoteException(
+          type: AgentRemoteErrorType.unauthorized,
+          message: 'expired',
+        ),
       ),
+      sessions,
     );
 
     await expectLater(
-      repository.sendTextMessage('Xin chào'),
-      emitsError(
+      repository.getThreads(),
+      throwsA(
         isA<ChatRepositoryException>().having(
-          (error) => error.message,
-          'message',
-          'Không thể gửi tin nhắn',
+          (error) => error.sessionExpired,
+          'sessionExpired',
+          isTrue,
         ),
       ),
     );
-    repository.close();
+    expect(sessions.cleared, isTrue);
   });
-
-  test('returns only confirmation_question from streamed JSON', () async {
-    const structuredContent = '''
-{
-  "intent": "CREATE_BUSINESS_TRIP",
-  "normalized_text": "Tôi cần tạo đơn từ ngày 14 tháng 5 tới mùng 7 tháng 6.",
-  "fields": {
-    "destination": {"value": null},
-    "start_date": {"value": "2024-05-14"},
-    "end_date": {"value": "2024-06-07"},
-    "duration_days": {"value": null},
-    "purpose": {"value": null},
-    "employee": {"value": null},
-    "customer": {"value": null},
-    "transportation": {"value": null}
-  },
-  "needs_confirmation": true,
-  "confirmation_question": "Vui lòng bổ sung điểm đến và xác nhận ngày kết thúc."
-}
-''';
-    final dio = _mockDio(
-      (_) => ResponseBody.fromString(
-        _sse([
-          '```json\n',
-          structuredContent.substring(0, structuredContent.length ~/ 2),
-          structuredContent.substring(structuredContent.length ~/ 2),
-          '\n```',
-        ]),
-        200,
-        headers: {
-          Headers.contentTypeHeader: ['text/event-stream; charset=utf-8'],
-        },
-      ),
-    );
-    final repository = ApiChatRepository(client: _client(dio));
-
-    final responses = await repository
-        .sendTextMessage('Tạo đơn công tác')
-        .toList();
-
-    expect(responses.length, greaterThan(1));
-    expect(responses.first.status, MessageStatus.processing);
-    expect(
-      responses.last.content,
-      'Vui lòng bổ sung điểm đến và xác nhận ngày kết thúc.',
-    );
-    expect(responses.last.status, MessageStatus.success);
-    repository.close();
-  });
-
-  test(
-    'builds a fallback question when confirmation_question is missing',
-    () async {
-      final dio = _mockDio(
-        (_) => ResponseBody.fromString(
-          _sse([
-            jsonEncode({
-              'intent': 'CREATE_BUSINESS_TRIP',
-              'missing_fields': ['destination', 'employee'],
-              'ambiguous_fields': [
-                {'field': 'end_date', 'candidates': []},
-              ],
-              'needs_confirmation': true,
-            }),
-          ]),
-          200,
-          headers: {
-            Headers.contentTypeHeader: ['text/event-stream; charset=utf-8'],
-          },
-        ),
-      );
-      final repository = ApiChatRepository(client: _client(dio));
-
-      final response = await repository.sendTextMessage('Tạo đơn').last;
-
-      expect(
-        response.content,
-        'Vui lòng cung cấp thêm điểm đến và nhân viên thực hiện. '
-        'Vui lòng xác nhận lại ngày kết thúc.',
-      );
-      repository.close();
-    },
-  );
 }
 
-ApiChatClient _client(Dio dio, {String Function()? systemPromptBuilder}) {
-  return ApiChatClient(
-    baseUrl: 'https://maas.example.com/v1/',
-    apiKey: 'test-api-key',
-    model: 'test-model',
-    systemPromptBuilder: systemPromptBuilder,
-    dio: dio,
-  );
-}
+class _FakeAgentRemote extends AgentChatRemoteDataSource {
+  _FakeAgentRemote({this.error}) : super(baseUrl: 'http://unused');
 
-Dio _mockDio(FutureOr<ResponseBody> Function(RequestOptions) handler) {
-  return Dio()..httpClientAdapter = _MockAdapter(handler);
-}
+  final AgentRemoteException? error;
 
-class _MockAdapter implements HttpClientAdapter {
-  _MockAdapter(this.handler);
-
-  final FutureOr<ResponseBody> Function(RequestOptions) handler;
-
-  @override
-  Future<ResponseBody> fetch(
-    RequestOptions options,
-    Stream<Uint8List>? requestStream,
-    Future<void>? cancelFuture,
-  ) async {
-    return handler(options);
+  void _throwIfNeeded() {
+    final failure = error;
+    if (failure != null) throw failure;
   }
 
   @override
-  void close({bool force = false}) {}
+  Future<List<ChatThreadSummaryDto>> getThreads(String accessToken) async {
+    _throwIfNeeded();
+    return const [
+      ChatThreadSummaryDto(
+        threadId: 'thread-1',
+        title: 'Đơn nghỉ phép',
+        preview: 'Tạo đơn nghỉ phép',
+        updatedAt: '2026-09-06T01:00:00.000Z',
+      ),
+    ];
+  }
+
+  @override
+  Future<ChatThreadDetailDto> getThread(
+    String accessToken,
+    String threadId,
+  ) async {
+    _throwIfNeeded();
+    return const ChatThreadDetailDto(
+      threadId: 'thread-1',
+      messages: [
+        PersistedChatMessageDto(role: 'user', content: 'Tạo đơn'),
+        PersistedChatMessageDto(role: 'assistant', content: 'Xác nhận?'),
+      ],
+      pendingAction: ChatConfirmationDto(
+        tool: 'create_leave',
+        args: {'type': 'ANNUAL'},
+        summary: 'Gửi đơn nghỉ phép',
+      ),
+    );
+  }
+
+  @override
+  Stream<AgentSseEvent> streamTurn(
+    String accessToken,
+    ChatTurnRequestDto request,
+  ) async* {
+    _throwIfNeeded();
+    yield const AgentTokenEvent('Xin chào');
+    yield const AgentConfirmationEvent(
+      ChatConfirmationDto(
+        tool: 'create_leave',
+        args: {'type': 'ANNUAL'},
+        summary: 'Gửi đơn nghỉ phép',
+      ),
+    );
+    yield const AgentResultEvent({'_id': 'leave-id'});
+    yield const AgentDoneEvent(
+      threadId: 'server-thread',
+      citations: ['Quy định nghỉ phép'],
+    );
+  }
 }
 
-String _sse(List<String> chunks) {
-  final events = chunks.map(
-    (chunk) =>
-        'data: ${jsonEncode({
-          'choices': [
-            {
-              'delta': {'content': chunk},
-            },
-          ],
-        })}\n\n',
-  );
-  return '${events.join()}data: [DONE]\n\n';
+class _SessionStore implements CredentialRepository {
+  _SessionStore();
+
+  bool cleared = false;
+  AuthSession? session = _session;
+
+  @override
+  Future<void> clear() async {
+    cleared = true;
+    session = null;
+  }
+
+  @override
+  Future<AuthSession?> read() async => session;
+
+  @override
+  Future<void> save(AuthSession value, {required bool persist}) async =>
+      session = value;
 }
+
+const _session = AuthSession(
+  accessToken: 'jwt',
+  user: AuthUser(
+    id: 'id',
+    employeeCode: 'EMP001',
+    email: 'a@msb.vn',
+    fullName: 'A',
+    role: UserRole.staff,
+    department: 'D',
+    annualRemaining: 9,
+    annualTotal: 12,
+    sickRemaining: 30,
+  ),
+);

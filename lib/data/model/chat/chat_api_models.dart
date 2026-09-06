@@ -1,0 +1,67 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'chat_api_models.freezed.dart';
+part 'chat_api_models.g.dart';
+
+@freezed
+class ChatTurnRequestDto with _$ChatTurnRequestDto {
+  // ignore: invalid_annotation_target
+  @JsonSerializable(includeIfNull: false)
+  const factory ChatTurnRequestDto({
+    required String message,
+    String? threadId,
+    bool? confirm,
+  }) = _ChatTurnRequestDto;
+
+  factory ChatTurnRequestDto.fromJson(Map<String, dynamic> json) =>
+      _$ChatTurnRequestDtoFromJson(json);
+}
+
+@freezed
+class ChatThreadSummaryDto with _$ChatThreadSummaryDto {
+  const factory ChatThreadSummaryDto({
+    required String threadId,
+    required String title,
+    required String preview,
+    required String updatedAt,
+  }) = _ChatThreadSummaryDto;
+
+  factory ChatThreadSummaryDto.fromJson(Map<String, dynamic> json) =>
+      _$ChatThreadSummaryDtoFromJson(json);
+}
+
+@freezed
+class PersistedChatMessageDto with _$PersistedChatMessageDto {
+  const factory PersistedChatMessageDto({
+    required String role,
+    @Default('') String content,
+  }) = _PersistedChatMessageDto;
+
+  factory PersistedChatMessageDto.fromJson(Map<String, dynamic> json) =>
+      _$PersistedChatMessageDtoFromJson(json);
+}
+
+@freezed
+class ChatConfirmationDto with _$ChatConfirmationDto {
+  const factory ChatConfirmationDto({
+    required String tool,
+    @Default(<String, dynamic>{}) Map<String, dynamic> args,
+    required String summary,
+  }) = _ChatConfirmationDto;
+
+  factory ChatConfirmationDto.fromJson(Map<String, dynamic> json) =>
+      _$ChatConfirmationDtoFromJson(json);
+}
+
+@freezed
+class ChatThreadDetailDto with _$ChatThreadDetailDto {
+  const factory ChatThreadDetailDto({
+    required String threadId,
+    @Default(<PersistedChatMessageDto>[])
+    List<PersistedChatMessageDto> messages,
+    ChatConfirmationDto? pendingAction,
+  }) = _ChatThreadDetailDto;
+
+  factory ChatThreadDetailDto.fromJson(Map<String, dynamic> json) =>
+      _$ChatThreadDetailDtoFromJson(json);
+}

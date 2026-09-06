@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../domain/model/chat_message.dart';
+import '../../../../domain/model/chat_stream_event.dart';
 import '../../../../domain/repository/chat_repository.dart';
 import '../../../../domain/repository/speech_to_text_repository.dart';
 import 'chat_event.dart';
@@ -23,6 +24,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<CancelRecording>(_onCancelRecording);
     on<SendVoiceMessage>(_onSendVoice);
     on<RetryMessage>(_onRetry);
+    on<ConfirmationResponded>(_onConfirmationResponded);
     on<RecordingTicked>(_onRecordingTicked);
     on<SpeechRecognitionUpdated>(_onSpeechRecognitionUpdated);
     on<SpeechRecognitionFailed>(_onSpeechRecognitionFailed);
@@ -51,23 +53,62 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   String _latestTranscript = '';
   bool _isStopping = false;
 
-  void _onStarted(ChatStarted event, Emitter<ChatState> emit) {
+  Future<void> _onStarted(ChatStarted event, Emitter<ChatState> emit) async {
+    if (event.threadId == null) {
+      emit(
+        ChatState(
+          messages: [_welcomeMessage()],
+          inputText: event.initialMessage ?? '',
+        ),
+      );
+      if (event.autoSendInitialMessage &&
+          (event.initialMessage?.trim().isNotEmpty ?? false)) {
+        add(const SendTextMessage());
+      }
+      return;
+    }
     emit(
-      state.copyWith(
-        messages: [
-          ChatMessage(
-            id: 'welcome',
-            type: MessageType.text,
-            sender: MessageSender.assistant,
-            content:
-                'Xin chào! Tôi là trợ lý AI của bạn. Bạn muốn tôi giúp gì hôm nay?',
-            createdAt: DateTime.now(),
-            status: MessageStatus.success,
-          ),
-        ],
+      ChatState(
+        activeThreadId: event.threadId,
+        inputText: event.initialMessage ?? '',
+        isLoading: true,
+        isRestoring: true,
       ),
     );
+    try {
+      final detail = await _chatRepository.getThread(event.threadId!);
+      emit(
+        state.copyWith(
+          messages: detail.messages.isEmpty
+              ? [_welcomeMessage()]
+              : detail.messages,
+          activeThreadId: detail.threadId,
+          isLoading: false,
+          isRestoring: false,
+          clearError: true,
+        ),
+      );
+    } on ChatRepositoryException catch (error) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          isRestoring: false,
+          error: error.message,
+          sessionExpired: error.sessionExpired,
+        ),
+      );
+    }
   }
+
+  ChatMessage _welcomeMessage() => ChatMessage(
+    id: 'welcome',
+    type: MessageType.text,
+    sender: MessageSender.assistant,
+    content:
+        'Xin chào! Tôi là trợ lý AI của bạn. Bạn muốn tôi giúp gì hôm nay?',
+    createdAt: DateTime.now(),
+    status: MessageStatus.success,
+  );
 
   void _onMessageChanged(MessageChanged event, Emitter<ChatState> emit) {
     emit(state.copyWith(inputText: event.message, clearError: true));
@@ -271,65 +312,133 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     await _sendAndReceive(message, emit);
   }
 
-  Future<void> _sendAndReceive(
-    ChatMessage userMessage,
+  Future<void> _onConfirmationResponded(
+    ConfirmationResponded event,
     Emitter<ChatState> emit,
   ) async {
+    if (state.isLoading) return;
+    final confirmationIndex = state.messages.indexWhere(
+      (message) =>
+          message.id == event.messageId && message.confirmation != null,
+    );
+    if (confirmationIndex < 0) return;
+    final confirmation = state.messages[confirmationIndex].confirmation!;
+    if (event.confirmed && !confirmation.canExecute) return;
+
+    final messages = [...state.messages]
+      ..[confirmationIndex] = state.messages[confirmationIndex].copyWith(
+        clearConfirmation: true,
+      );
+    final userMessage = ChatMessage(
+      id: 'user-${DateTime.now().microsecondsSinceEpoch}',
+      type: MessageType.text,
+      sender: MessageSender.user,
+      content: event.confirmed ? 'Xác nhận' : 'Hủy',
+      createdAt: DateTime.now(),
+      status: MessageStatus.sending,
+    );
+    emit(
+      state.copyWith(
+        messages: [...messages, userMessage],
+        isLoading: true,
+        aiProcessingState: AiProcessingState.thinking,
+        clearError: true,
+      ),
+    );
+    await _sendAndReceive(userMessage, emit, confirm: event.confirmed);
+  }
+
+  Future<void> _sendAndReceive(
+    ChatMessage userMessage,
+    Emitter<ChatState> emit, {
+    bool confirm = false,
+  }) async {
     String? assistantMessageId;
+    var receivedToken = false;
+    var terminalEventSeen = false;
     try {
-      final responseStream = userMessage.type == MessageType.audio
-          ? _chatRepository.sendVoiceMessage(userMessage.content!)
-          : _chatRepository.sendTextMessage(userMessage.content!);
+      final responseStream = _chatRepository.sendMessage(
+        message: userMessage.content!,
+        threadId: state.activeThreadId,
+        confirm: confirm,
+      );
       await Future<void>.delayed(const Duration(milliseconds: 450));
       emit(
         state.copyWith(aiProcessingState: AiProcessingState.generatingResponse),
       );
-      var receivedResponse = false;
-      await for (final response in responseStream) {
-        if (kDebugMode) {
-          debugPrint(
-            '[ChatBloc] message update: id=${response.id}, '
-            'status=${response.status.name}, '
-            'chars=${response.content?.length ?? 0}',
+      await for (final event in responseStream) {
+        assistantMessageId ??=
+            'assistant-${DateTime.now().microsecondsSinceEpoch}';
+        if (event is ChatStreamToken) {
+          receivedToken = true;
+          _upsertAssistant(
+            emit,
+            userMessage,
+            assistantMessageId,
+            content: _assistantContent(assistantMessageId) + event.text,
+          );
+        } else if (event is ChatStreamConfirmation) {
+          _upsertAssistant(
+            emit,
+            userMessage,
+            assistantMessageId,
+            confirmation: event.action,
+          );
+        } else if (event is ChatStreamResult) {
+          _upsertAssistant(
+            emit,
+            userMessage,
+            assistantMessageId,
+            executedResult: event.executed,
+          );
+        } else if (event is ChatStreamDone) {
+          terminalEventSeen = true;
+          _upsertAssistant(
+            emit,
+            userMessage,
+            assistantMessageId,
+            status: MessageStatus.success,
+            citations: event.citations,
+            isLoading: false,
+          );
+          emit(
+            state.copyWith(
+              activeThreadId: event.threadId,
+              isLoading: false,
+              aiProcessingState: AiProcessingState.idle,
+            ),
+          );
+        } else if (event is ChatStreamFailure) {
+          terminalEventSeen = true;
+          _upsertAssistant(
+            emit,
+            userMessage,
+            assistantMessageId,
+            status: MessageStatus.failed,
+            isLoading: false,
+          );
+          emit(
+            state.copyWith(
+              error: event.message,
+              isLoading: false,
+              aiProcessingState: AiProcessingState.idle,
+            ),
           );
         }
-        receivedResponse = true;
-        assistantMessageId = response.id;
-        final updated = state.messages
-            .map(
-              (item) => item.id == userMessage.id
-                  ? item.copyWith(status: MessageStatus.sent)
-                  : item.id == response.id
-                  ? response
-                  : item,
-            )
-            .toList();
-        if (!updated.any((item) => item.id == response.id)) {
-          updated.add(response);
-        }
-        final completed = response.status == MessageStatus.success;
-        emit(
-          state.copyWith(
-            messages: updated,
-            isLoading: !completed,
-            aiProcessingState: completed
-                ? AiProcessingState.idle
-                : AiProcessingState.generatingResponse,
-            clearError: true,
-          ),
-        );
       }
-      if (!receivedResponse) {
+      if (!terminalEventSeen) {
         throw const ChatRepositoryException(
-          'Phản hồi chatbot không có nội dung.',
+          'Kết nối bị gián đoạn trước khi hoàn tất.',
         );
       }
-    } catch (error) {
+    } on ChatRepositoryException catch (error) {
       final failed = state.messages
           .where((item) => item.id != assistantMessageId)
           .map(
-            (item) => item.id == userMessage.id
+            (item) => item.id == userMessage.id && !receivedToken
                 ? item.copyWith(status: MessageStatus.failed)
+                : item.id == userMessage.id
+                ? item.copyWith(status: MessageStatus.sent)
                 : item,
           )
           .toList();
@@ -338,12 +447,81 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           messages: failed,
           isLoading: false,
           aiProcessingState: AiProcessingState.idle,
-          error: error is ChatRepositoryException
-              ? error.message
-              : 'Đã có lỗi xảy ra. Vui lòng thử lại.',
+          error: error.message,
+          sessionExpired: error.sessionExpired,
         ),
       );
     }
+  }
+
+  String _assistantContent(String id) =>
+      state.messages
+          .where((message) => message.id == id)
+          .map((message) => message.content ?? '')
+          .firstOrNull ??
+      '';
+
+  void _upsertAssistant(
+    Emitter<ChatState> emit,
+    ChatMessage userMessage,
+    String assistantId, {
+    String? content,
+    MessageStatus status = MessageStatus.processing,
+    ChatConfirmAction? confirmation,
+    List<String>? citations,
+    Object? executedResult,
+    bool isLoading = true,
+  }) {
+    final current = state.messages
+        .where((message) => message.id == assistantId)
+        .firstOrNull;
+    final assistant = current == null
+        ? ChatMessage(
+            id: assistantId,
+            type: MessageType.text,
+            sender: MessageSender.assistant,
+            content: content ?? '',
+            createdAt: DateTime.now(),
+            status: status,
+            confirmation: confirmation,
+            citations: citations ?? const [],
+            executedResult: executedResult,
+          )
+        : current.copyWith(
+            content: content,
+            status: status,
+            confirmation: confirmation,
+            citations: citations,
+            executedResult: executedResult,
+          );
+    final updated = state.messages
+        .map(
+          (message) => message.id == userMessage.id
+              ? message.copyWith(status: MessageStatus.sent)
+              : message.id == assistantId
+              ? assistant
+              : message,
+        )
+        .toList();
+    if (!updated.any((message) => message.id == assistantId)) {
+      updated.add(assistant);
+    }
+    if (kDebugMode) {
+      debugPrint(
+        '[ChatBloc] agent update: status=${assistant.status.name}, '
+        'chars=${assistant.content?.length ?? 0}',
+      );
+    }
+    emit(
+      state.copyWith(
+        messages: updated,
+        isLoading: isLoading,
+        aiProcessingState: isLoading
+            ? AiProcessingState.generatingResponse
+            : AiProcessingState.idle,
+        clearError: true,
+      ),
+    );
   }
 
   void _onSpeechRecognitionUpdated(

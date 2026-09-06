@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../common/components/app_toast.dart';
+import '../../../../common/components/app_text_style.dart';
+import '../../../../common/components/irh_button.dart';
+import '../../../../common/extensions/responsive_extension.dart';
+import '../../../../common/themes/theme_extensions/app_color_scheme.dart';
 import '../../../../domain/model/chat_message.dart';
+import '../../../../generated/l10n.dart';
 import '../bloc/chat_bloc.dart';
 
 class ChatBubble extends StatelessWidget {
@@ -28,10 +34,6 @@ class ChatBubble extends StatelessWidget {
         ? colors.primary
         : colors.surfaceContainerHighest;
     final foreground = isUser ? colors.onPrimary : colors.onSurface;
-    final time =
-        '${message.createdAt.hour.toString().padLeft(2, '0')}:'
-        '${message.createdAt.minute.toString().padLeft(2, '0')}';
-
     return Semantics(
       label: isUser ? 'Tin nhắn của bạn' : 'Phản hồi của AI',
       child: Align(
@@ -94,31 +96,47 @@ class ChatBubble extends StatelessWidget {
                               ),
                             ),
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          time,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: colors.onSurfaceVariant,
-                          ),
+                    if (!isUser && message.confirmation != null) ...[
+                      8.height.heightBox,
+                      _ConfirmationCard(message: message),
+                    ],
+                    if (!isUser && message.executedResult != null) ...[
+                      8.height.heightBox,
+                      Text(
+                        S.of(context).chatActionCompleted,
+                        style: AppTextStyle.sm12.copyWith(
+                          color: context.appColorScheme.textSuccess,
                         ),
-                        if (!isUser) const Spacer(),
-                        if (!isUser &&
-                            message.type == MessageType.text &&
-                            message.status == MessageStatus.success &&
-                            (message.content?.isNotEmpty ?? false)) ...[
-                          const SizedBox(width: 7),
-                          _CopyMessageButton(message: message),
+                      ),
+                    ],
+                    if (!isUser && message.citations.isNotEmpty) ...[
+                      8.height.heightBox,
+                      Wrap(
+                        spacing: 8.width,
+                        runSpacing: 8.height,
+                        children: [
+                          for (final citation in message.citations)
+                            Chip(
+                              label: Text(citation),
+                              backgroundColor:
+                                  context.appColorScheme.surfaceSecondary,
+                            ),
                         ],
-                        if (isUser) ...[
-                          const SizedBox(width: 5),
-                          _MessageStatusIcon(status: message.status),
-                        ],
-                      ],
-                    ),
-                    if (message.status == MessageStatus.failed)
+                      ),
+                    ],
+                    if (!isUser &&
+                        message.type == MessageType.text &&
+                        message.status == MessageStatus.success &&
+                        (message.content?.isNotEmpty ?? false)) ...[
+                      const SizedBox(height: 8),
+                      Divider(height: 1, color: colors.outlineVariant),
+                      const SizedBox(height: 4),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: _CopyMessageButton(message: message),
+                      ),
+                    ],
+                    if (isUser && message.status == MessageStatus.failed)
                       TextButton.icon(
                         key: Key('retry-${message.id}'),
                         onPressed: () => context.read<ChatBloc>().add(
@@ -143,6 +161,68 @@ class ChatBubble extends StatelessWidget {
   }
 }
 
+class _ConfirmationCard extends StatelessWidget {
+  const _ConfirmationCard({required this.message});
+
+  final ChatMessage message;
+
+  @override
+  Widget build(BuildContext context) {
+    final action = message.confirmation!;
+    final strings = S.of(context);
+    final colors = context.appColorScheme;
+    return Container(
+      padding: EdgeInsets.all(16.width),
+      decoration: BoxDecoration(
+        color: colors.surfaceSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.borderSecondary),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            action.summary,
+            style: AppTextStyle.r14.copyWith(color: colors.textPrimary),
+          ),
+          12.height.heightBox,
+          if (action.canExecute)
+            Row(
+              children: [
+                Expanded(
+                  child: IrhButton(
+                    label: strings.confirmButton,
+                    onPressed: () => context.read<ChatBloc>().add(
+                      ConfirmationResponded(
+                        messageId: message.id,
+                        confirmed: true,
+                      ),
+                    ),
+                  ),
+                ),
+                8.width.widthBox,
+                IrhTextButton(
+                  label: strings.cancelButton,
+                  onPressed: () => context.read<ChatBloc>().add(
+                    ConfirmationResponded(
+                      messageId: message.id,
+                      confirmed: false,
+                    ),
+                  ),
+                ),
+              ],
+            )
+          else
+            Text(
+              strings.unsupportedChatAction,
+              style: AppTextStyle.r12.copyWith(color: colors.textError),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _CopyMessageButton extends StatelessWidget {
   const _CopyMessageButton({required this.message});
 
@@ -157,15 +237,7 @@ class _CopyMessageButton extends StatelessWidget {
       onPressed: () async {
         await Clipboard.setData(ClipboardData(text: message.content!));
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            const SnackBar(
-              content: Text('Đã sao chép phản hồi'),
-              behavior: SnackBarBehavior.floating,
-              duration: Duration(seconds: 2),
-            ),
-          );
+        AppToast.success(context, S.of(context).responseCopied);
       },
       style: IconButton.styleFrom(
         backgroundColor: colors.surfaceContainerHighest,
@@ -226,31 +298,5 @@ class _AudioContent extends StatelessWidget {
         ],
       ],
     );
-  }
-}
-
-class _MessageStatusIcon extends StatelessWidget {
-  const _MessageStatusIcon({required this.status});
-  final MessageStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return switch (status) {
-      MessageStatus.sending => SizedBox(
-        width: 12,
-        height: 12,
-        child: CircularProgressIndicator(
-          strokeWidth: 1.5,
-          color: colors.onSurfaceVariant,
-        ),
-      ),
-      MessageStatus.failed => Icon(
-        Icons.error_outline_rounded,
-        size: 14,
-        color: colors.error,
-      ),
-      _ => Icon(Icons.done_all_rounded, size: 14, color: colors.primary),
-    };
   }
 }
