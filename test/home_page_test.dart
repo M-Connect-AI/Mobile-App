@@ -1,24 +1,28 @@
 import 'package:chatbot_project/data/repository/mock_chat_repository.dart';
 import 'package:chatbot_project/domain/repository/speech_to_text_repository.dart';
 import 'package:chatbot_project/presentation/pages/chat/bloc/chat_bloc.dart';
-import 'package:chatbot_project/presentation/pages/page2/home_page.dart';
 import 'package:chatbot_project/resources/app_constants.dart';
+import 'package:chatbot_project/route/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   testWidgets('assistant bubble opens and closes the chat screen', (
     tester,
   ) async {
+    final router = GoRouter(
+      initialLocation: const HomeRoute().location,
+      routes: $appRoutes,
+    );
+    addTearDown(router.dispose);
     await tester.pumpWidget(
-      MaterialApp(
-        home: BlocProvider(
-          create: (_) =>
-              ChatBloc(MockChatRepository(), _FakeSpeechRepository())
-                ..add(const ChatStarted()),
-          child: const HomePage(),
-        ),
+      BlocProvider(
+        create: (_) =>
+            ChatBloc(MockChatRepository(), _FakeSpeechRepository())
+              ..add(const ChatStarted()),
+        child: MaterialApp.router(routerConfig: router),
       ),
     );
     await tester.pump();

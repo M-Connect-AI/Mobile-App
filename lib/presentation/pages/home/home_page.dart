@@ -1,46 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../resources/app_constants.dart';
-import '../chat/bloc/chat_bloc.dart';
-import '../chat/chat_page.dart';
+import '../../../route/go_router.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   void _openAssistant(BuildContext context) {
-    final chatBloc = context.read<ChatBloc>();
-    Navigator.of(context).push(
-      PageRouteBuilder<void>(
-        transitionDuration: const Duration(milliseconds: 360),
-        reverseTransitionDuration: const Duration(milliseconds: 260),
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            BlocProvider.value(
-              value: chatBloc,
-              child: FadeTransition(
-                opacity: CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOut,
-                ),
-                child: const ChatPage(showCloseButton: true),
-              ),
-            ),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-            SlideTransition(
-              position:
-                  Tween<Offset>(
-                    begin: const Offset(0, .035),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutCubic,
-                    ),
-                  ),
-              child: child,
-            ),
-      ),
-    );
+    const ChatRoute().push(context);
   }
 
   @override
@@ -116,7 +83,7 @@ class _HomeContent extends StatelessWidget {
               SizedBox(height: 14),
               _TaskCard(
                 icon: Icons.flight_takeoff_rounded,
-                iconColor: Color(0xFF5B5CE2),
+                iconColor: Color(0xFFF4600C),
                 title: 'Hoàn tất kế hoạch công tác',
                 subtitle: 'Hà Nội · 03–05 Tháng 9',
                 tag: 'Cần xử lý',
@@ -146,14 +113,14 @@ class _NextTripCard extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF6768EA), Color(0xFF4546BF)],
+          colors: [Color(0xFFFF8A45), Color(0xFFF4600C)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF5B5CE2).withValues(alpha: .24),
+            color: const Color(0xFFF4600C).withValues(alpha: .24),
             blurRadius: 28,
             offset: const Offset(0, 12),
           ),
@@ -199,7 +166,7 @@ class _NextTripCard extends StatelessWidget {
           const SizedBox(height: 9),
           const Text(
             '03 Tháng 9 · 08:30  •  VN 216',
-            style: TextStyle(color: Color(0xFFD9D9FF), fontSize: 13),
+            style: TextStyle(color: Color(0xFFFFE2D1), fontSize: 13),
           ),
           const SizedBox(height: 22),
           const Row(
@@ -270,7 +237,7 @@ class _QuickActions extends StatelessWidget {
           child: _QuickAction(
             icon: Icons.add_rounded,
             label: 'Tạo yêu cầu',
-            color: Color(0xFF5B5CE2),
+            color: Color(0xFFF4600C),
           ),
         ),
         SizedBox(width: 10),
@@ -500,7 +467,7 @@ class _AssistantBubbleState extends State<_AssistantBubble> {
                 height: 64,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF7A7BF3), Color(0xFF4B4CCB)],
+                    colors: [Color(0xFFFF8A45), Color(0xFFF4600C)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -508,7 +475,7 @@ class _AssistantBubbleState extends State<_AssistantBubble> {
                   border: Border.all(color: Colors.white, width: 3),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF4546BF).withValues(alpha: .35),
+                      color: const Color(0xFFF4600C).withValues(alpha: .35),
                       blurRadius: 22,
                       offset: const Offset(0, 9),
                     ),

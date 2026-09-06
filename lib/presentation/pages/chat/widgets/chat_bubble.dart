@@ -15,13 +15,18 @@ class ChatBubble extends StatelessWidget {
       return Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Text(message.content ?? '', style: Theme.of(context).textTheme.bodySmall),
+          child: Text(
+            message.content ?? '',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         ),
       );
     }
     final isUser = message.sender == MessageSender.user;
     final colors = Theme.of(context).colorScheme;
-    final bubbleColor = isUser ? colors.primary : colors.surfaceContainerHighest;
+    final bubbleColor = isUser
+        ? colors.primary
+        : colors.surfaceContainerHighest;
     final foreground = isUser ? colors.onPrimary : colors.onSurface;
     final time =
         '${message.createdAt.hour.toString().padLeft(2, '0')}:'
@@ -32,7 +37,9 @@ class ChatBubble extends StatelessWidget {
       child: Align(
         alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * .78),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.sizeOf(context).width * .78,
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,17 +49,29 @@ class ChatBubble extends StatelessWidget {
                 Container(
                   width: 34,
                   height: 34,
-                  decoration: BoxDecoration(color: colors.primaryContainer, shape: BoxShape.circle),
-                  child: Icon(Icons.auto_awesome_rounded, size: 18, color: colors.primary),
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.auto_awesome_rounded,
+                    size: 18,
+                    color: colors.primary,
+                  ),
                 ),
                 const SizedBox(width: 10),
               ],
               Flexible(
                 child: Column(
-                  crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  crossAxisAlignment: isUser
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: bubbleColor,
                         borderRadius: BorderRadius.only(
@@ -68,13 +87,23 @@ class ChatBubble extends StatelessWidget {
                               message.status == MessageStatus.processing
                                   ? '${message.content ?? ''} ▍'
                                   : message.content ?? '',
-                              style: TextStyle(color: foreground, fontSize: 15.5, height: 1.4),
+                              style: TextStyle(
+                                color: foreground,
+                                fontSize: 15.5,
+                                height: 1.4,
+                              ),
                             ),
                     ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(time, style: TextStyle(fontSize: 11, color: colors.onSurfaceVariant)),
+                        Text(
+                          time,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
                         if (!isUser) const Spacer(),
                         if (!isUser &&
                             message.type == MessageType.text &&
@@ -83,13 +112,18 @@ class ChatBubble extends StatelessWidget {
                           const SizedBox(width: 7),
                           _CopyMessageButton(message: message),
                         ],
-                        if (isUser) ...[const SizedBox(width: 5), _MessageStatusIcon(status: message.status)],
+                        if (isUser) ...[
+                          const SizedBox(width: 5),
+                          _MessageStatusIcon(status: message.status),
+                        ],
                       ],
                     ),
                     if (message.status == MessageStatus.failed)
                       TextButton.icon(
                         key: Key('retry-${message.id}'),
-                        onPressed: () => context.read<ChatBloc>().add(RetryMessage(message.id)),
+                        onPressed: () => context.read<ChatBloc>().add(
+                          RetryMessage(message.id),
+                        ),
                         style: TextButton.styleFrom(
                           foregroundColor: colors.error,
                           visualDensity: VisualDensity.compact,
@@ -170,16 +204,25 @@ class _AudioContent extends StatelessWidget {
                 margin: const EdgeInsets.symmetric(horizontal: 1.5),
                 width: 2.5,
                 height: height,
-                decoration: BoxDecoration(color: color.withValues(alpha: .72), borderRadius: BorderRadius.circular(4)),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: .72),
+                  borderRadius: BorderRadius.circular(4),
+                ),
               );
             }),
             const SizedBox(width: 9),
-            Text('0:${seconds.toString().padLeft(2, '0')}', style: TextStyle(color: color, fontSize: 13)),
+            Text(
+              '0:${seconds.toString().padLeft(2, '0')}',
+              style: TextStyle(color: color, fontSize: 13),
+            ),
           ],
         ),
         if (message.content?.isNotEmpty ?? false) ...[
           const SizedBox(height: 8),
-          Text(message.content!, style: TextStyle(color: color, fontSize: 14, height: 1.35)),
+          Text(
+            message.content!,
+            style: TextStyle(color: color, fontSize: 14, height: 1.35),
+          ),
         ],
       ],
     );
@@ -197,9 +240,16 @@ class _MessageStatusIcon extends StatelessWidget {
       MessageStatus.sending => SizedBox(
         width: 12,
         height: 12,
-        child: CircularProgressIndicator(strokeWidth: 1.5, color: colors.onSurfaceVariant),
+        child: CircularProgressIndicator(
+          strokeWidth: 1.5,
+          color: colors.onSurfaceVariant,
+        ),
       ),
-      MessageStatus.failed => Icon(Icons.error_outline_rounded, size: 14, color: colors.error),
+      MessageStatus.failed => Icon(
+        Icons.error_outline_rounded,
+        size: 14,
+        color: colors.error,
+      ),
       _ => Icon(Icons.done_all_rounded, size: 14, color: colors.primary),
     };
   }

@@ -7,6 +7,21 @@ Flutter chatbot sử dụng hai repository độc lập:
 
 Project này chỉ chứa Flutter client, không chứa source backend.
 
+## Cấu trúc màn hình
+
+- `lib/presentation/pages/login`: màn đăng nhập mockup, chưa xác thực thật.
+- `lib/presentation/pages/home`: màn trang chủ và điểm mở trợ lý.
+- `lib/presentation/pages/chat`: màn hội thoại với trợ lý AI.
+- `lib/common/`: design system, typography Roboto và responsive extensions.
+- `lib/l10n/`: nội dung bản địa hóa tiếng Việt/tiếng Anh.
+- `lib/route/go_router.dart`: typed routes cho ba màn hình.
+
+Ứng dụng khởi động ở màn đăng nhập. Hiện tại nút **Đăng nhập** chuyển thẳng
+sang trang chủ để phục vụ dựng giao diện và kiểm thử luồng.
+
+Roboto được nhúng trong `assets/fonts/` và cấu hình làm font mặc định của toàn
+bộ light/dark theme, không phụ thuộc font có sẵn trên thiết bị.
+
 ## Cấu hình AI Platform
 
 ```bash
@@ -26,8 +41,8 @@ AI_PLATFORM_MODEL=your-model-id
 ## Chạy ứng dụng
 
 ```bash
-flutter pub get
-flutter run
+fvm flutter pub get
+fvm flutter run
 ```
 
 Nếu `AI_PLATFORM_API_KEY` trống, ứng dụng dùng `MockChatRepository`. Khi có key, `ApiChatRepository` gọi:
@@ -109,6 +124,6 @@ Khi nhấn microphone lần đầu, hãy cấp cả quyền microphone và speec
 ## Kiểm tra
 
 ```bash
-flutter analyze
-flutter test
+fvm flutter analyze
+fvm flutter test
 ```
