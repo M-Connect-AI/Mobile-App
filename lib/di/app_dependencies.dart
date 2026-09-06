@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../data/repository/api_chat_repository.dart';
 import '../data/repository/auth/api_auth_repository.dart';
 import '../data/repository/auth/secure_credential_repository.dart';
+import '../data/repository/secure_server_config_repository.dart';
 import '../data/repository/device_speech_to_text_repository.dart';
 import '../data/repository/home/api_home_repository.dart';
 import '../data/source/remote/agent_chat_remote_data_source.dart';
@@ -15,6 +16,8 @@ import '../domain/repository/auth_repository.dart';
 import '../domain/repository/credential_repository.dart';
 import '../domain/repository/home_repository.dart';
 import '../domain/repository/speech_to_text_repository.dart';
+import '../domain/model/server_config.dart';
+import '../domain/repository/server_config_repository.dart';
 
 class AppDependencies {
   const AppDependencies({
@@ -24,6 +27,8 @@ class AppDependencies {
     required this.chatThreadRepository,
     required this.homeRepository,
     required this.speechToTextRepository,
+    required this.serverConfigRepository,
+    required this.serverConfig,
   });
 
   final AuthRepository authRepository;
@@ -32,8 +37,12 @@ class AppDependencies {
   final ChatThreadRepository chatThreadRepository;
   final HomeRepository homeRepository;
   final SpeechToTextRepository speechToTextRepository;
+  final ServerConfigRepository serverConfigRepository;
+  final ServerConfig serverConfig;
 
-  factory AppDependencies.fromEnvironment() {
+  static Future<AppDependencies> fromEnvironment({
+    ServerConfigRepository? serverConfigRepository,
+  }) async {
     final configuredHrBaseUrl =
         dotenv.maybeGet('HR_API_BASE_URL')?.trim() ?? '';
     final hrBaseUrl = configuredHrBaseUrl.isEmpty
@@ -45,10 +54,20 @@ class AppDependencies {
         ? 'http://localhost:3001'
         : configuredAgentBaseUrl;
 
+    final configRepository =
+        serverConfigRepository ??
+        SecureServerConfigRepository(
+          defaults: ServerConfig(
+            hrApiBaseUrl: hrBaseUrl,
+            agentApiBaseUrl: agentBaseUrl,
+          ),
+        );
+    final serverConfig = await configRepository.read();
+
     final credentialRepository = SecureCredentialRepository();
     final chatRepository = ApiChatRepository(
       AgentChatRemoteDataSource(
-        baseUrl: agentBaseUrl,
+        baseUrl: serverConfig.agentApiBaseUrl,
         dio: DioClientFactory.create(),
       ),
       credentialRepository,
@@ -56,7 +75,7 @@ class AppDependencies {
     return AppDependencies(
       authRepository: ApiAuthRepository(
         AuthRemoteDataSource(
-          baseUrl: hrBaseUrl,
+          baseUrl: serverConfig.hrApiBaseUrl,
           dio: DioClientFactory.create(),
         ),
       ),
@@ -64,10 +83,12 @@ class AppDependencies {
       chatRepository: chatRepository,
       chatThreadRepository: chatRepository,
       homeRepository: ApiHomeRepository(
-        HomeRemoteDataSource(baseUrl: hrBaseUrl),
+        HomeRemoteDataSource(baseUrl: serverConfig.hrApiBaseUrl),
         credentialRepository,
       ),
       speechToTextRepository: DeviceSpeechToTextRepository(),
+      serverConfigRepository: configRepository,
+      serverConfig: serverConfig,
     );
   }
 }

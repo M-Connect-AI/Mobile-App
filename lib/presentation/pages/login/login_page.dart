@@ -17,6 +17,7 @@ import '../../../domain/usecase/login/login_use_case.dart';
 import '../../../domain/usecase/login/restore_session_use_case.dart';
 import '../../../generated/l10n.dart';
 import '../../../route/go_router.dart';
+import '../../server_config/server_config_dialog.dart';
 import 'bloc/login_cubit.dart';
 
 class LoginPage extends StatelessWidget {
@@ -97,110 +98,118 @@ class _LoginViewState extends State<_LoginView> {
       child: Scaffold(
         backgroundColor: colors.surfacePrimary,
         body: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 440.width),
-                child: FormBuilder(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const _BrandMark(),
-                      40.height.heightBox,
-                      Text(
-                        strings.loginWelcome,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyle.b28.copyWith(
-                          color: colors.textPrimary,
-                        ),
-                      ),
-                      12.height.heightBox,
-                      Text(
-                        strings.loginSubtitle(strings.appName),
-                        textAlign: TextAlign.center,
-                        style: AppTextStyle.r16.copyWith(
-                          color: colors.textSecondary,
-                        ),
-                      ),
-                      36.height.heightBox,
-                      AppTextField(
-                        context,
-                        key: const Key('login-email-field'),
-                        name: 'email',
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        autofillHints: const [AutofillHints.email],
-                        labelText: strings.emailLabel,
-                        hintText: strings.emailHint,
-                        readOnly: true,
-                        onTap: _showAccountDialog,
-                        validator: (value) => (value?.trim().isEmpty ?? true)
-                            ? strings.emailRequired
-                            : null,
-                      ),
-                      16.height.heightBox,
-                      BlocBuilder<LoginCubit, LoginState>(
-                        buildWhen: (previous, current) =>
-                            previous.obscurePassword != current.obscurePassword,
-                        builder: (context, state) {
-                          return AppTextField(
-                            context,
-                            key: const Key('login-password-field'),
-                            name: 'password',
-                            obscureText: state.obscurePassword,
-                            textInputAction: TextInputAction.done,
-                            autofillHints: const [AutofillHints.password],
-                            labelText: strings.passwordLabel,
-                            hintText: strings.passwordHint,
-                            validator: (value) => (value?.isEmpty ?? true)
-                                ? strings.passwordRequired
-                                : null,
-                            onSubmitted: (_) => _login(),
-                            suffixIcon: CupertinoButton(
-                              key: const Key('password-visibility-button'),
-                              padding: EdgeInsets.zero,
-                              onPressed: context
-                                  .read<LoginCubit>()
-                                  .togglePasswordVisibility,
-                              child: Semantics(
-                                label: state.obscurePassword
-                                    ? strings.showPassword
-                                    : strings.hidePassword,
-                                child: Icon(
-                                  state.obscurePassword
-                                      ? CupertinoIcons.eye
-                                      : CupertinoIcons.eye_slash,
-                                  size: 20.sp,
-                                  color: colors.iconSecondary,
-                                ),
-                              ),
+          child: Stack(
+            children: [
+              const Positioned(top: 4, right: 8, child: ServerConfigButton()),
+              Center(
+                child: SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: 440.width),
+                    child: FormBuilder(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const _BrandMark(),
+                          40.height.heightBox,
+                          Text(
+                            strings.loginWelcome,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyle.b28.copyWith(
+                              color: colors.textPrimary,
                             ),
-                          );
-                        },
+                          ),
+                          12.height.heightBox,
+                          Text(
+                            strings.loginSubtitle(strings.appName),
+                            textAlign: TextAlign.center,
+                            style: AppTextStyle.r16.copyWith(
+                              color: colors.textSecondary,
+                            ),
+                          ),
+                          36.height.heightBox,
+                          AppTextField(
+                            context,
+                            key: const Key('login-email-field'),
+                            name: 'email',
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            autofillHints: const [AutofillHints.email],
+                            labelText: strings.emailLabel,
+                            hintText: strings.emailHint,
+                            readOnly: true,
+                            onTap: _showAccountDialog,
+                            validator: (value) =>
+                                (value?.trim().isEmpty ?? true)
+                                ? strings.emailRequired
+                                : null,
+                          ),
+                          16.height.heightBox,
+                          BlocBuilder<LoginCubit, LoginState>(
+                            buildWhen: (previous, current) =>
+                                previous.obscurePassword !=
+                                current.obscurePassword,
+                            builder: (context, state) {
+                              return AppTextField(
+                                context,
+                                key: const Key('login-password-field'),
+                                name: 'password',
+                                obscureText: state.obscurePassword,
+                                textInputAction: TextInputAction.done,
+                                autofillHints: const [AutofillHints.password],
+                                labelText: strings.passwordLabel,
+                                hintText: strings.passwordHint,
+                                validator: (value) => (value?.isEmpty ?? true)
+                                    ? strings.passwordRequired
+                                    : null,
+                                onSubmitted: (_) => _login(),
+                                suffixIcon: CupertinoButton(
+                                  key: const Key('password-visibility-button'),
+                                  padding: EdgeInsets.zero,
+                                  onPressed: context
+                                      .read<LoginCubit>()
+                                      .togglePasswordVisibility,
+                                  child: Semantics(
+                                    label: state.obscurePassword
+                                        ? strings.showPassword
+                                        : strings.hidePassword,
+                                    child: Icon(
+                                      state.obscurePassword
+                                          ? CupertinoIcons.eye
+                                          : CupertinoIcons.eye_slash,
+                                      size: 20.sp,
+                                      color: colors.iconSecondary,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          12.height.heightBox,
+                          const _LoginOptions(),
+                          12.height.heightBox,
+                          BlocBuilder<LoginCubit, LoginState>(
+                            buildWhen: (previous, current) =>
+                                previous.status != current.status,
+                            builder: (context, state) {
+                              final loading =
+                                  state.status == LoginStatus.loading;
+                              return IrhButton(
+                                key: const Key('login-button'),
+                                label: loading
+                                    ? strings.loggingIn
+                                    : strings.loginButton,
+                                onPressed: loading ? null : _login,
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                      12.height.heightBox,
-                      const _LoginOptions(),
-                      12.height.heightBox,
-                      BlocBuilder<LoginCubit, LoginState>(
-                        buildWhen: (previous, current) =>
-                            previous.status != current.status,
-                        builder: (context, state) {
-                          final loading = state.status == LoginStatus.loading;
-                          return IrhButton(
-                            key: const Key('login-button'),
-                            label: loading
-                                ? strings.loggingIn
-                                : strings.loginButton,
-                            onPressed: loading ? null : _login,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                    ),
+                  ).paddingSymmetric(horizontal: 24.width, vertical: 32.height),
                 ),
-              ).paddingSymmetric(horizontal: 24.width, vertical: 32.height),
-            ),
+              ),
+            ],
           ),
         ),
       ),

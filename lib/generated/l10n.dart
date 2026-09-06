@@ -314,6 +314,91 @@ class S {
     return Intl.message('Đăng xuất', name: 'logout', desc: '', args: []);
   }
 
+  /// `Cấu hình máy chủ`
+  String get serverConfigButton {
+    return Intl.message(
+      'Cấu hình máy chủ',
+      name: 'serverConfigButton',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cấu hình máy chủ`
+  String get serverConfigTitle {
+    return Intl.message(
+      'Cấu hình máy chủ',
+      name: 'serverConfigTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Thay đổi máy chủ dùng cho phiên kiểm thử nội bộ.`
+  String get serverConfigDescription {
+    return Intl.message(
+      'Thay đổi máy chủ dùng cho phiên kiểm thử nội bộ.',
+      name: 'serverConfigDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `HR API URL`
+  String get hrApiUrlLabel {
+    return Intl.message(
+      'HR API URL',
+      name: 'hrApiUrlLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Agent API URL`
+  String get agentApiUrlLabel {
+    return Intl.message(
+      'Agent API URL',
+      name: 'agentApiUrlLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nhập URL đầy đủ bắt đầu bằng http:// hoặc https://`
+  String get serverConfigInvalidUrl {
+    return Intl.message(
+      'Nhập URL đầy đủ bắt đầu bằng http:// hoặc https://',
+      name: 'serverConfigInvalidUrl',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sau khi lưu, phiên hiện tại sẽ đăng xuất để kết nối lại với máy chủ mới.`
+  String get serverConfigLogoutNotice {
+    return Intl.message(
+      'Sau khi lưu, phiên hiện tại sẽ đăng xuất để kết nối lại với máy chủ mới.',
+      name: 'serverConfigLogoutNotice',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mặc định`
+  String get restoreDefaultsButton {
+    return Intl.message(
+      'Mặc định',
+      name: 'restoreDefaultsButton',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lưu`
+  String get saveButton {
+    return Intl.message('Lưu', name: 'saveButton', desc: '', args: []);
+  }
+
   /// `Xin chào, Minh 👋`
   String get homeGreeting {
     return Intl.message(

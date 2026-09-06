@@ -77,6 +77,7 @@ void main() {
     expect(find.text('Hà Nội'), findsOneWidget);
     expect(find.byKey(const Key('assistant-bubble')), findsOneWidget);
     expect(find.byKey(const Key('logout-button')), findsOneWidget);
+    expect(find.byKey(const Key('server-config-button')), findsOneWidget);
     expect(find.byIcon(CupertinoIcons.square_arrow_right), findsOneWidget);
     expect(find.text('Đăng xuất'), findsNothing);
 

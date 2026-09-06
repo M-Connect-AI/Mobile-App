@@ -53,6 +53,7 @@ void main() {
     );
 
     expect(find.text('Chào mừng trở lại'), findsOneWidget);
+    expect(find.byKey(const Key('server-config-button')), findsOneWidget);
     expect(
       find.text('Đăng nhập mô phỏng · Chưa kết nối API thật'),
       findsNothing,

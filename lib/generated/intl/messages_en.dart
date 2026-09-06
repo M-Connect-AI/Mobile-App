@@ -30,6 +30,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "agentApiUrlLabel": MessageLookupByLibrary.simpleMessage("Agent API URL"),
     "annualLeave": MessageLookupByLibrary.simpleMessage(
       "Annual remaining / total",
     ),
@@ -113,6 +114,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "homeSubtitle": MessageLookupByLibrary.simpleMessage(
       "Have a productive day",
     ),
+    "hrApiUrlLabel": MessageLookupByLibrary.simpleMessage("HR API URL"),
     "leaveBalance": MessageLookupByLibrary.simpleMessage("Leave balance"),
     "leaveBalanceSuggestion": MessageLookupByLibrary.simpleMessage(
       "How many leave days do I have left?",
@@ -176,9 +178,26 @@ class MessageLookup extends MessageLookupByLibrary {
       "Keep me signed in",
     ),
     "responseCopied": MessageLookupByLibrary.simpleMessage("Response copied"),
+    "restoreDefaultsButton": MessageLookupByLibrary.simpleMessage("Defaults"),
     "retry": MessageLookupByLibrary.simpleMessage("Retry"),
+    "saveButton": MessageLookupByLibrary.simpleMessage("Save"),
     "seeAll": MessageLookupByLibrary.simpleMessage("See all"),
     "selectButton": MessageLookupByLibrary.simpleMessage("Select"),
+    "serverConfigButton": MessageLookupByLibrary.simpleMessage(
+      "Server configuration",
+    ),
+    "serverConfigDescription": MessageLookupByLibrary.simpleMessage(
+      "Change the servers used for internal testing.",
+    ),
+    "serverConfigInvalidUrl": MessageLookupByLibrary.simpleMessage(
+      "Enter a complete URL starting with http:// or https://",
+    ),
+    "serverConfigLogoutNotice": MessageLookupByLibrary.simpleMessage(
+      "Saving signs out the current session so the app can reconnect to the new server.",
+    ),
+    "serverConfigTitle": MessageLookupByLibrary.simpleMessage(
+      "Server configuration",
+    ),
     "showPassword": MessageLookupByLibrary.simpleMessage("Show password"),
     "sickLeave": MessageLookupByLibrary.simpleMessage("Sick leave remaining"),
     "statusApproved": MessageLookupByLibrary.simpleMessage("Approved"),

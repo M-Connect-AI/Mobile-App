@@ -30,6 +30,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "agentApiUrlLabel": MessageLookupByLibrary.simpleMessage("Agent API URL"),
     "annualLeave": MessageLookupByLibrary.simpleMessage(
       "Phép năm còn lại / tổng",
     ),
@@ -119,6 +120,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "homeSubtitle": MessageLookupByLibrary.simpleMessage(
       "Chúc bạn một ngày làm việc hiệu quả",
     ),
+    "hrApiUrlLabel": MessageLookupByLibrary.simpleMessage("HR API URL"),
     "leaveBalance": MessageLookupByLibrary.simpleMessage("Số dư nghỉ phép"),
     "leaveBalanceSuggestion": MessageLookupByLibrary.simpleMessage(
       "Tôi còn bao nhiêu ngày phép?",
@@ -184,9 +186,26 @@ class MessageLookup extends MessageLookupByLibrary {
     "responseCopied": MessageLookupByLibrary.simpleMessage(
       "Đã sao chép phản hồi",
     ),
+    "restoreDefaultsButton": MessageLookupByLibrary.simpleMessage("Mặc định"),
     "retry": MessageLookupByLibrary.simpleMessage("Thử lại"),
+    "saveButton": MessageLookupByLibrary.simpleMessage("Lưu"),
     "seeAll": MessageLookupByLibrary.simpleMessage("Xem tất cả"),
     "selectButton": MessageLookupByLibrary.simpleMessage("Chọn"),
+    "serverConfigButton": MessageLookupByLibrary.simpleMessage(
+      "Cấu hình máy chủ",
+    ),
+    "serverConfigDescription": MessageLookupByLibrary.simpleMessage(
+      "Thay đổi máy chủ dùng cho phiên kiểm thử nội bộ.",
+    ),
+    "serverConfigInvalidUrl": MessageLookupByLibrary.simpleMessage(
+      "Nhập URL đầy đủ bắt đầu bằng http:// hoặc https://",
+    ),
+    "serverConfigLogoutNotice": MessageLookupByLibrary.simpleMessage(
+      "Sau khi lưu, phiên hiện tại sẽ đăng xuất để kết nối lại với máy chủ mới.",
+    ),
+    "serverConfigTitle": MessageLookupByLibrary.simpleMessage(
+      "Cấu hình máy chủ",
+    ),
     "showPassword": MessageLookupByLibrary.simpleMessage("Hiện mật khẩu"),
     "sickLeave": MessageLookupByLibrary.simpleMessage("Phép ốm còn lại"),
     "statusApproved": MessageLookupByLibrary.simpleMessage("Đã duyệt"),
