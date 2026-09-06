@@ -1,0 +1,9 @@
+# Local release signing. Copy this file to key.properties and keep it private.
+storeFile=app/mconnect-chatbot-upload.jks
+storePasswordFile=signing/keystore-password.txt
+keyAlias=mconnect-chatbot
+keyPasswordFile=signing/keystore-password.txt
+
+# CI may omit this file and provide these environment variables instead:
+# ANDROID_KEYSTORE_PATH, ANDROID_KEY_ALIAS, ANDROID_STORE_PASSWORD,
+# ANDROID_KEY_PASSWORD.

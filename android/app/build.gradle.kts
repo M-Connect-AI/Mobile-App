@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -5,8 +7,61 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.inputStream().use(keystoreProperties::load)
+}
+
+fun signingValue(propertyName: String, environmentName: String): String? =
+    System.getenv(environmentName)?.takeIf(String::isNotBlank)
+        ?: keystoreProperties.getProperty(propertyName)?.takeIf(String::isNotBlank)
+
+fun signingSecret(
+    propertyName: String,
+    filePropertyName: String,
+    environmentName: String,
+): String? = signingValue(propertyName, environmentName)
+    ?: keystoreProperties.getProperty(filePropertyName)
+        ?.takeIf(String::isNotBlank)
+        ?.let(rootProject::file)
+        ?.takeIf { it.exists() }
+        ?.readText()
+        ?.trim()
+        ?.takeIf(String::isNotBlank)
+
+val releaseStorePath = signingValue("storeFile", "ANDROID_KEYSTORE_PATH")
+val releaseKeyAlias = signingValue("keyAlias", "ANDROID_KEY_ALIAS")
+val releaseStorePassword = signingSecret(
+    "storePassword",
+    "storePasswordFile",
+    "ANDROID_STORE_PASSWORD",
+)
+val releaseKeyPassword = signingSecret(
+    "keyPassword",
+    "keyPasswordFile",
+    "ANDROID_KEY_PASSWORD",
+)
+val hasReleaseSigning = listOf(
+    releaseStorePath,
+    releaseKeyAlias,
+    releaseStorePassword,
+    releaseKeyPassword,
+).all { !it.isNullOrBlank() }
+
+val releaseWasRequested = gradle.startParameter.taskNames.any {
+    it.contains("release", ignoreCase = true)
+}
+if (releaseWasRequested && !hasReleaseSigning) {
+    throw GradleException(
+        "Release signing is not configured. Provide android/key.properties " +
+            "or the ANDROID_KEYSTORE_PATH, ANDROID_KEY_ALIAS, " +
+            "ANDROID_STORE_PASSWORD, and ANDROID_KEY_PASSWORD environment variables.",
+    )
+}
+
 android {
-    namespace = "com.example.chatbot_project"
+    namespace = "com.irohasu.mconnect.chatbot"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,8 +75,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.chatbot_project"
+        applicationId = "com.irohasu.mconnect.chatbot"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -30,11 +84,22 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = rootProject.file(requireNotNull(releaseStorePath))
+                storePassword = requireNotNull(releaseStorePassword)
+                keyAlias = requireNotNull(releaseKeyAlias)
+                keyPassword = requireNotNull(releaseKeyPassword)
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 }

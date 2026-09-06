@@ -4,7 +4,12 @@ import 'chat_message.dart';
 import 'chat_stream_event.dart';
 
 class ChatThread extends Equatable {
-  const ChatThread({required this.threadId, required this.title, required this.preview, required this.updatedAt});
+  const ChatThread({
+    required this.threadId,
+    required this.title,
+    required this.preview,
+    required this.updatedAt,
+  });
 
   final String threadId;
   final String title;
@@ -16,7 +21,11 @@ class ChatThread extends Equatable {
 }
 
 class ChatThreadDetail extends Equatable {
-  const ChatThreadDetail({required this.threadId, required this.messages, this.pendingAction});
+  const ChatThreadDetail({
+    required this.threadId,
+    required this.messages,
+    this.pendingAction,
+  });
 
   final String threadId;
   final List<ChatMessage> messages;

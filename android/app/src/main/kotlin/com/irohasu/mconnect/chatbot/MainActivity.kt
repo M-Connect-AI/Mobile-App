@@ -1,4 +1,4 @@
-package com.example.chatbot_project
+package com.irohasu.mconnect.chatbot
 
 import io.flutter.embedding.android.FlutterActivity
 
