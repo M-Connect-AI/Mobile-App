@@ -31,7 +31,7 @@
   "loginButton": "Sign in",
   "logout": "Sign out",
   "serverConfigButton": "Server configuration",
-  "serverConfigTitle": "Server configuration",
+  "serverConfigTitle": "Internal server configuration",
   "serverConfigDescription": "Change the servers used for internal testing.",
   "hrApiUrlLabel": "HR API URL",
   "agentApiUrlLabel": "Agent API URL",

@@ -324,10 +324,10 @@ class S {
     );
   }
 
-  /// `Cấu hình máy chủ`
+  /// `Cấu hình máy chủ nội bộ`
   String get serverConfigTitle {
     return Intl.message(
-      'Cấu hình máy chủ',
+      'Cấu hình máy chủ nội bộ',
       name: 'serverConfigTitle',
       desc: '',
       args: [],

@@ -204,7 +204,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Sau khi lưu, phiên hiện tại sẽ đăng xuất để kết nối lại với máy chủ mới.",
     ),
     "serverConfigTitle": MessageLookupByLibrary.simpleMessage(
-      "Cấu hình máy chủ",
+      "Cấu hình máy chủ nội bộ",
     ),
     "showPassword": MessageLookupByLibrary.simpleMessage("Hiện mật khẩu"),
     "sickLeave": MessageLookupByLibrary.simpleMessage("Phép ốm còn lại"),

@@ -508,7 +508,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
     if (kDebugMode) {
       debugPrint(
-        '[ChatBloc] agent update: status=${assistant.status.name}, '
+        '[MConnect ChatBloc] agent update: status=${assistant.status.name}, '
         'chars=${assistant.content?.length ?? 0}',
       );
     }

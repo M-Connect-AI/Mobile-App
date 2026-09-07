@@ -31,7 +31,7 @@
   "loginButton": "Đăng nhập",
   "logout": "Đăng xuất",
   "serverConfigButton": "Cấu hình máy chủ",
-  "serverConfigTitle": "Cấu hình máy chủ",
+  "serverConfigTitle": "Cấu hình máy chủ nội bộ",
   "serverConfigDescription": "Thay đổi máy chủ dùng cho phiên kiểm thử nội bộ.",
   "hrApiUrlLabel": "HR API URL",
   "agentApiUrlLabel": "Agent API URL",

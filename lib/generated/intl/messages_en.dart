@@ -196,7 +196,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Saving signs out the current session so the app can reconnect to the new server.",
     ),
     "serverConfigTitle": MessageLookupByLibrary.simpleMessage(
-      "Server configuration",
+      "Internal server configuration",
     ),
     "showPassword": MessageLookupByLibrary.simpleMessage("Show password"),
     "sickLeave": MessageLookupByLibrary.simpleMessage("Sick leave remaining"),
