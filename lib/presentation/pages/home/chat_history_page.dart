@@ -10,14 +10,18 @@ import 'package:chatbot_project/presentation/pages/home/widgets/home_back_button
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../domain/repository/credential_repository.dart';
+
 class ChatHistoryPage extends StatelessWidget {
   const ChatHistoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          HomeChatAiCubit(context.read<ChatThreadRepository>())..loadThreads(),
+      create: (_) => HomeChatAiCubit(
+        context.read<ChatThreadRepository>(),
+        context.read<CredentialRepository>(),
+      )..loadThreads(),
       child: const _ChatHistoryView(),
     );
   }

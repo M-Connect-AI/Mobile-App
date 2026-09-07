@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../../generated/l10n.dart';
 import '../bloc/chat_state.dart';
 
 class TypingIndicator extends StatefulWidget {
@@ -30,11 +31,12 @@ class _TypingIndicatorState extends State<TypingIndicator> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = S.of(context);
     final label = switch (widget.stage) {
-      AiProcessingState.thinking => 'Thinking...',
-      AiProcessingState.understanding => 'Understanding request...',
-      AiProcessingState.generatingResponse => 'Preparing response...',
-      AiProcessingState.idle => 'Thinking...',
+      AiProcessingState.thinking => strings.thinking,
+      AiProcessingState.understanding => strings.understandingRequest,
+      AiProcessingState.generatingResponse => strings.preparingResponse,
+      AiProcessingState.idle => strings.thinking,
     };
     final colors = Theme.of(context).colorScheme;
     return Semantics(

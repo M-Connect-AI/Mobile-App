@@ -54,9 +54,9 @@ class _LoginViewState extends State<_LoginView> {
     if (!(_formKey.currentState?.saveAndValidate() ?? false)) return;
     final values = _formKey.currentState!.value;
     context.read<LoginCubit>().submit(
-      email: values['email'].toString().trim().toLowerCase(),
-      password: values['password'].toString(),
-    );
+          email: values['email'].toString().trim().toLowerCase(),
+          password: values['password'].toString(),
+        );
   }
 
   Future<void> _showAccountDialog() async {
@@ -110,8 +110,6 @@ class _LoginViewState extends State<_LoginView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const _BrandMark(),
-                          40.height.heightBox,
                           Text(
                             strings.loginWelcome,
                             textAlign: TextAlign.center,
@@ -140,15 +138,12 @@ class _LoginViewState extends State<_LoginView> {
                             readOnly: true,
                             onTap: _showAccountDialog,
                             validator: (value) =>
-                                (value?.trim().isEmpty ?? true)
-                                ? strings.emailRequired
-                                : null,
+                                (value?.trim().isEmpty ?? true) ? strings.emailRequired : null,
                           ),
                           16.height.heightBox,
                           BlocBuilder<LoginCubit, LoginState>(
                             buildWhen: (previous, current) =>
-                                previous.obscurePassword !=
-                                current.obscurePassword,
+                                previous.obscurePassword != current.obscurePassword,
                             builder: (context, state) {
                               return AppTextField(
                                 context,
@@ -159,24 +154,21 @@ class _LoginViewState extends State<_LoginView> {
                                 autofillHints: const [AutofillHints.password],
                                 labelText: strings.passwordLabel,
                                 hintText: strings.passwordHint,
-                                validator: (value) => (value?.isEmpty ?? true)
-                                    ? strings.passwordRequired
-                                    : null,
+                                validator: (value) =>
+                                    (value?.isEmpty ?? true) ? strings.passwordRequired : null,
                                 onSubmitted: (_) => _login(),
                                 suffixIcon: CupertinoButton(
                                   key: const Key('password-visibility-button'),
                                   padding: EdgeInsets.zero,
-                                  onPressed: context
-                                      .read<LoginCubit>()
-                                      .togglePasswordVisibility,
+                                  onPressed: context.read<LoginCubit>().togglePasswordVisibility,
                                   child: Semantics(
                                     label: state.obscurePassword
                                         ? strings.showPassword
                                         : strings.hidePassword,
                                     child: Icon(
                                       state.obscurePassword
-                                          ? CupertinoIcons.eye
-                                          : CupertinoIcons.eye_slash,
+                                          ? CupertinoIcons.eye_slash
+                                          : CupertinoIcons.eye,
                                       size: 20.sp,
                                       color: colors.iconSecondary,
                                     ),
@@ -189,16 +181,12 @@ class _LoginViewState extends State<_LoginView> {
                           const _LoginOptions(),
                           12.height.heightBox,
                           BlocBuilder<LoginCubit, LoginState>(
-                            buildWhen: (previous, current) =>
-                                previous.status != current.status,
+                            buildWhen: (previous, current) => previous.status != current.status,
                             builder: (context, state) {
-                              final loading =
-                                  state.status == LoginStatus.loading;
+                              final loading = state.status == LoginStatus.loading;
                               return IrhButton(
                                 key: const Key('login-button'),
-                                label: loading
-                                    ? strings.loggingIn
-                                    : strings.loginButton,
+                                label: loading ? strings.loggingIn : strings.loginButton,
                                 onPressed: loading ? null : _login,
                               );
                             },
@@ -221,8 +209,7 @@ class _LoginViewState extends State<_LoginView> {
       AuthFailureType.invalidCredentials => strings.loginFailed,
       AuthFailureType.network => strings.loginNetworkError,
       AuthFailureType.server => strings.loginServerError,
-      AuthFailureType.validation =>
-        state.failureMessage ?? strings.loginValidationError,
+      AuthFailureType.validation => state.failureMessage ?? strings.loginValidationError,
       AuthFailureType.invalidResponse => strings.loginInvalidResponse,
       null => strings.loginFailed,
     };
@@ -248,9 +235,11 @@ class _AccountPickerDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            strings.suggestedAccounts,
-            style: AppTextStyle.b20.copyWith(color: colors.textPrimary),
+          Center(
+            child: Text(
+              strings.suggestedAccounts,
+              style: AppTextStyle.b20.copyWith(color: colors.textPrimary),
+            ),
           ),
           16.height.heightBox,
           ...accounts.map(
@@ -291,12 +280,12 @@ class _AccountDialogOption extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: AppTextStyle.m12.copyWith(color: colors.textPrimary),
+                style: AppTextStyle.m16.copyWith(color: colors.textPrimary),
               ),
               4.height.heightBox,
               Text(
                 email,
-                style: AppTextStyle.r12.copyWith(color: colors.textSecondary),
+                style: AppTextStyle.r14.copyWith(color: colors.textSecondary),
               ),
             ],
           ).expanded(),
@@ -354,9 +343,7 @@ class _OtherEmailDialogState extends State<_OtherEmailDialog> {
               textInputAction: TextInputAction.done,
               labelText: strings.emailLabel,
               hintText: strings.emailHint,
-              validator: (value) => (value?.trim().isEmpty ?? true)
-                  ? strings.emailRequired
-                  : null,
+              validator: (value) => (value?.trim().isEmpty ?? true) ? strings.emailRequired : null,
               onSubmitted: (_) => _select(),
             ),
             12.height.heightBox,
@@ -385,10 +372,9 @@ class _LoginOptions extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = S.of(context);
     return Align(
-      alignment: Alignment.centerLeft,
+      alignment: Alignment.centerRight,
       child: BlocBuilder<LoginCubit, LoginState>(
-        buildWhen: (previous, current) =>
-            previous.rememberSession != current.rememberSession,
+        buildWhen: (previous, current) => previous.rememberSession != current.rememberSession,
         builder: (context, state) {
           return Semantics(
             label: strings.rememberSession,
@@ -401,18 +387,17 @@ class _LoginOptions extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  Text(
+                    strings.rememberSession,
+                    style: AppTextStyle.m14.copyWith(
+                      color: context.appColorScheme.textSecondary,
+                    ),
+                  ),
+                  8.width.widthBox,
                   CupertinoSwitch(
                     value: state.rememberSession,
                     activeTrackColor: context.appColorScheme.iconBrand,
-                    onChanged: (_) =>
-                        context.read<LoginCubit>().toggleRememberSession(),
-                  ),
-                  8.width.widthBox,
-                  Text(
-                    strings.rememberSession,
-                    style: AppTextStyle.m12.copyWith(
-                      color: context.appColorScheme.textSecondary,
-                    ),
+                    onChanged: (_) => context.read<LoginCubit>().toggleRememberSession(),
                   ),
                 ],
               ),
@@ -420,37 +405,6 @@ class _LoginOptions extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-}
-
-class _BrandMark extends StatelessWidget {
-  const _BrandMark();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColorScheme;
-    return Column(
-      children: [
-        Container(
-          width: 80.width,
-          height: 80.height,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: colors.iconBrand,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Text(
-            S.of(context).brandMonogram,
-            style: AppTextStyle.b24.copyWith(color: Colors.white),
-          ),
-        ),
-        16.height.heightBox,
-        Text(
-          S.of(context).appName,
-          style: AppTextStyle.b20.copyWith(color: colors.textBrand),
-        ),
-      ],
     );
   }
 }

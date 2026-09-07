@@ -30,12 +30,10 @@ class ChatBubble extends StatelessWidget {
     }
     final isUser = message.sender == MessageSender.user;
     final colors = Theme.of(context).colorScheme;
-    final bubbleColor = isUser
-        ? colors.primary
-        : colors.surfaceContainerHighest;
+    final bubbleColor = isUser ? colors.primary : colors.surfaceContainerHighest;
     final foreground = isUser ? colors.onPrimary : colors.onSurface;
     return Semantics(
-      label: isUser ? 'Tin nhắn của bạn' : 'Phản hồi của AI',
+      label: isUser ? S.of(context).yourMessage : S.of(context).aiResponse,
       child: Align(
         alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
         child: ConstrainedBox(
@@ -64,26 +62,24 @@ class ChatBubble extends StatelessWidget {
                 const SizedBox(width: 10),
               ],
               Flexible(
-                child: Column(
-                  crossAxisAlignment: isUser
-                      ? CrossAxisAlignment.end
-                      : CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: bubbleColor,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(isUser ? 18 : 5),
-                          topRight: Radius.circular(isUser ? 5 : 18),
-                          bottomLeft: const Radius.circular(18),
-                          bottomRight: const Radius.circular(18),
-                        ),
-                      ),
-                      child: message.type == MessageType.audio
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: bubbleColor,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(isUser ? 18 : 5),
+                      topRight: Radius.circular(isUser ? 5 : 18),
+                      bottomLeft: const Radius.circular(18),
+                      bottomRight: const Radius.circular(18),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                    children: [
+                      message.type == MessageType.audio
                           ? _AudioContent(message: message, color: foreground)
                           : Text(
                               message.status == MessageStatus.processing
@@ -95,62 +91,53 @@ class ChatBubble extends StatelessWidget {
                                 height: 1.4,
                               ),
                             ),
-                    ),
-                    if (!isUser && message.confirmation != null) ...[
-                      8.height.heightBox,
-                      _ConfirmationCard(message: message),
-                    ],
-                    if (!isUser && message.executedResult != null) ...[
-                      8.height.heightBox,
-                      Text(
-                        S.of(context).chatActionCompleted,
-                        style: AppTextStyle.sm12.copyWith(
-                          color: context.appColorScheme.textSuccess,
+                      if (!isUser && message.confirmation != null) ...[
+                        8.height.heightBox,
+                        _ConfirmationCard(message: message),
+                      ],
+                      if (!isUser && message.citations.isNotEmpty) ...[
+                        8.height.heightBox,
+                        Wrap(
+                          spacing: 8.width,
+                          runSpacing: 8.height,
+                          children: [
+                            for (final citation in message.citations)
+                              Chip(
+                                label: Text(citation),
+                                backgroundColor: context.appColorScheme.surfaceSecondary,
+                              ),
+                          ],
                         ),
-                      ),
-                    ],
-                    if (!isUser && message.citations.isNotEmpty) ...[
-                      8.height.heightBox,
-                      Wrap(
-                        spacing: 8.width,
-                        runSpacing: 8.height,
-                        children: [
-                          for (final citation in message.citations)
-                            Chip(
-                              label: Text(citation),
-                              backgroundColor:
-                                  context.appColorScheme.surfaceSecondary,
-                            ),
-                        ],
-                      ),
-                    ],
-                    if (!isUser &&
-                        message.type == MessageType.text &&
-                        message.status == MessageStatus.success &&
-                        (message.content?.isNotEmpty ?? false)) ...[
-                      const SizedBox(height: 8),
-                      Divider(height: 1, color: colors.outlineVariant),
-                      const SizedBox(height: 4),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: _CopyMessageButton(message: message),
-                      ),
-                    ],
-                    if (isUser && message.status == MessageStatus.failed)
-                      TextButton.icon(
-                        key: Key('retry-${message.id}'),
-                        onPressed: () => context.read<ChatBloc>().add(
-                          RetryMessage(message.id),
+                      ],
+                      if (!isUser &&
+                          message.executedResult != null &&
+                          message.type == MessageType.text &&
+                          message.status == MessageStatus.success &&
+                          (message.content?.isNotEmpty ?? false)) ...[
+                        const SizedBox(height: 8),
+                        Divider(height: 1, color: colors.outlineVariant),
+                        const SizedBox(height: 4),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: _CopyMessageButton(message: message),
                         ),
-                        style: TextButton.styleFrom(
-                          foregroundColor: colors.error,
-                          visualDensity: VisualDensity.compact,
-                          padding: const EdgeInsets.only(left: 4, right: 8),
+                      ],
+                      if (isUser && message.status == MessageStatus.failed)
+                        TextButton.icon(
+                          key: Key('retry-${message.id}'),
+                          onPressed: () => context.read<ChatBloc>().add(
+                                RetryMessage(message.id),
+                              ),
+                          style: TextButton.styleFrom(
+                            foregroundColor: colors.error,
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.only(left: 4, right: 8),
+                          ),
+                          icon: const Icon(Icons.refresh_rounded, size: 16),
+                          label: Text(S.of(context).retry),
                         ),
-                        icon: const Icon(Icons.refresh_rounded, size: 16),
-                        label: const Text('Retry'),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -193,22 +180,22 @@ class _ConfirmationCard extends StatelessWidget {
                   child: IrhButton(
                     label: strings.confirmButton,
                     onPressed: () => context.read<ChatBloc>().add(
-                      ConfirmationResponded(
-                        messageId: message.id,
-                        confirmed: true,
-                      ),
-                    ),
+                          ConfirmationResponded(
+                            messageId: message.id,
+                            confirmed: true,
+                          ),
+                        ),
                   ),
                 ),
                 8.width.widthBox,
                 IrhTextButton(
                   label: strings.cancelButton,
                   onPressed: () => context.read<ChatBloc>().add(
-                    ConfirmationResponded(
-                      messageId: message.id,
-                      confirmed: false,
-                    ),
-                  ),
+                        ConfirmationResponded(
+                          messageId: message.id,
+                          confirmed: false,
+                        ),
+                      ),
                 ),
               ],
             )
@@ -233,7 +220,7 @@ class _CopyMessageButton extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return IconButton(
       key: Key('copy-${message.id}'),
-      tooltip: 'Sao chép',
+      tooltip: S.of(context).copyMessage,
       onPressed: () async {
         await Clipboard.setData(ClipboardData(text: message.content!));
         if (!context.mounted) return;

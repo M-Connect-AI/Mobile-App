@@ -46,8 +46,7 @@ class _AiAssistantAppState extends State<AiAssistantApp> {
     final configRepository = _dependencies.serverConfigRepository;
     final normalized = config.normalized();
     final defaults = configRepository.defaults.normalized();
-    final usesDefaults =
-        normalized.hrApiBaseUrl == defaults.hrApiBaseUrl &&
+    final usesDefaults = normalized.hrApiBaseUrl == defaults.hrApiBaseUrl &&
         normalized.agentApiBaseUrl == defaults.agentApiBaseUrl;
     if (usesDefaults) {
       await configRepository.clear();
@@ -105,7 +104,7 @@ class _AiAssistantAppState extends State<AiAssistantApp> {
           builder: (context, child) => MaterialApp.router(
             title: AppConstants.chatbotName,
             debugShowCheckedModeBanner: false,
-            themeMode: ThemeMode.system,
+            themeMode: ThemeMode.light,
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,
             routerConfig: appRouter,

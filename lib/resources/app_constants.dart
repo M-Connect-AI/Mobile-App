@@ -1,3 +1,3 @@
 abstract final class AppConstants {
-  static const chatbotName = 'AI Assistant';
+  static const chatbotName = 'MConnect Mate';
 }

@@ -3,7 +3,9 @@ import 'package:chatbot_project/common/components/app_text_style.dart';
 import 'package:chatbot_project/common/components/irh_button.dart';
 import 'package:chatbot_project/common/extensions/responsive_extension.dart';
 import 'package:chatbot_project/common/themes/theme_extensions/app_color_scheme.dart';
+import 'package:chatbot_project/domain/model/auth_session.dart';
 import 'package:chatbot_project/domain/repository/chat_thread_repository.dart';
+import 'package:chatbot_project/domain/repository/credential_repository.dart';
 import 'package:chatbot_project/generated/l10n.dart';
 import 'package:chatbot_project/presentation/pages/chat/widgets/chat_input.dart';
 import 'package:chatbot_project/presentation/pages/home/bloc/home_chat_ai_cubit.dart';
@@ -20,8 +22,12 @@ class HomeChatAiPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          HomeChatAiCubit(context.read<ChatThreadRepository>())..loadThreads(),
+      create: (_) => HomeChatAiCubit(
+        context.read<ChatThreadRepository>(),
+        context.read<CredentialRepository>(),
+      )
+        ..loadRole()
+        ..loadThreads(),
       child: const _HomeChatAiView(),
     );
   }
@@ -102,6 +108,18 @@ class _DashboardHeader extends StatelessWidget {
   }
 }
 
+class _PromptSuggestionData {
+  const _PromptSuggestionData({
+    required this.itemKey,
+    required this.label,
+    required this.backgroundColor,
+  });
+
+  final Key itemKey;
+  final String label;
+  final Color backgroundColor;
+}
+
 class _PromptSuggestions extends StatelessWidget {
   const _PromptSuggestions();
 
@@ -112,50 +130,109 @@ class _PromptSuggestions extends StatelessWidget {
     ).push(context);
   }
 
+  List<_PromptSuggestionData> _suggestionsForRole(
+    UserRole role,
+    S strings,
+    AppColorScheme colors,
+  ) {
+    final brandColor = Color.lerp(
+      colors.surfaceSecondary,
+      colors.iconBrand,
+      .18,
+    )!;
+    final successColor = Color.lerp(
+      colors.surfaceSecondary,
+      colors.textSuccess,
+      .16,
+    )!;
+    final accentColor = Color.lerp(
+      colors.surfaceTemary,
+      colors.textBrand,
+      .12,
+    )!;
+
+    switch (role) {
+      case UserRole.manager:
+        return [
+          _PromptSuggestionData(
+            itemKey: const Key('manager-team-pending-suggestion'),
+            label: strings.managerTeamPendingSuggestion,
+            backgroundColor: brandColor,
+          ),
+          _PromptSuggestionData(
+            itemKey: const Key('manager-who-off-tomorrow-suggestion'),
+            label: strings.managerWhoOffTomorrowSuggestion,
+            backgroundColor: successColor,
+          ),
+          _PromptSuggestionData(
+            itemKey: const Key('manager-approve-second-suggestion'),
+            label: strings.managerApproveSecondSuggestion,
+            backgroundColor: accentColor,
+          ),
+          _PromptSuggestionData(
+            itemKey: const Key('manager-approve-one-day-suggestion'),
+            label: strings.managerApproveOneDaySuggestion,
+            backgroundColor: brandColor,
+          ),
+        ];
+      case UserRole.staff:
+        return [
+          _PromptSuggestionData(
+            itemKey: const Key('leave-request-suggestion'),
+            label: strings.leaveRequestSuggestion,
+            backgroundColor: brandColor,
+          ),
+          _PromptSuggestionData(
+            itemKey: const Key('leave-list-suggestion'),
+            label: strings.leaveListSuggestion,
+            backgroundColor: successColor,
+          ),
+          _PromptSuggestionData(
+            itemKey: const Key('leave-balance-suggestion'),
+            label: strings.leaveBalanceSuggestion,
+            backgroundColor: accentColor,
+          ),
+          _PromptSuggestionData(
+            itemKey: const Key('leave-pending-suggestion'),
+            label: strings.leavePendingSuggestion,
+            backgroundColor: brandColor,
+          ),
+          _PromptSuggestionData(
+            itemKey: const Key('leave-cancel-suggestion'),
+            label: strings.leaveCancelSuggestion,
+            backgroundColor: successColor,
+          ),
+        ];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final strings = S.of(context);
     final colors = context.appColorScheme;
-    return SizedBox(
-      height: 132.height,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        children: [
-          _SuggestionCard(
-            key: const Key('leave-request-suggestion'),
-            label: strings.leaveRequestSuggestion,
-            backgroundColor: Color.lerp(
-              colors.surfaceSecondary,
-              colors.iconBrand,
-              .18,
-            )!,
-            onPressed: () => _openChat(context, strings.leaveRequestSuggestion),
+    return BlocBuilder<HomeChatAiCubit, HomeChatAiState>(
+      buildWhen: (previous, current) => previous.role != current.role,
+      builder: (context, state) {
+        final suggestions = _suggestionsForRole(state.role, strings, colors);
+        return SizedBox(
+          height: 132.height,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: suggestions.length,
+            separatorBuilder: (_, __) => 12.width.widthBox,
+            itemBuilder: (context, index) {
+              final suggestion = suggestions[index];
+              return _SuggestionCard(
+                key: suggestion.itemKey,
+                label: suggestion.label,
+                backgroundColor: suggestion.backgroundColor,
+                onPressed: () => _openChat(context, suggestion.label),
+              );
+            },
           ),
-          12.width.widthBox,
-          _SuggestionCard(
-            key: const Key('leave-list-suggestion'),
-            label: strings.leaveListSuggestion,
-            backgroundColor: Color.lerp(
-              colors.surfaceSecondary,
-              colors.textSuccess,
-              .16,
-            )!,
-            onPressed: () => _openChat(context, strings.leaveListSuggestion),
-          ),
-          12.width.widthBox,
-          _SuggestionCard(
-            key: const Key('leave-balance-suggestion'),
-            label: strings.leaveBalanceSuggestion,
-            backgroundColor: Color.lerp(
-              colors.surfaceTemary,
-              colors.textBrand,
-              .12,
-            )!,
-            onPressed: () => _openChat(context, strings.leaveBalanceSuggestion),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -202,9 +279,10 @@ class _SuggestionCard extends StatelessWidget {
               ).expanded(),
               Align(
                 alignment: Alignment.bottomRight,
-                child: Text(
-                  '↗',
-                  style: AppTextStyle.b24.copyWith(color: colors.textPrimary),
+                child: Icon(
+                  Icons.arrow_outward_sharp,
+                  size: 30,
+                  color: colors.textPrimary,
                 ),
               ),
             ],
@@ -251,7 +329,7 @@ class _HistorySection extends StatelessWidget {
             ],
           ),
           8.height.heightBox,
-          const ChatThreadHistory(),
+          const ChatThreadHistory(maxItems: 5),
         ],
       ).paddingAll(16.width),
     );

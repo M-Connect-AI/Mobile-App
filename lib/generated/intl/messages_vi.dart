@@ -20,17 +20,20 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'vi';
 
-  static String m0(fullName) => "Xin chào, ${fullName} 👋";
+  static String m0(name) => "Nhắn tin cho ${name}...";
 
-  static String m1(appName) => "Đăng nhập để tiếp tục với ${appName}";
+  static String m1(fullName) => "Xin chào, ${fullName} 👋";
 
-  static String m2(preview, date) => "${preview} · ${date}";
+  static String m2(appName) => "Đăng nhập để tiếp tục với ${appName}";
 
-  static String m3(from, to) => "${from} – ${to}";
+  static String m3(preview, date) => "${preview} · ${date}";
+
+  static String m4(from, to) => "${from} – ${to}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "agentApiUrlLabel": MessageLookupByLibrary.simpleMessage("Agent API URL"),
+    "aiResponse": MessageLookupByLibrary.simpleMessage("Phản hồi của AI"),
     "annualLeave": MessageLookupByLibrary.simpleMessage(
       "Phép năm còn lại / tổng",
     ),
@@ -41,6 +44,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "backToHome": MessageLookupByLibrary.simpleMessage("Quay lại trang chủ"),
     "brandMonogram": MessageLookupByLibrary.simpleMessage("AI"),
     "businessTrip": MessageLookupByLibrary.simpleMessage("Công tác"),
+    "cancelAction": MessageLookupByLibrary.simpleMessage("Hủy"),
     "cancelButton": MessageLookupByLibrary.simpleMessage("Hủy"),
     "chatActionCompleted": MessageLookupByLibrary.simpleMessage(
       "Thao tác đã được backend thực thi thành công.",
@@ -54,8 +58,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "chatInputHint": MessageLookupByLibrary.simpleMessage(
       "Nhắn tin cho Trợ lý AI...",
     ),
+    "chatInputHintName": m0,
     "closeAssistant": MessageLookupByLibrary.simpleMessage("Đóng trợ lý"),
+    "confirmAction": MessageLookupByLibrary.simpleMessage("Xác nhận"),
     "confirmButton": MessageLookupByLibrary.simpleMessage("Xác nhận"),
+    "connectionInterrupted": MessageLookupByLibrary.simpleMessage(
+      "Kết nối bị gián đoạn trước khi hoàn tất.",
+    ),
+    "copyMessage": MessageLookupByLibrary.simpleMessage("Sao chép"),
     "emailHint": MessageLookupByLibrary.simpleMessage("name@company.com"),
     "emailLabel": MessageLookupByLibrary.simpleMessage("Email"),
     "emailRequired": MessageLookupByLibrary.simpleMessage(
@@ -101,7 +111,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Không thể tải lịch sử trò chuyện",
     ),
     "homeGreeting": MessageLookupByLibrary.simpleMessage("Xin chào, Minh 👋"),
-    "homeGreetingName": m0,
+    "homeGreetingName": m1,
     "homeInvalidResponse": MessageLookupByLibrary.simpleMessage(
       "Dữ liệu Home không hợp lệ. Vui lòng thử lại.",
     ),
@@ -125,12 +135,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "leaveBalanceSuggestion": MessageLookupByLibrary.simpleMessage(
       "Tôi còn bao nhiêu ngày phép?",
     ),
+    "leaveCancelSuggestion": MessageLookupByLibrary.simpleMessage(
+      "Hủy đơn nghỉ gần nhất",
+    ),
     "leaveListSuggestion": MessageLookupByLibrary.simpleMessage(
       "Xem đơn nghỉ phép của tôi",
     ),
+    "leavePendingSuggestion": MessageLookupByLibrary.simpleMessage(
+      "Tôi có đơn nào đang chờ duyệt không?",
+    ),
     "leaveRequest": MessageLookupByLibrary.simpleMessage("Nghỉ phép"),
     "leaveRequestSuggestion": MessageLookupByLibrary.simpleMessage(
-      "Tôi muốn xin nghỉ phép năm",
+      "Tôi muốn xin nghỉ phép ngày mai",
     ),
     "listening": MessageLookupByLibrary.simpleMessage("Đang nghe..."),
     "loggingIn": MessageLookupByLibrary.simpleMessage("Đang đăng nhập..."),
@@ -147,14 +163,26 @@ class MessageLookup extends MessageLookupByLibrary {
     "loginServerError": MessageLookupByLibrary.simpleMessage(
       "Máy chủ đang gặp sự cố. Vui lòng thử lại sau.",
     ),
-    "loginSubtitle": m1,
+    "loginSubtitle": m2,
     "loginValidationError": MessageLookupByLibrary.simpleMessage(
       "Thông tin đăng nhập không hợp lệ.",
     ),
     "loginWelcome": MessageLookupByLibrary.simpleMessage("Chào mừng trở lại"),
     "logout": MessageLookupByLibrary.simpleMessage("Đăng xuất"),
+    "managerApproveOneDaySuggestion": MessageLookupByLibrary.simpleMessage(
+      "Duyệt các đơn nghỉ 1 ngày",
+    ),
+    "managerApproveSecondSuggestion": MessageLookupByLibrary.simpleMessage(
+      "Duyệt đơn thứ 2",
+    ),
+    "managerTeamPendingSuggestion": MessageLookupByLibrary.simpleMessage(
+      "Team đang có những đơn nào chờ duyệt?",
+    ),
     "managerTranThiB": MessageLookupByLibrary.simpleMessage(
       "Quản lý — Trần Thị B",
+    ),
+    "managerWhoOffTomorrowSuggestion": MessageLookupByLibrary.simpleMessage(
+      "Ngày mai có ai nghỉ không?",
     ),
     "menu": MessageLookupByLibrary.simpleMessage("Mở menu"),
     "navigationChat": MessageLookupByLibrary.simpleMessage("Chat"),
@@ -178,8 +206,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "passwordRequired": MessageLookupByLibrary.simpleMessage(
       "Vui lòng nhập mật khẩu",
     ),
+    "preparingResponse": MessageLookupByLibrary.simpleMessage(
+      "Đang chuẩn bị phản hồi...",
+    ),
     "processing": MessageLookupByLibrary.simpleMessage("Đang xử lý..."),
     "quickAccess": MessageLookupByLibrary.simpleMessage("Truy cập nhanh"),
+    "recordVoice": MessageLookupByLibrary.simpleMessage("Ghi âm"),
     "rememberSession": MessageLookupByLibrary.simpleMessage(
       "Duy trì đăng nhập",
     ),
@@ -191,6 +223,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "saveButton": MessageLookupByLibrary.simpleMessage("Lưu"),
     "seeAll": MessageLookupByLibrary.simpleMessage("Xem tất cả"),
     "selectButton": MessageLookupByLibrary.simpleMessage("Chọn"),
+    "sendMessage": MessageLookupByLibrary.simpleMessage("Gửi tin nhắn"),
     "serverConfigButton": MessageLookupByLibrary.simpleMessage(
       "Cấu hình máy chủ",
     ),
@@ -208,6 +241,18 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "showPassword": MessageLookupByLibrary.simpleMessage("Hiện mật khẩu"),
     "sickLeave": MessageLookupByLibrary.simpleMessage("Phép ốm còn lại"),
+    "speechCompleteFailed": MessageLookupByLibrary.simpleMessage(
+      "Không thể hoàn tất nhận dạng giọng nói.",
+    ),
+    "speechNoContent": MessageLookupByLibrary.simpleMessage(
+      "Không nhận diện được nội dung. Vui lòng nói lại.",
+    ),
+    "speechStartFailed": MessageLookupByLibrary.simpleMessage(
+      "Không thể bắt đầu nhận dạng giọng nói. Vui lòng thử lại.",
+    ),
+    "speechUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Nhận dạng giọng nói không khả dụng. Hãy kiểm tra quyền microphone và speech recognition.",
+    ),
     "statusApproved": MessageLookupByLibrary.simpleMessage("Đã duyệt"),
     "statusCancelled": MessageLookupByLibrary.simpleMessage("Đã hủy"),
     "statusPending": MessageLookupByLibrary.simpleMessage("Đang chờ duyệt"),
@@ -216,13 +261,22 @@ class MessageLookup extends MessageLookupByLibrary {
       "Tài khoản gợi ý",
     ),
     "thinking": MessageLookupByLibrary.simpleMessage("Đang suy nghĩ..."),
-    "threadPreviewWithDate": m2,
-    "tripDateRange": m3,
+    "threadPreviewWithDate": m3,
+    "tripDateRange": m4,
+    "understandingRequest": MessageLookupByLibrary.simpleMessage(
+      "Đang hiểu yêu cầu...",
+    ),
     "unsupportedChatAction": MessageLookupByLibrary.simpleMessage(
       "Phiên bản ứng dụng chưa hỗ trợ thao tác này.",
     ),
     "upcomingTrip": MessageLookupByLibrary.simpleMessage(
       "Chuyến công tác sắp tới",
     ),
+    "voiceListening": MessageLookupByLibrary.simpleMessage("Đang lắng nghe..."),
+    "voiceStopAndSend": MessageLookupByLibrary.simpleMessage("Dừng và gửi"),
+    "welcomeMessage": MessageLookupByLibrary.simpleMessage(
+      "Xin chào! Tôi là trợ lý AI của bạn. Bạn muốn tôi giúp gì hôm nay?",
+    ),
+    "yourMessage": MessageLookupByLibrary.simpleMessage("Tin nhắn của bạn"),
   };
 }

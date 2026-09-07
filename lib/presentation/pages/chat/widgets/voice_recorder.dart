@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:waveform_flutter/waveform_flutter.dart';
 
+import '../../../../generated/l10n.dart';
+
 class VoiceRecorder extends StatefulWidget {
   const VoiceRecorder({
     super.key,
@@ -46,9 +48,7 @@ class _VoiceRecorderState extends State<VoiceRecorder> {
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 160),
             child: Text(
-              widget.transcript.isEmpty
-                  ? 'Đang lắng nghe...'
-                  : widget.transcript,
+              widget.transcript.isEmpty ? S.of(context).voiceListening : widget.transcript,
               key: ValueKey(widget.transcript),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -113,11 +113,11 @@ class _VoiceRecorderState extends State<VoiceRecorder> {
                 style: TextButton.styleFrom(
                   foregroundColor: colors.onSurfaceVariant,
                 ),
-                child: const Text('Hủy'),
+                child: Text(S.of(context).cancelButton),
               ),
               IconButton.filled(
                 key: const Key('stop-send-voice'),
-                tooltip: 'Dừng và gửi',
+                tooltip: S.of(context).voiceStopAndSend,
                 onPressed: widget.onSend,
                 style: IconButton.styleFrom(
                   backgroundColor: colors.error,

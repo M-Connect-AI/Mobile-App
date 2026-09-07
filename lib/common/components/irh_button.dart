@@ -15,7 +15,7 @@ class IrhButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
     return SizedBox(
-      height: 56.height,
+      height: 52.height,
       width: double.infinity,
       child: CupertinoButton(
         onPressed: onPressed,
@@ -48,7 +48,7 @@ class IrhTextButton extends StatelessWidget {
       onPressed: onPressed,
       child: Text(
         label,
-        style: AppTextStyle.m12.copyWith(
+        style: AppTextStyle.m14.copyWith(
           color: context.appColorScheme.textBrand,
         ),
       ),

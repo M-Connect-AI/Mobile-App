@@ -1,6 +1,6 @@
 {
-    "name": "chatbot_project",
-    "short_name": "chatbot_project",
+    "name": "MConnect Mate",
+    "short_name": "MConnect Mate",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

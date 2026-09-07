@@ -20,17 +20,20 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
-  static String m0(fullName) => "Hello, ${fullName} 👋";
+  static String m0(name) => "Message ${name}...";
 
-  static String m1(appName) => "Sign in to continue with ${appName}";
+  static String m1(fullName) => "Hello, ${fullName} 👋";
 
-  static String m2(preview, date) => "${preview} · ${date}";
+  static String m2(appName) => "Sign in to continue with ${appName}";
 
-  static String m3(from, to) => "${from} – ${to}";
+  static String m3(preview, date) => "${preview} · ${date}";
+
+  static String m4(from, to) => "${from} – ${to}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "agentApiUrlLabel": MessageLookupByLibrary.simpleMessage("Agent API URL"),
+    "aiResponse": MessageLookupByLibrary.simpleMessage("AI response"),
     "annualLeave": MessageLookupByLibrary.simpleMessage(
       "Annual remaining / total",
     ),
@@ -41,6 +44,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "backToHome": MessageLookupByLibrary.simpleMessage("Back to home"),
     "brandMonogram": MessageLookupByLibrary.simpleMessage("AI"),
     "businessTrip": MessageLookupByLibrary.simpleMessage("Business trip"),
+    "cancelAction": MessageLookupByLibrary.simpleMessage("Cancel"),
     "cancelButton": MessageLookupByLibrary.simpleMessage("Cancel"),
     "chatActionCompleted": MessageLookupByLibrary.simpleMessage(
       "The backend completed this action successfully.",
@@ -52,8 +56,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "chatInputHint": MessageLookupByLibrary.simpleMessage(
       "Message AI Assistant...",
     ),
+    "chatInputHintName": m0,
     "closeAssistant": MessageLookupByLibrary.simpleMessage("Close assistant"),
+    "confirmAction": MessageLookupByLibrary.simpleMessage("Confirm"),
     "confirmButton": MessageLookupByLibrary.simpleMessage("Confirm"),
+    "connectionInterrupted": MessageLookupByLibrary.simpleMessage(
+      "The connection was interrupted before completion.",
+    ),
+    "copyMessage": MessageLookupByLibrary.simpleMessage("Copy"),
     "emailHint": MessageLookupByLibrary.simpleMessage("name@company.com"),
     "emailLabel": MessageLookupByLibrary.simpleMessage("Email"),
     "emailRequired": MessageLookupByLibrary.simpleMessage(
@@ -95,7 +105,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Unable to load chat history",
     ),
     "homeGreeting": MessageLookupByLibrary.simpleMessage("Hello, Minh 👋"),
-    "homeGreetingName": m0,
+    "homeGreetingName": m1,
     "homeInvalidResponse": MessageLookupByLibrary.simpleMessage(
       "The Home data is invalid. Please try again.",
     ),
@@ -119,12 +129,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "leaveBalanceSuggestion": MessageLookupByLibrary.simpleMessage(
       "How many leave days do I have left?",
     ),
+    "leaveCancelSuggestion": MessageLookupByLibrary.simpleMessage(
+      "Cancel my latest leave request",
+    ),
     "leaveListSuggestion": MessageLookupByLibrary.simpleMessage(
       "View my leave requests",
     ),
+    "leavePendingSuggestion": MessageLookupByLibrary.simpleMessage(
+      "Do I have any pending requests?",
+    ),
     "leaveRequest": MessageLookupByLibrary.simpleMessage("Leave request"),
     "leaveRequestSuggestion": MessageLookupByLibrary.simpleMessage(
-      "I want to request annual leave",
+      "I want to request leave tomorrow",
     ),
     "listening": MessageLookupByLibrary.simpleMessage("Listening..."),
     "loggingIn": MessageLookupByLibrary.simpleMessage("Signing in..."),
@@ -141,14 +157,26 @@ class MessageLookup extends MessageLookupByLibrary {
     "loginServerError": MessageLookupByLibrary.simpleMessage(
       "The server is unavailable. Please try again later.",
     ),
-    "loginSubtitle": m1,
+    "loginSubtitle": m2,
     "loginValidationError": MessageLookupByLibrary.simpleMessage(
       "The sign-in details are invalid.",
     ),
     "loginWelcome": MessageLookupByLibrary.simpleMessage("Welcome back"),
     "logout": MessageLookupByLibrary.simpleMessage("Sign out"),
+    "managerApproveOneDaySuggestion": MessageLookupByLibrary.simpleMessage(
+      "Approve all one-day leave requests",
+    ),
+    "managerApproveSecondSuggestion": MessageLookupByLibrary.simpleMessage(
+      "Approve the second request",
+    ),
+    "managerTeamPendingSuggestion": MessageLookupByLibrary.simpleMessage(
+      "What requests is my team waiting on?",
+    ),
     "managerTranThiB": MessageLookupByLibrary.simpleMessage(
       "Manager — Tran Thi B",
+    ),
+    "managerWhoOffTomorrowSuggestion": MessageLookupByLibrary.simpleMessage(
+      "Is anyone off tomorrow?",
     ),
     "menu": MessageLookupByLibrary.simpleMessage("Open menu"),
     "navigationChat": MessageLookupByLibrary.simpleMessage("Chat"),
@@ -172,8 +200,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "passwordRequired": MessageLookupByLibrary.simpleMessage(
       "Please enter your password",
     ),
+    "preparingResponse": MessageLookupByLibrary.simpleMessage(
+      "Preparing response...",
+    ),
     "processing": MessageLookupByLibrary.simpleMessage("Processing..."),
     "quickAccess": MessageLookupByLibrary.simpleMessage("Quick access"),
+    "recordVoice": MessageLookupByLibrary.simpleMessage("Record voice"),
     "rememberSession": MessageLookupByLibrary.simpleMessage(
       "Keep me signed in",
     ),
@@ -183,6 +215,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "saveButton": MessageLookupByLibrary.simpleMessage("Save"),
     "seeAll": MessageLookupByLibrary.simpleMessage("See all"),
     "selectButton": MessageLookupByLibrary.simpleMessage("Select"),
+    "sendMessage": MessageLookupByLibrary.simpleMessage("Send message"),
     "serverConfigButton": MessageLookupByLibrary.simpleMessage(
       "Server configuration",
     ),
@@ -200,6 +233,18 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "showPassword": MessageLookupByLibrary.simpleMessage("Show password"),
     "sickLeave": MessageLookupByLibrary.simpleMessage("Sick leave remaining"),
+    "speechCompleteFailed": MessageLookupByLibrary.simpleMessage(
+      "Could not complete speech recognition.",
+    ),
+    "speechNoContent": MessageLookupByLibrary.simpleMessage(
+      "No content was recognized. Please speak again.",
+    ),
+    "speechStartFailed": MessageLookupByLibrary.simpleMessage(
+      "Could not start speech recognition. Please try again.",
+    ),
+    "speechUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Speech recognition is unavailable. Please check microphone and speech recognition permissions.",
+    ),
     "statusApproved": MessageLookupByLibrary.simpleMessage("Approved"),
     "statusCancelled": MessageLookupByLibrary.simpleMessage("Cancelled"),
     "statusPending": MessageLookupByLibrary.simpleMessage("Pending approval"),
@@ -208,13 +253,22 @@ class MessageLookup extends MessageLookupByLibrary {
       "Suggested accounts",
     ),
     "thinking": MessageLookupByLibrary.simpleMessage("Thinking..."),
-    "threadPreviewWithDate": m2,
-    "tripDateRange": m3,
+    "threadPreviewWithDate": m3,
+    "tripDateRange": m4,
+    "understandingRequest": MessageLookupByLibrary.simpleMessage(
+      "Understanding request...",
+    ),
     "unsupportedChatAction": MessageLookupByLibrary.simpleMessage(
       "This app version does not support this action.",
     ),
     "upcomingTrip": MessageLookupByLibrary.simpleMessage(
       "Upcoming business trip",
     ),
+    "voiceListening": MessageLookupByLibrary.simpleMessage("Listening..."),
+    "voiceStopAndSend": MessageLookupByLibrary.simpleMessage("Stop and send"),
+    "welcomeMessage": MessageLookupByLibrary.simpleMessage(
+      "Hello! I\'m your AI assistant. How can I help you today?",
+    ),
+    "yourMessage": MessageLookupByLibrary.simpleMessage("Your message"),
   };
 }

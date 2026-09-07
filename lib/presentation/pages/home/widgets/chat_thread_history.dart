@@ -13,22 +13,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 class ChatThreadHistory extends StatelessWidget {
-  const ChatThreadHistory({super.key});
+  const ChatThreadHistory({super.key, this.maxItems});
+
+  /// Số lượng thread tối đa hiển thị. `null` = hiển thị tất cả.
+  final int? maxItems;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeChatAiCubit, HomeChatAiState>(
       buildWhen: (previous, current) =>
-          previous.status != current.status ||
-          previous.threads != current.threads,
+          previous.status != current.status || previous.threads != current.threads,
       builder: (context, state) {
         return switch (state.status) {
-          ChatThreadStatus.initial ||
-          ChatThreadStatus.loading => const _HistoryLoading(),
+          ChatThreadStatus.initial || ChatThreadStatus.loading => const _HistoryLoading(),
           ChatThreadStatus.failure => const _HistoryFailure(),
-          ChatThreadStatus.success when state.threads.isEmpty =>
-            const _HistoryEmpty(),
-          ChatThreadStatus.success => _HistoryList(threads: state.threads),
+          ChatThreadStatus.success when state.threads.isEmpty => const _HistoryEmpty(),
+          ChatThreadStatus.success => _HistoryList(
+              threads: state.threads,
+              maxItems: maxItems,
+            ),
         };
       },
     );
@@ -97,9 +100,10 @@ class _HistoryEmpty extends StatelessWidget {
 }
 
 class _HistoryList extends StatelessWidget {
-  const _HistoryList({required this.threads});
+  const _HistoryList({required this.threads, this.maxItems});
 
   final List<ChatThread> threads;
+  final int? maxItems;
 
   @override
   Widget build(BuildContext context) {
@@ -110,14 +114,18 @@ class _HistoryList extends StatelessWidget {
       colors.textBrand,
       colors.iconSecondary,
     ];
+    final sortedThreads = [...threads]..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    final visibleThreads = maxItems != null && sortedThreads.length > maxItems!
+        ? sortedThreads.sublist(0, maxItems!)
+        : sortedThreads;
     return Column(
       children: [
-        for (var index = 0; index < threads.length; index++)
+        for (var index = 0; index < visibleThreads.length; index++)
           _HistoryItem(
-            key: ValueKey(threads[index].threadId),
-            thread: threads[index],
+            key: ValueKey(visibleThreads[index].threadId),
+            thread: visibleThreads[index],
             accentColor: accentColors[index % accentColors.length],
-            showDivider: index < threads.length - 1,
+            showDivider: index < visibleThreads.length - 1,
           ),
       ],
     );
@@ -163,9 +171,7 @@ class _HistoryItem extends StatelessWidget {
                   ),
                   4.height.heightBox,
                   Text(
-                    S
-                        .of(context)
-                        .threadPreviewWithDate(thread.preview, updatedDate),
+                    S.of(context).threadPreviewWithDate(thread.preview, updatedDate),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyle.r12.copyWith(

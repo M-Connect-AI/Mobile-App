@@ -709,10 +709,10 @@ class S {
     );
   }
 
-  /// `Tôi muốn xin nghỉ phép năm`
+  /// `Tôi muốn xin nghỉ phép ngày mai`
   String get leaveRequestSuggestion {
     return Intl.message(
-      'Tôi muốn xin nghỉ phép năm',
+      'Tôi muốn xin nghỉ phép ngày mai',
       name: 'leaveRequestSuggestion',
       desc: '',
       args: [],
@@ -734,6 +734,66 @@ class S {
     return Intl.message(
       'Tôi còn bao nhiêu ngày phép?',
       name: 'leaveBalanceSuggestion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tôi có đơn nào đang chờ duyệt không?`
+  String get leavePendingSuggestion {
+    return Intl.message(
+      'Tôi có đơn nào đang chờ duyệt không?',
+      name: 'leavePendingSuggestion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hủy đơn nghỉ gần nhất`
+  String get leaveCancelSuggestion {
+    return Intl.message(
+      'Hủy đơn nghỉ gần nhất',
+      name: 'leaveCancelSuggestion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Team đang có những đơn nào chờ duyệt?`
+  String get managerTeamPendingSuggestion {
+    return Intl.message(
+      'Team đang có những đơn nào chờ duyệt?',
+      name: 'managerTeamPendingSuggestion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ngày mai có ai nghỉ không?`
+  String get managerWhoOffTomorrowSuggestion {
+    return Intl.message(
+      'Ngày mai có ai nghỉ không?',
+      name: 'managerWhoOffTomorrowSuggestion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Duyệt đơn thứ 2`
+  String get managerApproveSecondSuggestion {
+    return Intl.message(
+      'Duyệt đơn thứ 2',
+      name: 'managerApproveSecondSuggestion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Duyệt các đơn nghỉ 1 ngày`
+  String get managerApproveOneDaySuggestion {
+    return Intl.message(
+      'Duyệt các đơn nghỉ 1 ngày',
+      name: 'managerApproveOneDaySuggestion',
       desc: '',
       args: [],
     );
@@ -934,6 +994,166 @@ class S {
     return Intl.message(
       'Quay lại trang trợ lý AI',
       name: 'backToChatDashboard',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Đang lắng nghe...`
+  String get voiceListening {
+    return Intl.message(
+      'Đang lắng nghe...',
+      name: 'voiceListening',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Dừng và gửi`
+  String get voiceStopAndSend {
+    return Intl.message(
+      'Dừng và gửi',
+      name: 'voiceStopAndSend',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Đang hiểu yêu cầu...`
+  String get understandingRequest {
+    return Intl.message(
+      'Đang hiểu yêu cầu...',
+      name: 'understandingRequest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Đang chuẩn bị phản hồi...`
+  String get preparingResponse {
+    return Intl.message(
+      'Đang chuẩn bị phản hồi...',
+      name: 'preparingResponse',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tin nhắn của bạn`
+  String get yourMessage {
+    return Intl.message(
+      'Tin nhắn của bạn',
+      name: 'yourMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Phản hồi của AI`
+  String get aiResponse {
+    return Intl.message(
+      'Phản hồi của AI',
+      name: 'aiResponse',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sao chép`
+  String get copyMessage {
+    return Intl.message('Sao chép', name: 'copyMessage', desc: '', args: []);
+  }
+
+  /// `Nhắn tin cho {name}...`
+  String chatInputHintName(String name) {
+    return Intl.message(
+      'Nhắn tin cho $name...',
+      name: 'chatInputHintName',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `Gửi tin nhắn`
+  String get sendMessage {
+    return Intl.message(
+      'Gửi tin nhắn',
+      name: 'sendMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ghi âm`
+  String get recordVoice {
+    return Intl.message('Ghi âm', name: 'recordVoice', desc: '', args: []);
+  }
+
+  /// `Xin chào! Tôi là trợ lý AI của bạn. Bạn muốn tôi giúp gì hôm nay?`
+  String get welcomeMessage {
+    return Intl.message(
+      'Xin chào! Tôi là trợ lý AI của bạn. Bạn muốn tôi giúp gì hôm nay?',
+      name: 'welcomeMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Xác nhận`
+  String get confirmAction {
+    return Intl.message('Xác nhận', name: 'confirmAction', desc: '', args: []);
+  }
+
+  /// `Hủy`
+  String get cancelAction {
+    return Intl.message('Hủy', name: 'cancelAction', desc: '', args: []);
+  }
+
+  /// `Nhận dạng giọng nói không khả dụng. Hãy kiểm tra quyền microphone và speech recognition.`
+  String get speechUnavailable {
+    return Intl.message(
+      'Nhận dạng giọng nói không khả dụng. Hãy kiểm tra quyền microphone và speech recognition.',
+      name: 'speechUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Không thể bắt đầu nhận dạng giọng nói. Vui lòng thử lại.`
+  String get speechStartFailed {
+    return Intl.message(
+      'Không thể bắt đầu nhận dạng giọng nói. Vui lòng thử lại.',
+      name: 'speechStartFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Không nhận diện được nội dung. Vui lòng nói lại.`
+  String get speechNoContent {
+    return Intl.message(
+      'Không nhận diện được nội dung. Vui lòng nói lại.',
+      name: 'speechNoContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Không thể hoàn tất nhận dạng giọng nói.`
+  String get speechCompleteFailed {
+    return Intl.message(
+      'Không thể hoàn tất nhận dạng giọng nói.',
+      name: 'speechCompleteFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Kết nối bị gián đoạn trước khi hoàn tất.`
+  String get connectionInterrupted {
+    return Intl.message(
+      'Kết nối bị gián đoạn trước khi hoàn tất.',
+      name: 'connectionInterrupted',
       desc: '',
       args: [],
     );

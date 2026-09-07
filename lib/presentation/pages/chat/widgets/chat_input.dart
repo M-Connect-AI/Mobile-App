@@ -14,8 +14,7 @@ import 'voice_recorder.dart';
 class ChatInput extends StatefulWidget {
   const ChatInput({super.key, this.autofocus = false}) : onTap = null;
 
-  const ChatInput.launcher({super.key, required this.onTap})
-    : autofocus = false;
+  const ChatInput.launcher({super.key, required this.onTap}) : autofocus = false;
 
   final VoidCallback? onTap;
   final bool autofocus;
@@ -57,8 +56,7 @@ class _ChatInputState extends State<ChatInput> {
       return _ChatInputLauncher(onTap: widget.onTap!);
     }
     return BlocConsumer<ChatBloc, ChatState>(
-      listenWhen: (previous, current) =>
-          previous.inputText != current.inputText,
+      listenWhen: (previous, current) => previous.inputText != current.inputText,
       listener: (_, state) {
         _syncController(state.inputText);
         if (state.inputText.isEmpty && state.isLoading) {
@@ -70,8 +68,7 @@ class _ChatInputState extends State<ChatInput> {
           return VoiceRecorder(
             duration: state.recordingDuration,
             transcript: state.recognizedText,
-            onCancel: () =>
-                context.read<ChatBloc>().add(const CancelRecording()),
+            onCancel: () => context.read<ChatBloc>().add(const CancelRecording()),
             onSend: () => context.read<ChatBloc>().add(const StopRecording()),
           );
         }
@@ -101,12 +98,11 @@ class _ChatInputState extends State<ChatInput> {
                   style: const TextStyle(fontSize: 15.5),
                   textCapitalization: TextCapitalization.sentences,
                   textInputAction: TextInputAction.newline,
-                  onChanged: (value) =>
-                      context.read<ChatBloc>().add(MessageChanged(value)),
-                  decoration: const InputDecoration(
-                    hintText: 'Nhắn tin cho ${AppConstants.chatbotName}...',
+                  onChanged: (value) => context.read<ChatBloc>().add(MessageChanged(value)),
+                  decoration: InputDecoration(
+                    hintText: S.of(context).chatInputHintName(AppConstants.chatbotName),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(
+                    contentPadding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 18,
                     ),
@@ -117,39 +113,34 @@ class _ChatInputState extends State<ChatInput> {
             const SizedBox(width: 9),
             IconButton.filled(
               key: const Key('chat-action-button'),
-              tooltip: hasText ? 'Gửi tin nhắn' : 'Ghi âm',
+              tooltip: hasText ? S.of(context).sendMessage : S.of(context).recordVoice,
               style: IconButton.styleFrom(
                 minimumSize: const Size.square(60),
                 iconSize: 27,
               ),
               onPressed:
-                  state.isLoading ||
-                      state.recordingState ==
-                          RecordingState.requestingPermission
-                  ? null
-                  : () {
-                      if (hasText) {
-                        _focusNode.unfocus();
-                        context.read<ChatBloc>().add(const SendTextMessage());
-                      } else {
-                        context.read<ChatBloc>().add(const StartRecording());
-                      }
-                    },
+                  state.isLoading || state.recordingState == RecordingState.requestingPermission
+                      ? null
+                      : () {
+                          if (hasText) {
+                            _focusNode.unfocus();
+                            context.read<ChatBloc>().add(const SendTextMessage());
+                          } else {
+                            context.read<ChatBloc>().add(const StartRecording());
+                          }
+                        },
               icon: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 180),
                 transitionBuilder: (child, animation) =>
                     ScaleTransition(scale: animation, child: child),
-                child:
-                    state.recordingState == RecordingState.requestingPermission
+                child: state.recordingState == RecordingState.requestingPermission
                     ? const SizedBox.square(
                         key: Key('permission-loading'),
                         dimension: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : Icon(
-                        hasText
-                            ? Icons.arrow_upward_rounded
-                            : Icons.mic_none_rounded,
+                        hasText ? Icons.arrow_upward_rounded : Icons.mic_none_rounded,
                         key: ValueKey(hasText ? 'send-icon' : 'mic-icon'),
                       ),
               ),
@@ -237,6 +228,5 @@ class _SendArrowPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _SendArrowPainter oldDelegate) =>
-      oldDelegate.color != color;
+  bool shouldRepaint(covariant _SendArrowPainter oldDelegate) => oldDelegate.color != color;
 }

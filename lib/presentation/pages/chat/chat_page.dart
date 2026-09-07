@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../common/components/app_toast.dart';
 import '../../../domain/model/chat_message.dart';
+import '../../../generated/l10n.dart';
 import '../../../resources/app_constants.dart';
 import '../../../route/go_router.dart';
 import 'bloc/chat_bloc.dart';
@@ -33,9 +34,7 @@ class _ChatPageState extends State<ChatPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final state = context.read<ChatBloc>().state;
-    if (!_initialThreadScrollScheduled &&
-        state.activeThreadId != null &&
-        !state.isRestoring) {
+    if (!_initialThreadScrollScheduled && state.activeThreadId != null && !state.isRestoring) {
       _initialThreadScrollScheduled = true;
       _scrollToBottom(immediately: true);
     }
@@ -74,9 +73,7 @@ class _ChatPageState extends State<ChatPage> {
           previous.error != current.error,
       listener: (context, state) {
         final restoredThread =
-            state.activeThreadId != null &&
-            !state.isLoading &&
-            !state.isRestoring;
+            state.activeThreadId != null && !state.isLoading && !state.isRestoring;
         if (restoredThread) _initialThreadScrollScheduled = true;
         _scrollToBottom(immediately: restoredThread);
         if (state.sessionExpired) {
@@ -100,26 +97,20 @@ class _ChatPageState extends State<ChatPage> {
                       previous.isLoading != current.isLoading ||
                       previous.aiProcessingState != current.aiProcessingState,
                   builder: (context, state) {
-                    final hasStreamingMessage =
-                        state.messages.isNotEmpty &&
+                    final hasStreamingMessage = state.messages.isNotEmpty &&
                         state.messages.last.sender == MessageSender.assistant &&
                         state.messages.last.status == MessageStatus.processing;
-                    final showTypingIndicator =
-                        state.isLoading && !hasStreamingMessage;
-                    final itemCount =
-                        state.messages.length + (showTypingIndicator ? 1 : 0);
+                    final showTypingIndicator = state.isLoading && !hasStreamingMessage;
+                    final itemCount = state.messages.length + (showTypingIndicator ? 1 : 0);
                     return ListView.separated(
                       key: const Key('chat-list'),
                       controller: _scrollController,
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                       padding: const EdgeInsets.fromLTRB(16, 22, 16, 16),
                       itemCount: itemCount,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 16),
+                      separatorBuilder: (context, index) => const SizedBox(height: 16),
                       itemBuilder: (context, index) {
-                        if (showTypingIndicator &&
-                            index == state.messages.length) {
+                        if (showTypingIndicator && index == state.messages.length) {
                           return TypingIndicator(
                             stage: state.aiProcessingState,
                           );
@@ -194,6 +185,7 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                     previous.aiProcessingState != current.aiProcessingState,
                 builder: (context, state) {
                   final (label, color) = _status(
+                    context,
                     state,
                     Theme.of(context).colorScheme,
                   );
@@ -233,13 +225,13 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
         if (showCloseButton)
           IconButton(
             key: const Key('close-assistant'),
-            tooltip: 'Đóng trợ lý',
+            tooltip: S.of(context).closeAssistant,
             onPressed: () => context.pop(),
             icon: const Icon(Icons.close_rounded),
           )
         else
           IconButton(
-            tooltip: 'Tùy chọn',
+            tooltip: S.of(context).options,
             onPressed: () {},
             icon: const Icon(Icons.more_horiz_rounded),
           ),
@@ -257,15 +249,23 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  (String, Color) _status(ChatState state, ColorScheme colors) {
+  (String, Color) _status(
+    BuildContext context,
+    ChatState state,
+    ColorScheme colors,
+  ) {
+    final strings = S.of(context);
     if (state.recordingState == RecordingState.recording) {
-      return ('Listening...', colors.error);
+      return (strings.listening, colors.error);
     }
     return switch (state.aiProcessingState) {
-      AiProcessingState.thinking => ('Thinking...', colors.primary),
-      AiProcessingState.understanding => ('Processing...', colors.primary),
-      AiProcessingState.generatingResponse => ('Processing...', colors.primary),
-      AiProcessingState.idle => ('Online', const Color(0xFF2EAD72)),
+      AiProcessingState.thinking => (strings.thinking, colors.primary),
+      AiProcessingState.understanding => (strings.processing, colors.primary),
+      AiProcessingState.generatingResponse => (
+          strings.processing,
+          colors.primary,
+        ),
+      AiProcessingState.idle => (strings.online, const Color(0xFF2EAD72)),
     };
   }
 }
