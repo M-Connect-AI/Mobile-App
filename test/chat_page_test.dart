@@ -35,7 +35,7 @@ void main() {
     await tester.tap(find.byKey(const Key('chat-action-button')));
     await tester.pump();
     expect(inputBeforeSend.focusNode?.hasFocus, isFalse);
-    expect(find.text('Thinking...'), findsWidgets);
+    expect(find.text(S.current.thinking), findsWidgets);
     expect(find.byTooltip('Sao chép'), findsOneWidget);
 
     await tester.pump(const Duration(seconds: 1));
@@ -57,8 +57,8 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pump(const Duration(milliseconds: 800));
 
-    expect(find.text('Retry'), findsOneWidget);
-    await tester.tap(find.text('Retry'));
+    expect(find.text(S.current.retry), findsOneWidget);
+    await tester.tap(find.text(S.current.retry));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     await tester.pump(const Duration(seconds: 1));

@@ -85,7 +85,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Tối ưu thao tác,\ntự động quy trình.'), findsOneWidget);
-    expect(find.text('Tôi muốn xin nghỉ phép năm'), findsOneWidget);
+    expect(find.text(S.current.leaveRequestSuggestion), findsOneWidget);
     expect(find.text('Xem đơn nghỉ phép của tôi'), findsOneWidget);
     expect(find.text('Tôi còn bao nhiêu ngày phép?'), findsOneWidget);
     expect(find.text('Lịch sử'), findsOneWidget);
@@ -123,7 +123,7 @@ void main() {
       find.byKey(const Key('chat-text-field')),
     );
     expect(chatTextField.controller?.text, isEmpty);
-    expect(find.text('Tôi muốn xin nghỉ phép năm'), findsOneWidget);
+    expect(find.text(S.current.leaveRequestSuggestion), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('close-assistant')));
     await tester.pumpAndSettle();

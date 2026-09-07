@@ -54,9 +54,9 @@ class _LoginViewState extends State<_LoginView> {
     if (!(_formKey.currentState?.saveAndValidate() ?? false)) return;
     final values = _formKey.currentState!.value;
     context.read<LoginCubit>().submit(
-          email: values['email'].toString().trim().toLowerCase(),
-          password: values['password'].toString(),
-        );
+      email: values['email'].toString().trim().toLowerCase(),
+      password: values['password'].toString(),
+    );
   }
 
   Future<void> _showAccountDialog() async {
@@ -138,12 +138,15 @@ class _LoginViewState extends State<_LoginView> {
                             readOnly: true,
                             onTap: _showAccountDialog,
                             validator: (value) =>
-                                (value?.trim().isEmpty ?? true) ? strings.emailRequired : null,
+                                (value?.trim().isEmpty ?? true)
+                                ? strings.emailRequired
+                                : null,
                           ),
                           16.height.heightBox,
                           BlocBuilder<LoginCubit, LoginState>(
                             buildWhen: (previous, current) =>
-                                previous.obscurePassword != current.obscurePassword,
+                                previous.obscurePassword !=
+                                current.obscurePassword,
                             builder: (context, state) {
                               return AppTextField(
                                 context,
@@ -154,13 +157,16 @@ class _LoginViewState extends State<_LoginView> {
                                 autofillHints: const [AutofillHints.password],
                                 labelText: strings.passwordLabel,
                                 hintText: strings.passwordHint,
-                                validator: (value) =>
-                                    (value?.isEmpty ?? true) ? strings.passwordRequired : null,
+                                validator: (value) => (value?.isEmpty ?? true)
+                                    ? strings.passwordRequired
+                                    : null,
                                 onSubmitted: (_) => _login(),
                                 suffixIcon: CupertinoButton(
                                   key: const Key('password-visibility-button'),
                                   padding: EdgeInsets.zero,
-                                  onPressed: context.read<LoginCubit>().togglePasswordVisibility,
+                                  onPressed: context
+                                      .read<LoginCubit>()
+                                      .togglePasswordVisibility,
                                   child: Semantics(
                                     label: state.obscurePassword
                                         ? strings.showPassword
@@ -181,12 +187,16 @@ class _LoginViewState extends State<_LoginView> {
                           const _LoginOptions(),
                           12.height.heightBox,
                           BlocBuilder<LoginCubit, LoginState>(
-                            buildWhen: (previous, current) => previous.status != current.status,
+                            buildWhen: (previous, current) =>
+                                previous.status != current.status,
                             builder: (context, state) {
-                              final loading = state.status == LoginStatus.loading;
+                              final loading =
+                                  state.status == LoginStatus.loading;
                               return IrhButton(
                                 key: const Key('login-button'),
-                                label: loading ? strings.loggingIn : strings.loginButton,
+                                label: loading
+                                    ? strings.loggingIn
+                                    : strings.loginButton,
                                 onPressed: loading ? null : _login,
                               );
                             },
@@ -209,7 +219,8 @@ class _LoginViewState extends State<_LoginView> {
       AuthFailureType.invalidCredentials => strings.loginFailed,
       AuthFailureType.network => strings.loginNetworkError,
       AuthFailureType.server => strings.loginServerError,
-      AuthFailureType.validation => state.failureMessage ?? strings.loginValidationError,
+      AuthFailureType.validation =>
+        state.failureMessage ?? strings.loginValidationError,
       AuthFailureType.invalidResponse => strings.loginInvalidResponse,
       null => strings.loginFailed,
     };
@@ -231,30 +242,32 @@ class _AccountPickerDialog extends StatelessWidget {
     return Dialog(
       backgroundColor: colors.surfaceSecondary,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: Text(
-              strings.suggestedAccounts,
-              style: AppTextStyle.b20.copyWith(color: colors.textPrimary),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Text(
+                strings.suggestedAccounts,
+                style: AppTextStyle.b20.copyWith(color: colors.textPrimary),
+              ),
             ),
-          ),
-          16.height.heightBox,
-          ...accounts.map(
-            (account) => _AccountDialogOption(
-              email: account.email,
-              label: account.label,
+            16.height.heightBox,
+            ...accounts.map(
+              (account) => _AccountDialogOption(
+                email: account.email,
+                label: account.label,
+              ),
             ),
-          ),
-          8.height.heightBox,
-          IrhTextButton(
-            label: strings.otherEmail,
-            onPressed: () => GoRouterHelper(context).pop(''),
-          ),
-        ],
-      ).paddingAll(20.width),
+            8.height.heightBox,
+            IrhTextButton(
+              label: strings.otherEmail,
+              onPressed: () => GoRouterHelper(context).pop(''),
+            ),
+          ],
+        ).paddingAll(20.width),
+      ),
     );
   }
 }
@@ -343,7 +356,9 @@ class _OtherEmailDialogState extends State<_OtherEmailDialog> {
               textInputAction: TextInputAction.done,
               labelText: strings.emailLabel,
               hintText: strings.emailHint,
-              validator: (value) => (value?.trim().isEmpty ?? true) ? strings.emailRequired : null,
+              validator: (value) => (value?.trim().isEmpty ?? true)
+                  ? strings.emailRequired
+                  : null,
               onSubmitted: (_) => _select(),
             ),
             12.height.heightBox,
@@ -374,7 +389,8 @@ class _LoginOptions extends StatelessWidget {
     return Align(
       alignment: Alignment.centerRight,
       child: BlocBuilder<LoginCubit, LoginState>(
-        buildWhen: (previous, current) => previous.rememberSession != current.rememberSession,
+        buildWhen: (previous, current) =>
+            previous.rememberSession != current.rememberSession,
         builder: (context, state) {
           return Semantics(
             label: strings.rememberSession,
@@ -397,7 +413,8 @@ class _LoginOptions extends StatelessWidget {
                   CupertinoSwitch(
                     value: state.rememberSession,
                     activeTrackColor: context.appColorScheme.iconBrand,
-                    onChanged: (_) => context.read<LoginCubit>().toggleRememberSession(),
+                    onChanged: (_) =>
+                        context.read<LoginCubit>().toggleRememberSession(),
                   ),
                 ],
               ),

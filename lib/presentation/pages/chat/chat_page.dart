@@ -34,7 +34,9 @@ class _ChatPageState extends State<ChatPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final state = context.read<ChatBloc>().state;
-    if (!_initialThreadScrollScheduled && state.activeThreadId != null && !state.isRestoring) {
+    if (!_initialThreadScrollScheduled &&
+        state.activeThreadId != null &&
+        !state.isRestoring) {
       _initialThreadScrollScheduled = true;
       _scrollToBottom(immediately: true);
     }
@@ -52,6 +54,10 @@ class _ChatPageState extends State<ChatPage> {
       final target = _scrollController.position.maxScrollExtent;
       if (immediately) {
         _scrollController.jumpTo(target);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!_scrollController.hasClients) return;
+          _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        });
         return;
       }
       _scrollController.animateTo(
@@ -73,7 +79,9 @@ class _ChatPageState extends State<ChatPage> {
           previous.error != current.error,
       listener: (context, state) {
         final restoredThread =
-            state.activeThreadId != null && !state.isLoading && !state.isRestoring;
+            state.activeThreadId != null &&
+            !state.isLoading &&
+            !state.isRestoring;
         if (restoredThread) _initialThreadScrollScheduled = true;
         _scrollToBottom(immediately: restoredThread);
         if (state.sessionExpired) {
@@ -97,20 +105,26 @@ class _ChatPageState extends State<ChatPage> {
                       previous.isLoading != current.isLoading ||
                       previous.aiProcessingState != current.aiProcessingState,
                   builder: (context, state) {
-                    final hasStreamingMessage = state.messages.isNotEmpty &&
+                    final hasStreamingMessage =
+                        state.messages.isNotEmpty &&
                         state.messages.last.sender == MessageSender.assistant &&
                         state.messages.last.status == MessageStatus.processing;
-                    final showTypingIndicator = state.isLoading && !hasStreamingMessage;
-                    final itemCount = state.messages.length + (showTypingIndicator ? 1 : 0);
+                    final showTypingIndicator =
+                        state.isLoading && !hasStreamingMessage;
+                    final itemCount =
+                        state.messages.length + (showTypingIndicator ? 1 : 0);
                     return ListView.separated(
                       key: const Key('chat-list'),
                       controller: _scrollController,
-                      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
                       padding: const EdgeInsets.fromLTRB(16, 22, 16, 16),
                       itemCount: itemCount,
-                      separatorBuilder: (context, index) => const SizedBox(height: 16),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 16),
                       itemBuilder: (context, index) {
-                        if (showTypingIndicator && index == state.messages.length) {
+                        if (showTypingIndicator &&
+                            index == state.messages.length) {
                           return TypingIndicator(
                             stage: state.aiProcessingState,
                           );
@@ -262,9 +276,9 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       AiProcessingState.thinking => (strings.thinking, colors.primary),
       AiProcessingState.understanding => (strings.processing, colors.primary),
       AiProcessingState.generatingResponse => (
-          strings.processing,
-          colors.primary,
-        ),
+        strings.processing,
+        colors.primary,
+      ),
       AiProcessingState.idle => (strings.online, const Color(0xFF2EAD72)),
     };
   }

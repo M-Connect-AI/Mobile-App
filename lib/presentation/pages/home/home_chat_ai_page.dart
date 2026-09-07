@@ -220,7 +220,7 @@ class _PromptSuggestions extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             itemCount: suggestions.length,
-            separatorBuilder: (_, __) => 12.width.widthBox,
+            separatorBuilder: (_, _) => 12.width.widthBox,
             itemBuilder: (context, index) {
               final suggestion = suggestions[index];
               return _SuggestionCard(

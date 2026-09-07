@@ -41,7 +41,8 @@ class _HomeView extends StatelessWidget {
       listenWhen: (previous, current) =>
           (previous.failureType != current.failureType &&
               current.failureType == HomeFailureType.sessionExpired) ||
-          (previous.status != current.status && current.status == HomeStatus.loggedOut),
+          (previous.status != current.status &&
+              current.status == HomeStatus.loggedOut),
       listener: (context, state) => const LoginRoute().go(context),
       child: Scaffold(
         extendBody: true,
@@ -173,7 +174,8 @@ class _AssistantButton extends StatefulWidget {
   State<_AssistantButton> createState() => _AssistantButtonState();
 }
 
-class _AssistantButtonState extends State<_AssistantButton> with SingleTickerProviderStateMixin {
+class _AssistantButtonState extends State<_AssistantButton>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _emphasis;
 
@@ -248,21 +250,19 @@ class _AssistantButtonState extends State<_AssistantButton> with SingleTickerPro
           ),
         );
       },
-      child: Positioned.fill(
-        child: Semantics(
-          button: true,
-          label: S.of(context).navigationChat,
-          child: CupertinoButton(
-            key: const Key('assistant-bubble'),
-            minimumSize: Size.zero,
-            padding: EdgeInsets.zero,
-            borderRadius: BorderRadius.circular(36),
-            onPressed: widget.onPressed,
-            child: Icon(
-              Icons.auto_awesome_rounded,
-              color: colors.surfaceSecondary,
-              size: 32.sp,
-            ),
+      child: Semantics(
+        button: true,
+        label: S.of(context).navigationChat,
+        child: CupertinoButton(
+          key: const Key('assistant-bubble'),
+          minimumSize: Size.zero,
+          padding: EdgeInsets.zero,
+          borderRadius: BorderRadius.circular(36),
+          onPressed: widget.onPressed,
+          child: Icon(
+            Icons.auto_awesome_rounded,
+            color: colors.surfaceSecondary,
+            size: 32.sp,
           ),
         ),
       ),
@@ -279,7 +279,9 @@ class _HomeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
     final strings = S.of(context);
-    final nextTrip = data.upcomingTrips.isEmpty ? null : data.upcomingTrips.first;
+    final nextTrip = data.upcomingTrips.isEmpty
+        ? null
+        : data.upcomingTrips.first;
     return CustomScrollView(
       slivers: [
         SliverAppBar(
@@ -305,7 +307,8 @@ class _HomeContent extends StatelessWidget {
           actions: [
             const ServerConfigButton(),
             BlocBuilder<HomeCubit, HomeState>(
-              buildWhen: (previous, current) => previous.status != current.status,
+              buildWhen: (previous, current) =>
+                  previous.status != current.status,
               builder: (context, state) => Semantics(
                 button: true,
                 label: strings.logout,
@@ -348,7 +351,10 @@ class _HomeContent extends StatelessWidget {
               28.height.heightBox,
               _SectionTitle(title: strings.upcomingTrip),
               16.height.heightBox,
-              if (nextTrip != null) _NextTripCard(trip: nextTrip) else const _NoUpcomingTripCard(),
+              if (nextTrip != null)
+                _NextTripCard(trip: nextTrip)
+              else
+                const _NoUpcomingTripCard(),
               28.height.heightBox,
               _SectionTitle(title: strings.quickAccess),
               16.height.heightBox,
@@ -357,7 +363,9 @@ class _HomeContent extends StatelessWidget {
                 28.height.heightBox,
                 _SectionTitle(title: strings.otherUpcomingTrips),
                 16.height.heightBox,
-                ...data.upcomingTrips.skip(1).map(
+                ...data.upcomingTrips
+                    .skip(1)
+                    .map(
                       (trip) => Padding(
                         padding: EdgeInsets.only(bottom: 12.height),
                         child: _TripListItem(trip: trip),
@@ -722,8 +730,8 @@ class _HomeError extends StatelessWidget {
 }
 
 String _statusLabel(S strings, RequestStatus status) => switch (status) {
-      RequestStatus.pending => strings.statusPending,
-      RequestStatus.approved => strings.statusApproved,
-      RequestStatus.rejected => strings.statusRejected,
-      RequestStatus.cancelled => strings.statusCancelled,
-    };
+  RequestStatus.pending => strings.statusPending,
+  RequestStatus.approved => strings.statusApproved,
+  RequestStatus.rejected => strings.statusRejected,
+  RequestStatus.cancelled => strings.statusCancelled,
+};

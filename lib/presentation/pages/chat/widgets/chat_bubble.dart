@@ -30,7 +30,9 @@ class ChatBubble extends StatelessWidget {
     }
     final isUser = message.sender == MessageSender.user;
     final colors = Theme.of(context).colorScheme;
-    final bubbleColor = isUser ? colors.primary : colors.surfaceContainerHighest;
+    final bubbleColor = isUser
+        ? colors.primary
+        : colors.surfaceContainerHighest;
     final foreground = isUser ? colors.onPrimary : colors.onSurface;
     return Semantics(
       label: isUser ? S.of(context).yourMessage : S.of(context).aiResponse,
@@ -77,7 +79,9 @@ class ChatBubble extends StatelessWidget {
                     ),
                   ),
                   child: Column(
-                    crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                    crossAxisAlignment: isUser
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start,
                     children: [
                       message.type == MessageType.audio
                           ? _AudioContent(message: message, color: foreground)
@@ -95,6 +99,15 @@ class ChatBubble extends StatelessWidget {
                         8.height.heightBox,
                         _ConfirmationCard(message: message),
                       ],
+                      if (!isUser && message.executedResult != null) ...[
+                        8.height.heightBox,
+                        Text(
+                          S.of(context).chatActionCompleted,
+                          style: AppTextStyle.sm12.copyWith(
+                            color: context.appColorScheme.textSuccess,
+                          ),
+                        ),
+                      ],
                       if (!isUser && message.citations.isNotEmpty) ...[
                         8.height.heightBox,
                         Wrap(
@@ -104,13 +117,13 @@ class ChatBubble extends StatelessWidget {
                             for (final citation in message.citations)
                               Chip(
                                 label: Text(citation),
-                                backgroundColor: context.appColorScheme.surfaceSecondary,
+                                backgroundColor:
+                                    context.appColorScheme.surfaceSecondary,
                               ),
                           ],
                         ),
                       ],
                       if (!isUser &&
-                          message.executedResult != null &&
                           message.type == MessageType.text &&
                           message.status == MessageStatus.success &&
                           (message.content?.isNotEmpty ?? false)) ...[
@@ -126,8 +139,8 @@ class ChatBubble extends StatelessWidget {
                         TextButton.icon(
                           key: Key('retry-${message.id}'),
                           onPressed: () => context.read<ChatBloc>().add(
-                                RetryMessage(message.id),
-                              ),
+                            RetryMessage(message.id),
+                          ),
                           style: TextButton.styleFrom(
                             foregroundColor: colors.error,
                             visualDensity: VisualDensity.compact,
@@ -180,22 +193,22 @@ class _ConfirmationCard extends StatelessWidget {
                   child: IrhButton(
                     label: strings.confirmButton,
                     onPressed: () => context.read<ChatBloc>().add(
-                          ConfirmationResponded(
-                            messageId: message.id,
-                            confirmed: true,
-                          ),
-                        ),
+                      ConfirmationResponded(
+                        messageId: message.id,
+                        confirmed: true,
+                      ),
+                    ),
                   ),
                 ),
                 8.width.widthBox,
                 IrhTextButton(
                   label: strings.cancelButton,
                   onPressed: () => context.read<ChatBloc>().add(
-                        ConfirmationResponded(
-                          messageId: message.id,
-                          confirmed: false,
-                        ),
-                      ),
+                    ConfirmationResponded(
+                      messageId: message.id,
+                      confirmed: false,
+                    ),
+                  ),
                 ),
               ],
             )
