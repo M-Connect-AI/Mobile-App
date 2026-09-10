@@ -15,7 +15,8 @@ export 'chat_event.dart';
 export 'chat_state.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
-  ChatBloc(this._chatRepository, this._speechRepository) : super(const ChatState()) {
+  ChatBloc(this._chatRepository, this._speechRepository)
+    : super(const ChatState()) {
     on<ChatStarted>(_onStarted);
     on<MessageChanged>(_onMessageChanged);
     on<SendTextMessage>(_onSendText);
@@ -61,8 +62,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           inputText: event.initialMessage ?? '',
         ),
       );
-      if (event.autoSendInitialMessage && (event.initialMessage?.trim().isNotEmpty ?? false)) {
+      if (event.autoSendInitialMessage &&
+          (event.initialMessage?.trim().isNotEmpty ?? false)) {
         add(const SendTextMessage());
+      }
+      if (event.startRecording) {
+        add(const StartRecording());
       }
       return;
     }
@@ -78,7 +83,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       final detail = await _chatRepository.getThread(event.threadId!);
       emit(
         state.copyWith(
-          messages: detail.messages.isEmpty ? [_welcomeMessage()] : detail.messages,
+          messages: detail.messages.isEmpty
+              ? [_welcomeMessage()]
+              : detail.messages,
           activeThreadId: detail.threadId,
           isLoading: false,
           isRestoring: false,
@@ -98,13 +105,13 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   ChatMessage _welcomeMessage() => ChatMessage(
-        id: 'welcome',
-        type: MessageType.text,
-        sender: MessageSender.assistant,
-        content: S.current.welcomeMessage,
-        createdAt: DateTime.now(),
-        status: MessageStatus.success,
-      );
+    id: 'welcome',
+    type: MessageType.text,
+    sender: MessageSender.assistant,
+    content: S.current.welcomeMessage,
+    createdAt: DateTime.now(),
+    status: MessageStatus.success,
+  );
 
   void _onMessageChanged(MessageChanged event, Emitter<ChatState> emit) {
     emit(state.copyWith(inputText: event.message, clearError: true));
@@ -187,7 +194,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     if (state.isRecording) {
       emit(
         state.copyWith(
-          recordingDuration: state.recordingDuration + const Duration(seconds: 1),
+          recordingDuration:
+              state.recordingDuration + const Duration(seconds: 1),
         ),
       );
     }
@@ -203,8 +211,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     try {
       final duration = state.recordingDuration;
       final repositoryTranscript = await _speechRepository.stopListening();
-      final transcript =
-          repositoryTranscript.isNotEmpty ? repositoryTranscript : _latestTranscript.trim();
+      final transcript = repositoryTranscript.isNotEmpty
+          ? repositoryTranscript
+          : _latestTranscript.trim();
       emit(
         state.copyWith(
           recordingState: RecordingState.idle,
@@ -213,9 +222,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         ),
       );
       if (transcript.isEmpty) {
-        emit(
-          state.copyWith(error: S.current.speechNoContent),
-        );
+        emit(state.copyWith(error: S.current.speechNoContent));
         return;
       }
       add(SendVoiceMessage(transcript, duration));
@@ -290,7 +297,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     );
     if (index == -1) return;
     final message = state.messages[index];
-    final updated = [...state.messages]..[index] = message.copyWith(status: MessageStatus.sending);
+    final updated = [...state.messages]
+      ..[index] = message.copyWith(status: MessageStatus.sending);
     emit(
       state.copyWith(
         messages: updated,
@@ -308,21 +316,24 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ) async {
     if (state.isLoading) return;
     final confirmationIndex = state.messages.indexWhere(
-      (message) => message.id == event.messageId && message.confirmation != null,
+      (message) =>
+          message.id == event.messageId && message.confirmation != null,
     );
     if (confirmationIndex < 0) return;
     final confirmation = state.messages[confirmationIndex].confirmation!;
     if (event.confirmed && !confirmation.canExecute) return;
 
-    final messages = [...state.messages]..[confirmationIndex] =
-          state.messages[confirmationIndex].copyWith(
+    final messages = [...state.messages]
+      ..[confirmationIndex] = state.messages[confirmationIndex].copyWith(
         clearConfirmation: true,
       );
     final userMessage = ChatMessage(
       id: 'user-${DateTime.now().microsecondsSinceEpoch}',
       type: MessageType.text,
       sender: MessageSender.user,
-      content: event.confirmed ? S.current.confirmAction : S.current.cancelAction,
+      content: event.confirmed
+          ? S.current.confirmAction
+          : S.current.cancelAction,
       createdAt: DateTime.now(),
       status: MessageStatus.sending,
     );
@@ -356,7 +367,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         state.copyWith(aiProcessingState: AiProcessingState.generatingResponse),
       );
       await for (final event in responseStream) {
-        assistantMessageId ??= 'assistant-${DateTime.now().microsecondsSinceEpoch}';
+        assistantMessageId ??=
+            'assistant-${DateTime.now().microsecondsSinceEpoch}';
         if (event is ChatStreamToken) {
           receivedToken = true;
           _upsertAssistant(
@@ -424,8 +436,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             (item) => item.id == userMessage.id && !receivedToken
                 ? item.copyWith(status: MessageStatus.failed)
                 : item.id == userMessage.id
-                    ? item.copyWith(status: MessageStatus.sent)
-                    : item,
+                ? item.copyWith(status: MessageStatus.sent)
+                : item,
           )
           .toList();
       emit(
@@ -458,7 +470,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Object? executedResult,
     bool isLoading = true,
   }) {
-    final current = state.messages.where((message) => message.id == assistantId).firstOrNull;
+    final current = state.messages
+        .where((message) => message.id == assistantId)
+        .firstOrNull;
     final assistant = current == null
         ? ChatMessage(
             id: assistantId,
@@ -483,8 +497,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           (message) => message.id == userMessage.id
               ? message.copyWith(status: MessageStatus.sent)
               : message.id == assistantId
-                  ? assistant
-                  : message,
+              ? assistant
+              : message,
         )
         .toList();
     if (!updated.any((message) => message.id == assistantId)) {
@@ -500,8 +514,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       state.copyWith(
         messages: updated,
         isLoading: isLoading,
-        aiProcessingState:
-            isLoading ? AiProcessingState.generatingResponse : AiProcessingState.idle,
+        aiProcessingState: isLoading
+            ? AiProcessingState.generatingResponse
+            : AiProcessingState.idle,
         clearError: true,
       ),
     );

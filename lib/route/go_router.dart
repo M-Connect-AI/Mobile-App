@@ -37,6 +37,7 @@ final List<RouteBase> appRoutes = [
       initialMessage: state.uri.queryParameters['initialMessage'],
       autoSendInitialMessage:
           state.uri.queryParameters['autoSendInitialMessage'] == 'true',
+      startRecording: state.uri.queryParameters['startRecording'] == 'true',
     ).buildPage(context, state),
   ),
 ];
@@ -86,6 +87,7 @@ class ChatRoute extends GoRouteData {
     this.threadId,
     this.initialMessage,
     this.autoSendInitialMessage = false,
+    this.startRecording = false,
   });
 
   static const path = '/chat';
@@ -93,6 +95,7 @@ class ChatRoute extends GoRouteData {
   final String? threadId;
   final String? initialMessage;
   final bool autoSendInitialMessage;
+  final bool startRecording;
 
   Future<T?> push<T>(BuildContext context) {
     final uri = Uri(
@@ -101,6 +104,7 @@ class ChatRoute extends GoRouteData {
         if (threadId != null) 'threadId': threadId,
         if (initialMessage != null) 'initialMessage': initialMessage,
         if (autoSendInitialMessage) 'autoSendInitialMessage': 'true',
+        if (startRecording) 'startRecording': 'true',
       },
     );
     return context.push<T>(uri.toString());
@@ -122,11 +126,13 @@ class ChatRoute extends GoRouteData {
                 threadId: threadId,
                 initialMessage: initialMessage,
                 autoSendInitialMessage: autoSendInitialMessage,
+                startRecording: startRecording,
               ),
             ),
         child: ChatPage(
           showCloseButton: true,
-          autofocusInput: threadId == null && !autoSendInitialMessage,
+          autofocusInput:
+              threadId == null && !autoSendInitialMessage && !startRecording,
         ),
       ),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {

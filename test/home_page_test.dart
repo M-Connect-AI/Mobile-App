@@ -9,9 +9,9 @@ import 'package:chatbot_project/domain/model/home_data.dart';
 import 'package:chatbot_project/domain/repository/home_repository.dart';
 import 'package:chatbot_project/domain/repository/speech_to_text_repository.dart';
 import 'package:chatbot_project/generated/l10n.dart';
+import 'package:chatbot_project/presentation/pages/home/home_page.dart';
 import 'package:chatbot_project/resources/app_constants.dart';
 import 'package:chatbot_project/route/go_router.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -23,6 +23,11 @@ void main() {
   testWidgets('AI button opens dashboard, then input opens chat screen', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final speechRepository = _FakeSpeechRepository();
     final router = GoRouter(
       initialLocation: const HomeRoute().location,
       routes: appRoutes,
@@ -46,7 +51,7 @@ void main() {
                 create: (_) => _FakeChatRepository(),
               ),
               RepositoryProvider<SpeechToTextRepository>(
-                create: (_) => _FakeSpeechRepository(),
+                create: (_) => speechRepository,
               ),
             ],
             child: ScreenUtilInit(
@@ -73,13 +78,54 @@ void main() {
     await tester.pump();
 
     expect(find.text('Xin chào, Minh 👋'), findsOneWidget);
-    expect(find.text('9/12'), findsOneWidget);
-    expect(find.text('Hà Nội'), findsOneWidget);
+    expect(find.byKey(const Key('task-summary-list')), findsOneWidget);
+    expect(find.byKey(const Key('leave-summary-card')), findsOneWidget);
+    expect(find.byKey(const Key('supplement-summary-card')), findsOneWidget);
+    expect(find.text(S.current.homeNeedsAttention), findsNothing);
+    expect(find.text(S.current.homeWaitingApproval), findsWidgets);
+    expect(
+      tester.getSize(find.byKey(const Key('task-summary-list'))),
+      const Size(390, 120),
+    );
+    expect(
+      tester.getSize(find.byKey(const Key('leave-summary-card'))),
+      const Size(260, 120),
+    );
+    expect(
+      tester.getTopLeft(find.byKey(const Key('leave-summary-card'))).dx,
+      16,
+    );
+
+    await tester.drag(
+      find.byKey(const Key('task-summary-list')),
+      const Offset(-720, 0),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('edocman-summary-card')), findsOneWidget);
+    expect(find.byKey(const Key('eis-summary-card')), findsOneWidget);
+    expect(find.byKey(const Key('home-banner-placeholder')), findsOneWidget);
+    expect(find.text('TIỆN ÍCH'), findsOneWidget);
     expect(find.byKey(const Key('assistant-bubble')), findsOneWidget);
+    expect(find.byKey(const Key('logout-button')), findsNothing);
+    expect(find.byKey(const Key('server-config-button')), findsNothing);
+    expect(find.text('Đăng xuất'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('utilities-navigation-item')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('utilities-content')), findsOneWidget);
     expect(find.byKey(const Key('logout-button')), findsOneWidget);
     expect(find.byKey(const Key('server-config-button')), findsOneWidget);
-    expect(find.byIcon(CupertinoIcons.square_arrow_right), findsOneWidget);
-    expect(find.text('Đăng xuất'), findsNothing);
+    expect(find.text('Đăng xuất'), findsOneWidget);
+    expect(find.byKey(const Key('task-summary-list')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('home-navigation-item')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('home-content')), findsOneWidget);
+    expect(find.byKey(const Key('logout-button')), findsNothing);
+    expect(find.byKey(const Key('server-config-button')), findsNothing);
 
     await tester.tap(find.byKey(const Key('assistant-bubble')));
     await tester.pumpAndSettle();
@@ -142,6 +188,16 @@ void main() {
     await tester.tap(find.byKey(const Key('close-assistant')));
     await tester.pumpAndSettle();
 
+    await tester.tap(find.byKey(const Key('chat-launcher-microphone')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.text(AppConstants.chatbotName), findsOneWidget);
+    expect(speechRepository.initializeCallCount, 1);
+
+    await tester.tap(find.byKey(const Key('close-assistant')));
+    await tester.pumpAndSettle();
+
     final homeBackButton = find.byKey(const Key('home-chat-back-button'));
     await tester.ensureVisible(homeBackButton);
     await tester.pumpAndSettle();
@@ -150,6 +206,47 @@ void main() {
 
     expect(find.text('Xin chào, Minh 👋'), findsOneWidget);
     expect(find.byKey(const Key('assistant-bubble')), findsOneWidget);
+  });
+
+  testWidgets('manager sees both task statuses', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider<HomeRepository>(
+            create: (_) => const _FakeHomeRepository(role: UserRole.manager),
+          ),
+          RepositoryProvider<CredentialRepository>(
+            create: (_) => _FakeCredentialRepository(),
+          ),
+        ],
+        child: ScreenUtilInit(
+          designSize: const Size(390, 844),
+          minTextAdapt: true,
+          splitScreenMode: true,
+          builder: (context, child) => MaterialApp(
+            theme: AppTheme.light,
+            locale: const Locale('vi'),
+            supportedLocales: S.delegate.supportedLocales,
+            localizationsDelegates: const [
+              S.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            home: const HomePage(),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text(S.current.homeNeedsAttention), findsWidgets);
+    expect(find.text(S.current.homeWaitingApproval), findsWidgets);
   });
 }
 
@@ -196,10 +293,13 @@ class _FakeChatRepository implements ChatRepository {
 }
 
 class _FakeHomeRepository implements HomeRepository {
-  const _FakeHomeRepository();
+  const _FakeHomeRepository({this.role = UserRole.staff});
+
+  final UserRole role;
 
   @override
-  Future<HomeData> getHomeData() async => _homeData;
+  Future<HomeData> getHomeData() async =>
+      _homeData.copyWith(user: _homeData.user.copyWith(role: role));
 }
 
 class _FakeCredentialRepository implements CredentialRepository {
@@ -245,6 +345,8 @@ final _homeData = HomeData(
 );
 
 class _FakeSpeechRepository implements SpeechToTextRepository {
+  int initializeCallCount = 0;
+
   @override
   Stream<String> get errors => const Stream.empty();
 
@@ -261,7 +363,10 @@ class _FakeSpeechRepository implements SpeechToTextRepository {
   Future<void> close() async {}
 
   @override
-  Future<bool> initialize() async => true;
+  Future<bool> initialize() async {
+    initializeCallCount += 1;
+    return false;
+  }
 
   @override
   Future<void> startListening() async {}

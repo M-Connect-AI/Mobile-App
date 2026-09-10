@@ -7,18 +7,22 @@ import '../../../../domain/repository/home_repository.dart';
 
 enum HomeStatus { initial, loading, success, failure, loggingOut, loggedOut }
 
+enum HomeTab { home, utilities }
+
 class HomeState extends Equatable {
   const HomeState({
     this.status = HomeStatus.initial,
     this.data,
     this.failureType,
     this.errorMessage,
+    this.tab = HomeTab.home,
   });
 
   final HomeStatus status;
   final HomeData? data;
   final HomeFailureType? failureType;
   final String? errorMessage;
+  final HomeTab tab;
 
   HomeState copyWith({
     HomeStatus? status,
@@ -26,15 +30,17 @@ class HomeState extends Equatable {
     HomeFailureType? failureType,
     String? errorMessage,
     bool clearError = false,
+    HomeTab? tab,
   }) => HomeState(
     status: status ?? this.status,
     data: data ?? this.data,
     failureType: clearError ? null : failureType ?? this.failureType,
     errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+    tab: tab ?? this.tab,
   );
 
   @override
-  List<Object?> get props => [status, data, failureType, errorMessage];
+  List<Object?> get props => [status, data, failureType, errorMessage, tab];
 }
 
 class HomeCubit extends Cubit<HomeState> {
@@ -42,6 +48,8 @@ class HomeCubit extends Cubit<HomeState> {
 
   final HomeRepository _repository;
   final CredentialRepository _credentials;
+
+  void selectTab(HomeTab tab) => emit(state.copyWith(tab: tab));
 
   Future<void> load() async {
     emit(state.copyWith(status: HomeStatus.loading, clearError: true));

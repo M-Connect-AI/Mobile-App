@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../gen/fonts.gen.dart';
 import '../themes/theme_extensions/app_color_scheme.dart';
 
 abstract final class AppTheme {
@@ -17,7 +18,7 @@ abstract final class AppTheme {
     ).copyWith(primary: _seed);
     return ThemeData(
       useMaterial3: true,
-      fontFamily: 'Roboto',
+      fontFamily: FontFamily.inter,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: appColors.surfacePrimary,
       extensions: [appColors],

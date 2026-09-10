@@ -89,10 +89,10 @@ class S {
     return Intl.message('Email', name: 'emailLabel', desc: '', args: []);
   }
 
-  /// `name@company.com`
+  /// `Example@msb.com.vn`
   String get emailHint {
     return Intl.message(
-      'name@company.com',
+      'Example@msb.com.vn',
       name: 'emailHint',
       desc: '',
       args: [],
@@ -309,6 +309,16 @@ class S {
     return Intl.message('Đăng nhập', name: 'loginButton', desc: '', args: []);
   }
 
+  /// `© MSB 2023 ALL RIGHT RESERVED`
+  String get loginCopyright {
+    return Intl.message(
+      '© MSB 2023 ALL RIGHT RESERVED',
+      name: 'loginCopyright',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Đăng xuất`
   String get logout {
     return Intl.message('Đăng xuất', name: 'logout', desc: '', args: []);
@@ -399,20 +409,15 @@ class S {
     return Intl.message('Lưu', name: 'saveButton', desc: '', args: []);
   }
 
-  /// `Xin chào, Minh 👋`
+  /// `Chào, Minh`
   String get homeGreeting {
-    return Intl.message(
-      'Xin chào, Minh 👋',
-      name: 'homeGreeting',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Chào, Minh', name: 'homeGreeting', desc: '', args: []);
   }
 
-  /// `Xin chào, {fullName} 👋`
+  /// `Chào, {fullName}`
   String homeGreetingName(String fullName) {
     return Intl.message(
-      'Xin chào, $fullName 👋',
+      'Chào, $fullName',
       name: 'homeGreetingName',
       desc: '',
       args: [fullName],
@@ -427,6 +432,166 @@ class S {
       desc: '',
       args: [],
     );
+  }
+
+  /// `Buổi sáng tốt lành`
+  String get homeMorningGreeting {
+    return Intl.message(
+      'Buổi sáng tốt lành',
+      name: 'homeMorningGreeting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cần bạn\nxử lý`
+  String get homeNeedsAttention {
+    return Intl.message(
+      'Cần bạn\nxử lý',
+      name: 'homeNeedsAttention',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bạn chờ\nphê duyệt`
+  String get homeWaitingApproval {
+    return Intl.message(
+      'Bạn chờ\nphê duyệt',
+      name: 'homeWaitingApproval',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bổ sung`
+  String get supplement {
+    return Intl.message('Bổ sung', name: 'supplement', desc: '', args: []);
+  }
+
+  /// `Bổ sung chấm công`
+  String get attendanceSupplement {
+    return Intl.message(
+      'Bổ sung chấm công',
+      name: 'attendanceSupplement',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edocman`
+  String get edocman {
+    return Intl.message('Edocman', name: 'edocman', desc: '', args: []);
+  }
+
+  /// `EIS`
+  String get eis {
+    return Intl.message('EIS', name: 'eis', desc: '', args: []);
+  }
+
+  /// `03`
+  String get taskThreeCount {
+    return Intl.message('03', name: 'taskThreeCount', desc: '', args: []);
+  }
+
+  /// `12`
+  String get taskTwelveCount {
+    return Intl.message('12', name: 'taskTwelveCount', desc: '', args: []);
+  }
+
+  /// `TIỆN ÍCH`
+  String get homeUtilities {
+    return Intl.message('TIỆN ÍCH', name: 'homeUtilities', desc: '', args: []);
+  }
+
+  /// `Quản lý thời gian`
+  String get timeManagement {
+    return Intl.message(
+      'Quản lý thời gian',
+      name: 'timeManagement',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `M-Run`
+  String get mRun {
+    return Intl.message('M-Run', name: 'mRun', desc: '', args: []);
+  }
+
+  /// `Sự kiện`
+  String get events {
+    return Intl.message('Sự kiện', name: 'events', desc: '', args: []);
+  }
+
+  /// `Thành viên mới`
+  String get newMembers {
+    return Intl.message(
+      'Thành viên mới',
+      name: 'newMembers',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `MSB`
+  String get homeBannerEyebrow {
+    return Intl.message('MSB', name: 'homeBannerEyebrow', desc: '', args: []);
+  }
+
+  /// `1 Click LÚC ÍCH`
+  String get homeBannerTitle {
+    return Intl.message(
+      '1 Click LÚC ÍCH',
+      name: 'homeBannerTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `GIẢI MÃ VĂN HÓA MSB`
+  String get homeBannerSubtitle {
+    return Intl.message(
+      'GIẢI MÃ VĂN HÓA MSB',
+      name: 'homeBannerSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TIN NỔI BẬT`
+  String get featuredNews {
+    return Intl.message(
+      'TIN NỔI BẬT',
+      name: 'featuredNews',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Khảo sát toàn hàng: Giải mã văn hóa MSB`
+  String get newsRetailTitle {
+    return Intl.message(
+      'Khảo sát toàn hàng: Giải mã văn hóa MSB',
+      name: 'newsRetailTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bạn có thể quan tâm: Kiến thức MSB`
+  String get newsKnowledgeTitle {
+    return Intl.message(
+      'Bạn có thể quan tâm: Kiến thức MSB',
+      name: 'newsKnowledgeTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `3`
+  String get notificationCount {
+    return Intl.message('3', name: 'notificationCount', desc: '', args: []);
   }
 
   /// `Số dư nghỉ phép`
@@ -664,6 +829,11 @@ class S {
     );
   }
 
+  /// `HRIS`
+  String get navigationHris {
+    return Intl.message('HRIS', name: 'navigationHris', desc: '', args: []);
+  }
+
   /// `Chat`
   String get navigationChat {
     return Intl.message('Chat', name: 'navigationChat', desc: '', args: []);
@@ -679,6 +849,16 @@ class S {
     return Intl.message(
       'Cá nhân',
       name: 'navigationPersonal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tiện ích`
+  String get navigationUtilities {
+    return Intl.message(
+      'Tiện ích',
+      name: 'navigationUtilities',
       desc: '',
       args: [],
     );

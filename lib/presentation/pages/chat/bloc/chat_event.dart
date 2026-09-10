@@ -11,14 +11,21 @@ final class ChatStarted extends ChatEvent {
     this.threadId,
     this.initialMessage,
     this.autoSendInitialMessage = false,
+    this.startRecording = false,
   });
 
   final String? threadId;
   final String? initialMessage;
   final bool autoSendInitialMessage;
+  final bool startRecording;
 
   @override
-  List<Object?> get props => [threadId, initialMessage, autoSendInitialMessage];
+  List<Object?> get props => [
+    threadId,
+    initialMessage,
+    autoSendInitialMessage,
+    startRecording,
+  ];
 }
 
 final class MessageChanged extends ChatEvent {

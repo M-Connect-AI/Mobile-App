@@ -15,6 +15,10 @@ import 'package:go_router/go_router.dart';
 
 void main() {
   testWidgets('real-login flow opens the home screen', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final auth = _SuccessfulAuthRepository();
     final router = GoRouter(
       initialLocation: const LoginRoute().location,
@@ -52,7 +56,16 @@ void main() {
       ),
     );
 
-    expect(find.text('Chào mừng trở lại'), findsOneWidget);
+    expect(find.text('Đăng nhập'), findsNWidgets(2));
+    expect(find.byKey(const Key('login-logo')), findsOneWidget);
+    expect(tester.getTopLeft(find.byKey(const Key('login-logo'))).dx, 55);
+    expect(
+      tester.getBottomLeft(find.byKey(const Key('login-logo'))).dy,
+      lessThanOrEqualTo(
+        tester.getTopLeft(find.byKey(const Key('login-form-card'))).dy,
+      ),
+    );
+    expect(find.text('© MSB 2023 ALL RIGHT RESERVED'), findsOneWidget);
     expect(find.byKey(const Key('server-config-button')), findsOneWidget);
     expect(
       find.text('Đăng nhập mô phỏng · Chưa kết nối API thật'),

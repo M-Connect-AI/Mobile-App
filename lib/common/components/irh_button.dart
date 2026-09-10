@@ -6,16 +6,22 @@ import '../themes/theme_extensions/app_color_scheme.dart';
 import 'app_text_style.dart';
 
 class IrhButton extends StatelessWidget {
-  const IrhButton({super.key, required this.label, required this.onPressed});
+  const IrhButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.height,
+  });
 
   final String label;
   final VoidCallback? onPressed;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
     return SizedBox(
-      height: 52.height,
+      height: height ?? 52.height,
       width: double.infinity,
       child: CupertinoButton(
         onPressed: onPressed,

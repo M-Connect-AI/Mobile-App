@@ -22,12 +22,13 @@ class HomeChatAiPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => HomeChatAiCubit(
-        context.read<ChatThreadRepository>(),
-        context.read<CredentialRepository>(),
-      )
-        ..loadRole()
-        ..loadThreads(),
+      create: (_) =>
+          HomeChatAiCubit(
+              context.read<ChatThreadRepository>(),
+              context.read<CredentialRepository>(),
+            )
+            ..loadRole()
+            ..loadThreads(),
       child: const _HomeChatAiView(),
     );
   }
@@ -52,7 +53,9 @@ class _HomeChatAiView extends StatelessWidget {
               ),
               child: ChatInput.launcher(
                 key: const Key('home-chat-input'),
-                onTap: () => const ChatRoute().push(context),
+                onInputTap: () => const ChatRoute().push(context),
+                onMicrophoneTap: () =>
+                    const ChatRoute(startRecording: true).push(context),
               ).paddingSymmetric(horizontal: 20.width, vertical: 12.height),
             ),
           ],

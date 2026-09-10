@@ -22,7 +22,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m0(name) => "Nhắn tin cho ${name}...";
 
-  static String m1(fullName) => "Xin chào, ${fullName} 👋";
+  static String m1(fullName) => "Chào, ${fullName}";
 
   static String m2(appName) => "Đăng nhập để tiếp tục với ${appName}";
 
@@ -38,6 +38,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Phép năm còn lại / tổng",
     ),
     "appName": MessageLookupByLibrary.simpleMessage("Trợ lý AI"),
+    "attendanceSupplement": MessageLookupByLibrary.simpleMessage(
+      "Bổ sung chấm công",
+    ),
     "backToChatDashboard": MessageLookupByLibrary.simpleMessage(
       "Quay lại trang trợ lý AI",
     ),
@@ -66,7 +69,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Kết nối bị gián đoạn trước khi hoàn tất.",
     ),
     "copyMessage": MessageLookupByLibrary.simpleMessage("Sao chép"),
-    "emailHint": MessageLookupByLibrary.simpleMessage("name@company.com"),
+    "edocman": MessageLookupByLibrary.simpleMessage("Edocman"),
+    "eis": MessageLookupByLibrary.simpleMessage("EIS"),
+    "emailHint": MessageLookupByLibrary.simpleMessage("Example@msb.com.vn"),
     "emailLabel": MessageLookupByLibrary.simpleMessage("Email"),
     "emailRequired": MessageLookupByLibrary.simpleMessage(
       "Vui lòng nhập email",
@@ -77,6 +82,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "employeeNguyenVanA": MessageLookupByLibrary.simpleMessage(
       "Nhân viên — Nguyễn Văn A",
     ),
+    "events": MessageLookupByLibrary.simpleMessage("Sự kiện"),
+    "featuredNews": MessageLookupByLibrary.simpleMessage("TIN NỔI BẬT"),
     "forgotPassword": MessageLookupByLibrary.simpleMessage("Quên mật khẩu?"),
     "hidePassword": MessageLookupByLibrary.simpleMessage("Ẩn mật khẩu"),
     "history": MessageLookupByLibrary.simpleMessage("Lịch sử"),
@@ -110,10 +117,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "historyLoadError": MessageLookupByLibrary.simpleMessage(
       "Không thể tải lịch sử trò chuyện",
     ),
-    "homeGreeting": MessageLookupByLibrary.simpleMessage("Xin chào, Minh 👋"),
+    "homeBannerEyebrow": MessageLookupByLibrary.simpleMessage("MSB"),
+    "homeBannerSubtitle": MessageLookupByLibrary.simpleMessage(
+      "GIẢI MÃ VĂN HÓA MSB",
+    ),
+    "homeBannerTitle": MessageLookupByLibrary.simpleMessage("1 Click LÚC ÍCH"),
+    "homeGreeting": MessageLookupByLibrary.simpleMessage("Chào, Minh"),
     "homeGreetingName": m1,
     "homeInvalidResponse": MessageLookupByLibrary.simpleMessage(
       "Dữ liệu Home không hợp lệ. Vui lòng thử lại.",
+    ),
+    "homeMorningGreeting": MessageLookupByLibrary.simpleMessage(
+      "Buổi sáng tốt lành",
+    ),
+    "homeNeedsAttention": MessageLookupByLibrary.simpleMessage(
+      "Cần bạn\nxử lý",
     ),
     "homeNetworkError": MessageLookupByLibrary.simpleMessage(
       "Không thể tải Home. Vui lòng kiểm tra kết nối mạng.",
@@ -129,6 +147,10 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "homeSubtitle": MessageLookupByLibrary.simpleMessage(
       "Chúc bạn một ngày làm việc hiệu quả",
+    ),
+    "homeUtilities": MessageLookupByLibrary.simpleMessage("TIỆN ÍCH"),
+    "homeWaitingApproval": MessageLookupByLibrary.simpleMessage(
+      "Bạn chờ\nphê duyệt",
     ),
     "hrApiUrlLabel": MessageLookupByLibrary.simpleMessage("HR API URL"),
     "leaveBalance": MessageLookupByLibrary.simpleMessage("Số dư nghỉ phép"),
@@ -151,6 +173,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "listening": MessageLookupByLibrary.simpleMessage("Đang nghe..."),
     "loggingIn": MessageLookupByLibrary.simpleMessage("Đang đăng nhập..."),
     "loginButton": MessageLookupByLibrary.simpleMessage("Đăng nhập"),
+    "loginCopyright": MessageLookupByLibrary.simpleMessage(
+      "© MSB 2023 ALL RIGHT RESERVED",
+    ),
     "loginFailed": MessageLookupByLibrary.simpleMessage(
       "Email hoặc mật khẩu không đúng",
     ),
@@ -169,6 +194,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "loginWelcome": MessageLookupByLibrary.simpleMessage("Chào mừng trở lại"),
     "logout": MessageLookupByLibrary.simpleMessage("Đăng xuất"),
+    "mRun": MessageLookupByLibrary.simpleMessage("M-Run"),
     "managerApproveOneDaySuggestion": MessageLookupByLibrary.simpleMessage(
       "Duyệt các đơn nghỉ 1 ngày",
     ),
@@ -188,11 +214,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "navigationChat": MessageLookupByLibrary.simpleMessage("Chat"),
     "navigationFeed": MessageLookupByLibrary.simpleMessage("Tin tức"),
     "navigationHome": MessageLookupByLibrary.simpleMessage("Trang chủ"),
+    "navigationHris": MessageLookupByLibrary.simpleMessage("HRIS"),
     "navigationPersonal": MessageLookupByLibrary.simpleMessage("Cá nhân"),
     "navigationSearch": MessageLookupByLibrary.simpleMessage("Tìm kiếm"),
+    "navigationUtilities": MessageLookupByLibrary.simpleMessage("Tiện ích"),
+    "newMembers": MessageLookupByLibrary.simpleMessage("Thành viên mới"),
+    "newsKnowledgeTitle": MessageLookupByLibrary.simpleMessage(
+      "Bạn có thể quan tâm: Kiến thức MSB",
+    ),
+    "newsRetailTitle": MessageLookupByLibrary.simpleMessage(
+      "Khảo sát toàn hàng: Giải mã văn hóa MSB",
+    ),
     "noUpcomingTrips": MessageLookupByLibrary.simpleMessage(
       "Bạn chưa có chuyến công tác sắp tới.",
     ),
+    "notificationCount": MessageLookupByLibrary.simpleMessage("3"),
     "online": MessageLookupByLibrary.simpleMessage("Trực tuyến"),
     "openChat": MessageLookupByLibrary.simpleMessage("Mở màn hình chat"),
     "options": MessageLookupByLibrary.simpleMessage("Tùy chọn"),
@@ -260,8 +296,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "suggestedAccounts": MessageLookupByLibrary.simpleMessage(
       "Tài khoản gợi ý",
     ),
+    "supplement": MessageLookupByLibrary.simpleMessage("Bổ sung"),
+    "taskThreeCount": MessageLookupByLibrary.simpleMessage("03"),
+    "taskTwelveCount": MessageLookupByLibrary.simpleMessage("12"),
     "thinking": MessageLookupByLibrary.simpleMessage("Đang suy nghĩ..."),
     "threadPreviewWithDate": m3,
+    "timeManagement": MessageLookupByLibrary.simpleMessage("Quản lý thời gian"),
     "tripDateRange": m4,
     "understandingRequest": MessageLookupByLibrary.simpleMessage(
       "Đang hiểu yêu cầu...",

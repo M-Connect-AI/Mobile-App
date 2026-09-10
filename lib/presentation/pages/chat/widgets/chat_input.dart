@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../common/components/app_text_style.dart';
+import '../../../../common/components/irh_text.dart';
 import '../../../../common/extensions/responsive_extension.dart';
 import '../../../../common/themes/theme_extensions/app_color_scheme.dart';
 import '../../../../generated/l10n.dart';
@@ -12,11 +12,12 @@ import '../bloc/chat_bloc.dart';
 import 'voice_recorder.dart';
 
 class ChatInput extends StatefulWidget {
-  const ChatInput({super.key, this.autofocus = false}) : onTap = null;
+  const ChatInput({super.key, this.autofocus = false}) : onInputTap = null, onMicrophoneTap = null;
 
-  const ChatInput.launcher({super.key, required this.onTap}) : autofocus = false;
+  const ChatInput.launcher({super.key, required this.onInputTap, required this.onMicrophoneTap}) : autofocus = false;
 
-  final VoidCallback? onTap;
+  final VoidCallback? onInputTap;
+  final VoidCallback? onMicrophoneTap;
   final bool autofocus;
 
   @override
@@ -30,7 +31,7 @@ class _ChatInputState extends State<ChatInput> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (widget.onTap == null) {
+    if (widget.onInputTap == null) {
       _syncController(context.read<ChatBloc>().state.inputText);
     }
   }
@@ -52,8 +53,8 @@ class _ChatInputState extends State<ChatInput> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.onTap != null) {
-      return _ChatInputLauncher(onTap: widget.onTap!);
+    if (widget.onInputTap != null && widget.onMicrophoneTap != null) {
+      return _ChatInputLauncher(onInputTap: widget.onInputTap!, onMicrophoneTap: widget.onMicrophoneTap!);
     }
     return BlocConsumer<ChatBloc, ChatState>(
       listenWhen: (previous, current) => previous.inputText != current.inputText,
@@ -79,10 +80,7 @@ class _ChatInputState extends State<ChatInput> {
           children: [
             Expanded(
               child: Container(
-                constraints: const BoxConstraints(
-                  minHeight: 60,
-                  maxHeight: 148,
-                ),
+                constraints: const BoxConstraints(minHeight: 60, maxHeight: 148),
                 decoration: BoxDecoration(
                   color: colors.surfaceContainerHighest.withValues(alpha: .7),
                   borderRadius: BorderRadius.circular(30),
@@ -102,10 +100,7 @@ class _ChatInputState extends State<ChatInput> {
                   decoration: InputDecoration(
                     hintText: S.of(context).chatInputHintName(AppConstants.chatbotName),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 18,
-                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                   ),
                 ),
               ),
@@ -114,25 +109,20 @@ class _ChatInputState extends State<ChatInput> {
             IconButton.filled(
               key: const Key('chat-action-button'),
               tooltip: hasText ? S.of(context).sendMessage : S.of(context).recordVoice,
-              style: IconButton.styleFrom(
-                minimumSize: const Size.square(60),
-                iconSize: 27,
-              ),
-              onPressed:
-                  state.isLoading || state.recordingState == RecordingState.requestingPermission
-                      ? null
-                      : () {
-                          if (hasText) {
-                            _focusNode.unfocus();
-                            context.read<ChatBloc>().add(const SendTextMessage());
-                          } else {
-                            context.read<ChatBloc>().add(const StartRecording());
-                          }
-                        },
+              style: IconButton.styleFrom(minimumSize: const Size.square(60), iconSize: 27),
+              onPressed: state.isLoading || state.recordingState == RecordingState.requestingPermission
+                  ? null
+                  : () {
+                      if (hasText) {
+                        _focusNode.unfocus();
+                        context.read<ChatBloc>().add(const SendTextMessage());
+                      } else {
+                        context.read<ChatBloc>().add(const StartRecording());
+                      }
+                    },
               icon: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 180),
-                transitionBuilder: (child, animation) =>
-                    ScaleTransition(scale: animation, child: child),
+                transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
                 child: state.recordingState == RecordingState.requestingPermission
                     ? const SizedBox.square(
                         key: Key('permission-loading'),
@@ -153,80 +143,57 @@ class _ChatInputState extends State<ChatInput> {
 }
 
 class _ChatInputLauncher extends StatelessWidget {
-  const _ChatInputLauncher({required this.onTap});
+  const _ChatInputLauncher({required this.onInputTap, required this.onMicrophoneTap});
 
-  final VoidCallback onTap;
+  final VoidCallback onInputTap;
+  final VoidCallback onMicrophoneTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
-    return Semantics(
-      button: true,
-      label: S.of(context).openChat,
-      child: CupertinoButton(
-        minimumSize: Size.zero,
-        padding: EdgeInsets.zero,
-        borderRadius: BorderRadius.circular(28),
-        onPressed: onTap,
-        child: Container(
-          height: 56.height,
-          decoration: BoxDecoration(
-            color: colors.surfaceTemary,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Semantics(
+          button: true,
+          label: S.of(context).openChat,
+          child: CupertinoButton(
+            key: const Key('chat-launcher-input'),
+            minimumSize: Size.zero,
+            padding: EdgeInsets.zero,
             borderRadius: BorderRadius.circular(28),
+            onPressed: onInputTap,
+            child: Container(
+              height: 56.height,
+              alignment: Alignment.centerLeft,
+              decoration: BoxDecoration(color: colors.surfaceTemary, borderRadius: BorderRadius.circular(28)),
+              child: IrhText.regular(
+                S.of(context).chatInputHintName(AppConstants.chatbotName),
+                color: colors.textTertiary,
+              ).paddingSymmetric(horizontal: 20.width, vertical: 16.height),
+            ),
           ),
-          child: Row(
-            children: [
-              Text(
-                S.of(context).chatInputHint,
-                style: AppTextStyle.r16.copyWith(color: colors.textTertiary),
-              ).expanded(),
-              Container(
-                width: 40.width,
-                height: 40.width,
-                decoration: BoxDecoration(
-                  color: colors.iconBrand,
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: CustomPaint(
-                  size: Size(20.sp, 20.sp),
-                  painter: _SendArrowPainter(color: colors.surfaceSecondary),
-                ),
-              ),
-            ],
-          ).paddingSymmetric(horizontal: 16.width),
+        ).expanded(),
+        8.width.widthBox,
+        Semantics(
+          button: true,
+          label: S.of(context).recordVoice,
+          child: CupertinoButton(
+            key: const Key('chat-launcher-microphone'),
+            minimumSize: Size.zero,
+            padding: EdgeInsets.zero,
+            borderRadius: BorderRadius.circular(28),
+            onPressed: onMicrophoneTap,
+            child: Container(
+              width: 56.width,
+              height: 56.height,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(color: colors.iconBrand, shape: BoxShape.circle),
+              child: Icon(Icons.mic_none_rounded, size: 28.sp, color: colors.surfaceSecondary),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
-}
-
-class _SendArrowPainter extends CustomPainter {
-  const _SendArrowPainter({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = size.width * .1
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..style = PaintingStyle.stroke;
-    final centerX = size.width / 2;
-    canvas.drawLine(
-      Offset(centerX, size.height * .8),
-      Offset(centerX, size.height * .2),
-      paint,
-    );
-    final path = Path()
-      ..moveTo(size.width * .24, size.height * .44)
-      ..lineTo(centerX, size.height * .2)
-      ..lineTo(size.width * .76, size.height * .44);
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _SendArrowPainter oldDelegate) => oldDelegate.color != color;
 }

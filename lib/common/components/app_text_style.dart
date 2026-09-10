@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../gen/fonts.gen.dart';
 import '../extensions/responsive_extension.dart';
 
 abstract final class AppTextStyle {
-  static const _fontFamily = 'Roboto';
-
-  static TextStyle _style(double size, FontWeight weight) =>
-      TextStyle(fontFamily: _fontFamily, fontSize: size.sp, fontWeight: weight);
+  static TextStyle _style(double size, FontWeight weight) => TextStyle(
+    fontFamily: FontFamily.inter,
+    fontSize: size.sp,
+    fontWeight: weight,
+  );
 
   static TextStyle get r12 => _style(12, FontWeight.w400);
   static TextStyle get r14 => _style(14, FontWeight.w400);

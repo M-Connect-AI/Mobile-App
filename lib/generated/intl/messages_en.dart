@@ -38,6 +38,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Annual remaining / total",
     ),
     "appName": MessageLookupByLibrary.simpleMessage("AI Assistant"),
+    "attendanceSupplement": MessageLookupByLibrary.simpleMessage(
+      "Attendance supplement",
+    ),
     "backToChatDashboard": MessageLookupByLibrary.simpleMessage(
       "Back to AI assistant",
     ),
@@ -64,7 +67,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "The connection was interrupted before completion.",
     ),
     "copyMessage": MessageLookupByLibrary.simpleMessage("Copy"),
-    "emailHint": MessageLookupByLibrary.simpleMessage("name@company.com"),
+    "edocman": MessageLookupByLibrary.simpleMessage("Edocman"),
+    "eis": MessageLookupByLibrary.simpleMessage("EIS"),
+    "emailHint": MessageLookupByLibrary.simpleMessage("Example@msb.com.vn"),
     "emailLabel": MessageLookupByLibrary.simpleMessage("Email"),
     "emailRequired": MessageLookupByLibrary.simpleMessage(
       "Please enter your email",
@@ -75,6 +80,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "employeeNguyenVanA": MessageLookupByLibrary.simpleMessage(
       "Employee — Nguyen Van A",
     ),
+    "events": MessageLookupByLibrary.simpleMessage("Events"),
+    "featuredNews": MessageLookupByLibrary.simpleMessage("FEATURED NEWS"),
     "forgotPassword": MessageLookupByLibrary.simpleMessage("Forgot password?"),
     "hidePassword": MessageLookupByLibrary.simpleMessage("Hide password"),
     "history": MessageLookupByLibrary.simpleMessage("History"),
@@ -104,10 +111,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "historyLoadError": MessageLookupByLibrary.simpleMessage(
       "Unable to load chat history",
     ),
+    "homeBannerEyebrow": MessageLookupByLibrary.simpleMessage("MSB"),
+    "homeBannerSubtitle": MessageLookupByLibrary.simpleMessage(
+      "DECODING MSB CULTURE",
+    ),
+    "homeBannerTitle": MessageLookupByLibrary.simpleMessage("1 Click LÚC ÍCH"),
     "homeGreeting": MessageLookupByLibrary.simpleMessage("Hello, Minh 👋"),
     "homeGreetingName": m1,
     "homeInvalidResponse": MessageLookupByLibrary.simpleMessage(
       "The Home data is invalid. Please try again.",
+    ),
+    "homeMorningGreeting": MessageLookupByLibrary.simpleMessage(
+      "Have a great morning",
+    ),
+    "homeNeedsAttention": MessageLookupByLibrary.simpleMessage(
+      "Needs your\nattention",
     ),
     "homeNetworkError": MessageLookupByLibrary.simpleMessage(
       "Home could not be loaded. Check your network connection.",
@@ -123,6 +141,10 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "homeSubtitle": MessageLookupByLibrary.simpleMessage(
       "Have a productive day",
+    ),
+    "homeUtilities": MessageLookupByLibrary.simpleMessage("UTILITIES"),
+    "homeWaitingApproval": MessageLookupByLibrary.simpleMessage(
+      "Waiting for\napproval",
     ),
     "hrApiUrlLabel": MessageLookupByLibrary.simpleMessage("HR API URL"),
     "leaveBalance": MessageLookupByLibrary.simpleMessage("Leave balance"),
@@ -145,6 +167,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "listening": MessageLookupByLibrary.simpleMessage("Listening..."),
     "loggingIn": MessageLookupByLibrary.simpleMessage("Signing in..."),
     "loginButton": MessageLookupByLibrary.simpleMessage("Sign in"),
+    "loginCopyright": MessageLookupByLibrary.simpleMessage(
+      "© MSB 2023 ALL RIGHT RESERVED",
+    ),
     "loginFailed": MessageLookupByLibrary.simpleMessage(
       "Incorrect email or password",
     ),
@@ -163,6 +188,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "loginWelcome": MessageLookupByLibrary.simpleMessage("Welcome back"),
     "logout": MessageLookupByLibrary.simpleMessage("Sign out"),
+    "mRun": MessageLookupByLibrary.simpleMessage("M-Run"),
     "managerApproveOneDaySuggestion": MessageLookupByLibrary.simpleMessage(
       "Approve all one-day leave requests",
     ),
@@ -182,11 +208,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "navigationChat": MessageLookupByLibrary.simpleMessage("Chat"),
     "navigationFeed": MessageLookupByLibrary.simpleMessage("Feed"),
     "navigationHome": MessageLookupByLibrary.simpleMessage("Home"),
+    "navigationHris": MessageLookupByLibrary.simpleMessage("HRIS"),
     "navigationPersonal": MessageLookupByLibrary.simpleMessage("Personal"),
     "navigationSearch": MessageLookupByLibrary.simpleMessage("Search"),
+    "navigationUtilities": MessageLookupByLibrary.simpleMessage("Utilities"),
+    "newMembers": MessageLookupByLibrary.simpleMessage("New members"),
+    "newsKnowledgeTitle": MessageLookupByLibrary.simpleMessage(
+      "You may be interested in: MSB knowledge",
+    ),
+    "newsRetailTitle": MessageLookupByLibrary.simpleMessage(
+      "Company-wide survey: Decoding MSB culture",
+    ),
     "noUpcomingTrips": MessageLookupByLibrary.simpleMessage(
       "You have no upcoming business trips.",
     ),
+    "notificationCount": MessageLookupByLibrary.simpleMessage("3"),
     "online": MessageLookupByLibrary.simpleMessage("Online"),
     "openChat": MessageLookupByLibrary.simpleMessage("Open chat screen"),
     "options": MessageLookupByLibrary.simpleMessage("Options"),
@@ -252,8 +288,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "suggestedAccounts": MessageLookupByLibrary.simpleMessage(
       "Suggested accounts",
     ),
+    "supplement": MessageLookupByLibrary.simpleMessage("Supplement"),
+    "taskThreeCount": MessageLookupByLibrary.simpleMessage("03"),
+    "taskTwelveCount": MessageLookupByLibrary.simpleMessage("12"),
     "thinking": MessageLookupByLibrary.simpleMessage("Thinking..."),
     "threadPreviewWithDate": m3,
+    "timeManagement": MessageLookupByLibrary.simpleMessage("Time management"),
     "tripDateRange": m4,
     "understandingRequest": MessageLookupByLibrary.simpleMessage(
       "Understanding request...",
