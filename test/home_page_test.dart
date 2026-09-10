@@ -77,7 +77,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('Xin chào, Minh 👋'), findsOneWidget);
+    expect(find.text(S.current.homeGreetingName('Minh')), findsOneWidget);
     expect(find.byKey(const Key('task-summary-list')), findsOneWidget);
     expect(find.byKey(const Key('leave-summary-card')), findsOneWidget);
     expect(find.byKey(const Key('supplement-summary-card')), findsOneWidget);
@@ -204,7 +204,7 @@ void main() {
     await tester.tap(homeBackButton);
     await tester.pumpAndSettle();
 
-    expect(find.text('Xin chào, Minh 👋'), findsOneWidget);
+    expect(find.text(S.current.homeGreetingName('Minh')), findsOneWidget);
     expect(find.byKey(const Key('assistant-bubble')), findsOneWidget);
   });
 

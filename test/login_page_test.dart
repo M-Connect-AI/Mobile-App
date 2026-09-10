@@ -91,7 +91,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(auth.email, 'a.nguyen@msb.vn');
-    expect(find.text('Xin chào, Minh 👋'), findsOneWidget);
+    expect(find.text(S.current.homeGreetingName('Minh')), findsOneWidget);
   });
 }
 
