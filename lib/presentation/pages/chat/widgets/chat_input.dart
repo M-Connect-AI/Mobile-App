@@ -9,6 +9,7 @@ import '../../../../common/themes/theme_extensions/app_color_scheme.dart';
 import '../../../../generated/l10n.dart';
 import '../../../../resources/app_constants.dart';
 import '../bloc/chat_bloc.dart';
+import 'microphone_permission_dialog.dart';
 import 'voice_recorder.dart';
 
 class ChatInput extends StatefulWidget {
@@ -112,11 +113,14 @@ class _ChatInputState extends State<ChatInput> {
               style: IconButton.styleFrom(minimumSize: const Size.square(60), iconSize: 27),
               onPressed: state.isLoading || state.recordingState == RecordingState.requestingPermission
                   ? null
-                  : () {
+                  : () async {
                       if (hasText) {
                         _focusNode.unfocus();
                         context.read<ChatBloc>().add(const SendTextMessage());
                       } else {
+                        if (!await confirmMicrophoneAccess(context) || !context.mounted) {
+                          return;
+                        }
                         context.read<ChatBloc>().add(const StartRecording());
                       }
                     },

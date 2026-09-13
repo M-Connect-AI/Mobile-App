@@ -31,6 +31,7 @@
   "loginButton": "Sign in",
   "loginCopyright": "© MSB 2023 ALL RIGHT RESERVED",
   "logout": "Sign out",
+  "aliceInspectorButton": "Alice",
   "serverConfigButton": "Server configuration",
   "serverConfigTitle": "Internal server configuration",
   "serverConfigDescription": "Change the servers used for internal testing.",
@@ -67,12 +68,33 @@
   "leaveBalance": "Leave balance",
   "annualLeave": "Annual remaining / total",
   "sickLeave": "Sick leave remaining",
+  "profileAnnualDays": "{remaining}/{total} days",
+  "profileSickDays": "{days} days",
   "upcomingTrip": "Upcoming business trip",
   "otherUpcomingTrips": "Later trips",
   "noUpcomingTrips": "You have no upcoming business trips.",
   "quickAccess": "Quick access",
   "leaveRequest": "Leave request",
   "businessTrip": "Business trip",
+  "requestDetailTitle": "{title} details",
+  "leaveListEmpty": "You have no leave requests.",
+  "tripListEmpty": "You have no business trips.",
+  "requestNotFound": "This request could not be found.",
+  "requestNetworkError": "Could not load data. Check your connection and try again.",
+  "requestInvalidResponse": "Invalid request data. Please try again.",
+  "requestCode": "Request ID",
+  "employeeCode": "Employee code",
+  "leaveType": "Leave type",
+  "leaveAnnualType": "Annual leave",
+  "leaveSickType": "Sick leave",
+  "leaveUnpaidType": "Unpaid leave",
+  "requestFrom": "From",
+  "requestTo": "To",
+  "leaveDays": "Days",
+  "leaveReason": "Reason",
+  "tripDestination": "Destination",
+  "tripPurpose": "Purpose",
+  "requestCreatedAt": "Created on",
   "tripDateRange": "{from} – {to}",
   "statusPending": "Pending approval",
   "statusApproved": "Approved",
@@ -93,9 +115,14 @@
   "navigationSearch": "Search",
   "navigationHris": "HRIS",
   "navigationChat": "Chat",
+  "navigationAssistant": "Assistant",
   "navigationFeed": "Feed",
   "navigationPersonal": "Personal",
   "navigationUtilities": "Utilities",
+  "profileStaffRole": "Staff",
+  "profileManagerRole": "Manager",
+  "profileDepartment": "Department",
+  "profileManagerCode": "Manager code",
   "menu": "Open menu",
   "backToHome": "Back to home",
   "chatDashboardSlogan": "Optimize actions,\nautomate workflows.",
@@ -140,6 +167,9 @@
   "chatInputHintName": "Message {name}...",
   "sendMessage": "Send message",
   "recordVoice": "Record voice",
+  "microphonePermissionTitle": "Allow microphone access?",
+  "microphonePermissionDescription": "The app needs microphone and speech recognition access to turn your voice into a message. Continue only if you agree.",
+  "microphonePermissionContinue": "Continue",
   "welcomeMessage": "Hello! I'm your AI assistant. How can I help you today?",
   "confirmAction": "Confirm",
   "cancelAction": "Cancel",
@@ -165,5 +195,17 @@
       "from": {"type": "String"},
       "to": {"type": "String"}
     }
+  },
+  "@requestDetailTitle": {
+    "placeholders": {"title": {"type": "String"}}
+  },
+  "@profileAnnualDays": {
+    "placeholders": {
+      "remaining": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "@profileSickDays": {
+    "placeholders": {"days": {"type": "int"}}
   }
 }

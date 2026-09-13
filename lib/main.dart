@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 import 'common/theme/app_theme.dart';
 import 'common/server_config/server_config_scope.dart';
@@ -15,6 +16,7 @@ import 'domain/repository/chat_thread_repository.dart';
 import 'domain/repository/auth_repository.dart';
 import 'domain/repository/credential_repository.dart';
 import 'domain/repository/home_repository.dart';
+import 'domain/repository/hr_request_repository.dart';
 import 'domain/repository/speech_to_text_repository.dart';
 import 'domain/repository/server_config_repository.dart';
 import 'generated/l10n.dart';
@@ -46,17 +48,15 @@ class _AiAssistantAppState extends State<AiAssistantApp> {
     final configRepository = _dependencies.serverConfigRepository;
     final normalized = config.normalized();
     final defaults = configRepository.defaults.normalized();
-    final usesDefaults = normalized.hrApiBaseUrl == defaults.hrApiBaseUrl &&
-        normalized.agentApiBaseUrl == defaults.agentApiBaseUrl;
+    final usesDefaults =
+        normalized.hrApiBaseUrl == defaults.hrApiBaseUrl && normalized.agentApiBaseUrl == defaults.agentApiBaseUrl;
     if (usesDefaults) {
       await configRepository.clear();
     } else {
       await configRepository.save(normalized);
     }
     await _dependencies.credentialRepository.clear();
-    final replacement = await AppDependencies.fromEnvironment(
-      serverConfigRepository: configRepository,
-    );
+    final replacement = await AppDependencies.fromEnvironment(serverConfigRepository: configRepository);
     if (!mounted) return;
     appRouter.go(const LoginRoute().location);
     setState(() {
@@ -73,49 +73,43 @@ class _AiAssistantAppState extends State<AiAssistantApp> {
       child: MultiRepositoryProvider(
         key: ValueKey(_configurationRevision),
         providers: [
-          RepositoryProvider<AuthRepository>(
-            create: (_) => dependencies.authRepository,
-          ),
-          RepositoryProvider<CredentialRepository>(
-            create: (_) => dependencies.credentialRepository,
-          ),
+          RepositoryProvider<AuthRepository>(create: (_) => dependencies.authRepository),
+          RepositoryProvider<CredentialRepository>(create: (_) => dependencies.credentialRepository),
           RepositoryProvider<ChatRepository>(
             create: (_) => dependencies.chatRepository,
             dispose: (repository) => repository.close(),
           ),
-          RepositoryProvider<ChatThreadRepository>(
-            create: (_) => dependencies.chatThreadRepository,
-          ),
-          RepositoryProvider<HomeRepository>(
-            create: (_) => dependencies.homeRepository,
-          ),
+          RepositoryProvider<ChatThreadRepository>(create: (_) => dependencies.chatThreadRepository),
+          RepositoryProvider<HomeRepository>(create: (_) => dependencies.homeRepository),
+          RepositoryProvider<HrRequestRepository>(create: (_) => dependencies.hrRequestRepository),
           RepositoryProvider<SpeechToTextRepository>(
             create: (_) => dependencies.speechToTextRepository,
             dispose: (repository) => unawaited(repository.close()),
           ),
-          RepositoryProvider<ServerConfigRepository>.value(
-            value: dependencies.serverConfigRepository,
-          ),
+          RepositoryProvider<ServerConfigRepository>.value(value: dependencies.serverConfigRepository),
         ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
           minTextAdapt: true,
           splitScreenMode: true,
-          builder: (context, child) => MaterialApp.router(
-            title: AppConstants.chatbotName,
-            debugShowCheckedModeBanner: false,
-            themeMode: ThemeMode.light,
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            routerConfig: appRouter,
-            locale: const Locale('vi'),
-            supportedLocales: S.delegate.supportedLocales,
-            localizationsDelegates: const [
-              S.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
+          builder: (context, child) => OverlaySupport(
+            child: MaterialApp.router(
+              title: AppConstants.chatbotName,
+              debugShowCheckedModeBanner: false,
+              themeMode: ThemeMode.light,
+              theme: AppTheme.light,
+              darkTheme: AppTheme.dark,
+              routerConfig: appRouter,
+              builder: (context, child) => child ?? const SizedBox.shrink(),
+              locale: const Locale('vi'),
+              supportedLocales: S.delegate.supportedLocales,
+              localizationsDelegates: const [
+                S.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+            ),
           ),
         ),
       ),

@@ -11,6 +11,8 @@ import '../presentation/pages/home/chat_history_page.dart';
 import '../presentation/pages/home/home_chat_ai_page.dart';
 import '../presentation/pages/home/home_page.dart';
 import '../presentation/pages/login/login_page.dart';
+import '../presentation/pages/hr/bloc/hr_request_cubit.dart';
+import '../presentation/pages/hr/hr_request_pages.dart';
 
 part 'go_router.g.dart';
 
@@ -43,7 +45,7 @@ final List<RouteBase> appRoutes = [
 ];
 
 @TypedGoRoute<LoginRoute>(path: '/login')
-class LoginRoute extends GoRouteData with _$LoginRoute {
+class LoginRoute extends GoRouteData with $LoginRoute {
   const LoginRoute();
 
   @override
@@ -51,11 +53,51 @@ class LoginRoute extends GoRouteData with _$LoginRoute {
 }
 
 @TypedGoRoute<HomeRoute>(path: '/home')
-class HomeRoute extends GoRouteData with _$HomeRoute {
+class HomeRoute extends GoRouteData with $HomeRoute {
   const HomeRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) => const HomePage();
+}
+
+@TypedGoRoute<LeaveListRoute>(path: '/leaves')
+class LeaveListRoute extends GoRouteData with $LeaveListRoute {
+  const LeaveListRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const HrRequestListPage(kind: HrRequestKind.leave);
+}
+
+@TypedGoRoute<LeaveDetailRoute>(path: '/leaves/:id')
+class LeaveDetailRoute extends GoRouteData with $LeaveDetailRoute {
+  const LeaveDetailRoute(this.id);
+
+  final String id;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      HrRequestDetailPage(kind: HrRequestKind.leave, id: id);
+}
+
+@TypedGoRoute<TripListRoute>(path: '/trips')
+class TripListRoute extends GoRouteData with $TripListRoute {
+  const TripListRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const HrRequestListPage(kind: HrRequestKind.trip);
+}
+
+@TypedGoRoute<TripDetailRoute>(path: '/trips/:id')
+class TripDetailRoute extends GoRouteData with $TripDetailRoute {
+  const TripDetailRoute(this.id);
+
+  final String id;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      HrRequestDetailPage(kind: HrRequestKind.trip, id: id);
 }
 
 class HomeChatAiRoute extends GoRouteData {

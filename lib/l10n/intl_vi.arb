@@ -31,6 +31,7 @@
   "loginButton": "Đăng nhập",
   "loginCopyright": "© MSB 2023 ALL RIGHT RESERVED",
   "logout": "Đăng xuất",
+  "aliceInspectorButton": "Alice",
   "serverConfigButton": "Cấu hình máy chủ",
   "serverConfigTitle": "Cấu hình máy chủ nội bộ",
   "serverConfigDescription": "Thay đổi máy chủ dùng cho phiên kiểm thử nội bộ.",
@@ -67,12 +68,33 @@
   "leaveBalance": "Số dư nghỉ phép",
   "annualLeave": "Phép năm còn lại / tổng",
   "sickLeave": "Phép ốm còn lại",
+  "profileAnnualDays": "{remaining}/{total} ngày",
+  "profileSickDays": "{days} ngày",
   "upcomingTrip": "Chuyến công tác sắp tới",
   "otherUpcomingTrips": "Các chuyến tiếp theo",
   "noUpcomingTrips": "Bạn chưa có chuyến công tác sắp tới.",
   "quickAccess": "Truy cập nhanh",
   "leaveRequest": "Nghỉ phép",
   "businessTrip": "Công tác",
+  "requestDetailTitle": "Chi tiết {title}",
+  "leaveListEmpty": "Bạn chưa có đơn nghỉ phép.",
+  "tripListEmpty": "Bạn chưa có chuyến công tác.",
+  "requestNotFound": "Không tìm thấy yêu cầu này.",
+  "requestNetworkError": "Không thể tải dữ liệu. Vui lòng kiểm tra kết nối mạng.",
+  "requestInvalidResponse": "Dữ liệu yêu cầu không hợp lệ. Vui lòng thử lại.",
+  "requestCode": "Mã yêu cầu",
+  "employeeCode": "Mã nhân viên",
+  "leaveType": "Loại nghỉ phép",
+  "leaveAnnualType": "Phép năm",
+  "leaveSickType": "Phép ốm",
+  "leaveUnpaidType": "Nghỉ không lương",
+  "requestFrom": "Từ ngày",
+  "requestTo": "Đến ngày",
+  "leaveDays": "Số ngày",
+  "leaveReason": "Lý do",
+  "tripDestination": "Địa điểm",
+  "tripPurpose": "Mục đích",
+  "requestCreatedAt": "Ngày tạo",
   "tripDateRange": "{from} – {to}",
   "statusPending": "Đang chờ duyệt",
   "statusApproved": "Đã duyệt",
@@ -93,9 +115,14 @@
   "navigationSearch": "Tìm kiếm",
   "navigationHris": "HRIS",
   "navigationChat": "Chat",
+  "navigationAssistant": "Trợ lý",
   "navigationFeed": "Tin tức",
   "navigationPersonal": "Cá nhân",
   "navigationUtilities": "Tiện ích",
+  "profileStaffRole": "Nhân viên",
+  "profileManagerRole": "Quản lý",
+  "profileDepartment": "Phòng ban",
+  "profileManagerCode": "Mã quản lý",
   "menu": "Mở menu",
   "backToHome": "Quay lại trang chủ",
   "chatDashboardSlogan": "Tối ưu thao tác,\ntự động quy trình.",
@@ -140,6 +167,9 @@
   "chatInputHintName": "Nhắn tin cho {name}...",
   "sendMessage": "Gửi tin nhắn",
   "recordVoice": "Ghi âm",
+  "microphonePermissionTitle": "Cho phép sử dụng micro?",
+  "microphonePermissionDescription": "Ứng dụng cần quyền truy cập micro và nhận dạng giọng nói để chuyển lời nói của bạn thành tin nhắn. Chỉ tiếp tục nếu bạn đồng ý.",
+  "microphonePermissionContinue": "Tiếp tục",
   "welcomeMessage": "Xin chào! Tôi là trợ lý AI của bạn. Bạn muốn tôi giúp gì hôm nay?",
   "confirmAction": "Xác nhận",
   "cancelAction": "Hủy",
@@ -165,5 +195,17 @@
       "from": {"type": "String"},
       "to": {"type": "String"}
     }
+  },
+  "@requestDetailTitle": {
+    "placeholders": {"title": {"type": "String"}}
+  },
+  "@profileAnnualDays": {
+    "placeholders": {
+      "remaining": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "@profileSickDays": {
+    "placeholders": {"days": {"type": "int"}}
   }
 }

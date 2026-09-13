@@ -4,7 +4,7 @@ part 'chat_api_models.freezed.dart';
 part 'chat_api_models.g.dart';
 
 @freezed
-class ChatTurnRequestDto with _$ChatTurnRequestDto {
+abstract class ChatTurnRequestDto with _$ChatTurnRequestDto {
   // ignore: invalid_annotation_target
   @JsonSerializable(includeIfNull: false)
   const factory ChatTurnRequestDto({
@@ -18,7 +18,7 @@ class ChatTurnRequestDto with _$ChatTurnRequestDto {
 }
 
 @freezed
-class ChatThreadSummaryDto with _$ChatThreadSummaryDto {
+abstract class ChatThreadSummaryDto with _$ChatThreadSummaryDto {
   const factory ChatThreadSummaryDto({
     required String threadId,
     required String title,
@@ -31,7 +31,7 @@ class ChatThreadSummaryDto with _$ChatThreadSummaryDto {
 }
 
 @freezed
-class PersistedChatMessageDto with _$PersistedChatMessageDto {
+abstract class PersistedChatMessageDto with _$PersistedChatMessageDto {
   const factory PersistedChatMessageDto({
     required String role,
     @Default('') String content,
@@ -42,7 +42,7 @@ class PersistedChatMessageDto with _$PersistedChatMessageDto {
 }
 
 @freezed
-class ChatConfirmationDto with _$ChatConfirmationDto {
+abstract class ChatConfirmationDto with _$ChatConfirmationDto {
   const factory ChatConfirmationDto({
     required String tool,
     @Default(<String, dynamic>{}) Map<String, dynamic> args,
@@ -54,7 +54,7 @@ class ChatConfirmationDto with _$ChatConfirmationDto {
 }
 
 @freezed
-class ChatThreadDetailDto with _$ChatThreadDetailDto {
+abstract class ChatThreadDetailDto with _$ChatThreadDetailDto {
   const factory ChatThreadDetailDto({
     required String threadId,
     @Default(<PersistedChatMessageDto>[])

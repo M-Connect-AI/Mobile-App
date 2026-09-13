@@ -6,7 +6,7 @@ part 'auth_session.g.dart';
 enum UserRole { staff, manager }
 
 @freezed
-class AuthUser with _$AuthUser {
+abstract class AuthUser with _$AuthUser {
   const factory AuthUser({
     required String id,
     required String employeeCode,
@@ -25,7 +25,7 @@ class AuthUser with _$AuthUser {
 }
 
 @freezed
-class AuthSession with _$AuthSession {
+abstract class AuthSession with _$AuthSession {
   const factory AuthSession({
     required String accessToken,
     required AuthUser user,

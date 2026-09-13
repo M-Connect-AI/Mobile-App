@@ -26,14 +26,21 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m2(appName) => "Đăng nhập để tiếp tục với ${appName}";
 
-  static String m3(preview, date) => "${preview} · ${date}";
+  static String m3(remaining, total) => "${remaining}/${total} ngày";
 
-  static String m4(from, to) => "${from} – ${to}";
+  static String m4(days) => "${days} ngày";
+
+  static String m5(title) => "Chi tiết ${title}";
+
+  static String m6(preview, date) => "${preview} · ${date}";
+
+  static String m7(from, to) => "${from} – ${to}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "agentApiUrlLabel": MessageLookupByLibrary.simpleMessage("Agent API URL"),
     "aiResponse": MessageLookupByLibrary.simpleMessage("Phản hồi của AI"),
+    "aliceInspectorButton": MessageLookupByLibrary.simpleMessage("Alice"),
     "annualLeave": MessageLookupByLibrary.simpleMessage(
       "Phép năm còn lại / tổng",
     ),
@@ -76,6 +83,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "emailRequired": MessageLookupByLibrary.simpleMessage(
       "Vui lòng nhập email",
     ),
+    "employeeCode": MessageLookupByLibrary.simpleMessage("Mã nhân viên"),
     "employeeLeVanC": MessageLookupByLibrary.simpleMessage(
       "Nhân viên — Lê Văn C",
     ),
@@ -153,6 +161,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Bạn chờ\nphê duyệt",
     ),
     "hrApiUrlLabel": MessageLookupByLibrary.simpleMessage("HR API URL"),
+    "leaveAnnualType": MessageLookupByLibrary.simpleMessage("Phép năm"),
     "leaveBalance": MessageLookupByLibrary.simpleMessage("Số dư nghỉ phép"),
     "leaveBalanceSuggestion": MessageLookupByLibrary.simpleMessage(
       "Tôi còn bao nhiêu ngày phép?",
@@ -160,16 +169,24 @@ class MessageLookup extends MessageLookupByLibrary {
     "leaveCancelSuggestion": MessageLookupByLibrary.simpleMessage(
       "Hủy đơn nghỉ gần nhất",
     ),
+    "leaveDays": MessageLookupByLibrary.simpleMessage("Số ngày"),
+    "leaveListEmpty": MessageLookupByLibrary.simpleMessage(
+      "Bạn chưa có đơn nghỉ phép.",
+    ),
     "leaveListSuggestion": MessageLookupByLibrary.simpleMessage(
       "Xem đơn nghỉ phép của tôi",
     ),
     "leavePendingSuggestion": MessageLookupByLibrary.simpleMessage(
       "Tôi có đơn nào đang chờ duyệt không?",
     ),
+    "leaveReason": MessageLookupByLibrary.simpleMessage("Lý do"),
     "leaveRequest": MessageLookupByLibrary.simpleMessage("Nghỉ phép"),
     "leaveRequestSuggestion": MessageLookupByLibrary.simpleMessage(
       "Tôi muốn xin nghỉ phép ngày mai",
     ),
+    "leaveSickType": MessageLookupByLibrary.simpleMessage("Phép ốm"),
+    "leaveType": MessageLookupByLibrary.simpleMessage("Loại nghỉ phép"),
+    "leaveUnpaidType": MessageLookupByLibrary.simpleMessage("Nghỉ không lương"),
     "listening": MessageLookupByLibrary.simpleMessage("Đang nghe..."),
     "loggingIn": MessageLookupByLibrary.simpleMessage("Đang đăng nhập..."),
     "loginButton": MessageLookupByLibrary.simpleMessage("Đăng nhập"),
@@ -211,6 +228,16 @@ class MessageLookup extends MessageLookupByLibrary {
       "Ngày mai có ai nghỉ không?",
     ),
     "menu": MessageLookupByLibrary.simpleMessage("Mở menu"),
+    "microphonePermissionContinue": MessageLookupByLibrary.simpleMessage(
+      "Tiếp tục",
+    ),
+    "microphonePermissionDescription": MessageLookupByLibrary.simpleMessage(
+      "Ứng dụng cần quyền truy cập micro và nhận dạng giọng nói để chuyển lời nói của bạn thành tin nhắn. Chỉ tiếp tục nếu bạn đồng ý.",
+    ),
+    "microphonePermissionTitle": MessageLookupByLibrary.simpleMessage(
+      "Cho phép sử dụng micro?",
+    ),
+    "navigationAssistant": MessageLookupByLibrary.simpleMessage("Trợ lý"),
     "navigationChat": MessageLookupByLibrary.simpleMessage("Chat"),
     "navigationFeed": MessageLookupByLibrary.simpleMessage("Tin tức"),
     "navigationHome": MessageLookupByLibrary.simpleMessage("Trang chủ"),
@@ -246,11 +273,31 @@ class MessageLookup extends MessageLookupByLibrary {
       "Đang chuẩn bị phản hồi...",
     ),
     "processing": MessageLookupByLibrary.simpleMessage("Đang xử lý..."),
+    "profileAnnualDays": m3,
+    "profileDepartment": MessageLookupByLibrary.simpleMessage("Phòng ban"),
+    "profileManagerCode": MessageLookupByLibrary.simpleMessage("Mã quản lý"),
+    "profileManagerRole": MessageLookupByLibrary.simpleMessage("Quản lý"),
+    "profileSickDays": m4,
+    "profileStaffRole": MessageLookupByLibrary.simpleMessage("Nhân viên"),
     "quickAccess": MessageLookupByLibrary.simpleMessage("Truy cập nhanh"),
     "recordVoice": MessageLookupByLibrary.simpleMessage("Ghi âm"),
     "rememberSession": MessageLookupByLibrary.simpleMessage(
       "Duy trì đăng nhập",
     ),
+    "requestCode": MessageLookupByLibrary.simpleMessage("Mã yêu cầu"),
+    "requestCreatedAt": MessageLookupByLibrary.simpleMessage("Ngày tạo"),
+    "requestDetailTitle": m5,
+    "requestFrom": MessageLookupByLibrary.simpleMessage("Từ ngày"),
+    "requestInvalidResponse": MessageLookupByLibrary.simpleMessage(
+      "Dữ liệu yêu cầu không hợp lệ. Vui lòng thử lại.",
+    ),
+    "requestNetworkError": MessageLookupByLibrary.simpleMessage(
+      "Không thể tải dữ liệu. Vui lòng kiểm tra kết nối mạng.",
+    ),
+    "requestNotFound": MessageLookupByLibrary.simpleMessage(
+      "Không tìm thấy yêu cầu này.",
+    ),
+    "requestTo": MessageLookupByLibrary.simpleMessage("Đến ngày"),
     "responseCopied": MessageLookupByLibrary.simpleMessage(
       "Đã sao chép phản hồi",
     ),
@@ -300,9 +347,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "taskThreeCount": MessageLookupByLibrary.simpleMessage("03"),
     "taskTwelveCount": MessageLookupByLibrary.simpleMessage("12"),
     "thinking": MessageLookupByLibrary.simpleMessage("Đang suy nghĩ..."),
-    "threadPreviewWithDate": m3,
+    "threadPreviewWithDate": m6,
     "timeManagement": MessageLookupByLibrary.simpleMessage("Quản lý thời gian"),
-    "tripDateRange": m4,
+    "tripDateRange": m7,
+    "tripDestination": MessageLookupByLibrary.simpleMessage("Địa điểm"),
+    "tripListEmpty": MessageLookupByLibrary.simpleMessage(
+      "Bạn chưa có chuyến công tác.",
+    ),
+    "tripPurpose": MessageLookupByLibrary.simpleMessage("Mục đích"),
     "understandingRequest": MessageLookupByLibrary.simpleMessage(
       "Đang hiểu yêu cầu...",
     ),

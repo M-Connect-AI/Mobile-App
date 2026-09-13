@@ -251,6 +251,9 @@ class FakeSpeechToTextRepository implements SpeechToTextRepository {
   Future<void> close() async {}
 
   @override
+  Future<bool> hasPermission() async => false;
+
+  @override
   Future<bool> initialize() async => true;
 
   @override

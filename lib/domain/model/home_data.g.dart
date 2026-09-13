@@ -6,15 +6,15 @@ part of 'home_data.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$LeaveBalanceImpl _$$LeaveBalanceImplFromJson(Map<String, dynamic> json) =>
-    _$LeaveBalanceImpl(
+_LeaveBalance _$LeaveBalanceFromJson(Map<String, dynamic> json) =>
+    _LeaveBalance(
       employeeCode: json['employeeCode'] as String,
       annualRemaining: (json['annualRemaining'] as num).toInt(),
       annualTotal: (json['annualTotal'] as num).toInt(),
       sickRemaining: (json['sickRemaining'] as num).toInt(),
     );
 
-Map<String, dynamic> _$$LeaveBalanceImplToJson(_$LeaveBalanceImpl instance) =>
+Map<String, dynamic> _$LeaveBalanceToJson(_LeaveBalance instance) =>
     <String, dynamic>{
       'employeeCode': instance.employeeCode,
       'annualRemaining': instance.annualRemaining,
@@ -22,8 +22,8 @@ Map<String, dynamic> _$$LeaveBalanceImplToJson(_$LeaveBalanceImpl instance) =>
       'sickRemaining': instance.sickRemaining,
     };
 
-_$BusinessTripImpl _$$BusinessTripImplFromJson(Map<String, dynamic> json) =>
-    _$BusinessTripImpl(
+_BusinessTrip _$BusinessTripFromJson(Map<String, dynamic> json) =>
+    _BusinessTrip(
       id: json['id'] as String,
       employeeCode: json['employeeCode'] as String,
       destination: json['destination'] as String,
@@ -39,7 +39,7 @@ _$BusinessTripImpl _$$BusinessTripImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['updatedAt'] as String),
     );
 
-Map<String, dynamic> _$$BusinessTripImplToJson(_$BusinessTripImpl instance) =>
+Map<String, dynamic> _$BusinessTripToJson(_BusinessTrip instance) =>
     <String, dynamic>{
       'id': instance.id,
       'employeeCode': instance.employeeCode,
@@ -59,20 +59,18 @@ const _$RequestStatusEnumMap = {
   RequestStatus.cancelled: 'cancelled',
 };
 
-_$HomeDataImpl _$$HomeDataImplFromJson(Map<String, dynamic> json) =>
-    _$HomeDataImpl(
-      user: AuthUser.fromJson(json['user'] as Map<String, dynamic>),
-      leaveBalance: LeaveBalance.fromJson(
-        json['leaveBalance'] as Map<String, dynamic>,
-      ),
-      upcomingTrips: (json['upcomingTrips'] as List<dynamic>)
-          .map((e) => BusinessTrip.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
+_HomeData _$HomeDataFromJson(Map<String, dynamic> json) => _HomeData(
+  user: AuthUser.fromJson(json['user'] as Map<String, dynamic>),
+  leaveBalance: LeaveBalance.fromJson(
+    json['leaveBalance'] as Map<String, dynamic>,
+  ),
+  upcomingTrips: (json['upcomingTrips'] as List<dynamic>)
+      .map((e) => BusinessTrip.fromJson(e as Map<String, dynamic>))
+      .toList(),
+);
 
-Map<String, dynamic> _$$HomeDataImplToJson(_$HomeDataImpl instance) =>
-    <String, dynamic>{
-      'user': instance.user,
-      'leaveBalance': instance.leaveBalance,
-      'upcomingTrips': instance.upcomingTrips,
-    };
+Map<String, dynamic> _$HomeDataToJson(_HomeData instance) => <String, dynamic>{
+  'user': instance.user,
+  'leaveBalance': instance.leaveBalance,
+  'upcomingTrips': instance.upcomingTrips,
+};

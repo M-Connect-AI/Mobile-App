@@ -3,6 +3,7 @@ abstract interface class SpeechToTextRepository {
   Stream<SpeechSessionStatus> get statuses;
   Stream<String> get errors;
 
+  Future<bool> hasPermission();
   Future<bool> initialize();
   Future<void> startListening();
   Future<String> stopListening();

@@ -324,6 +324,16 @@ class S {
     return Intl.message('Đăng xuất', name: 'logout', desc: '', args: []);
   }
 
+  /// `Alice`
+  String get aliceInspectorButton {
+    return Intl.message(
+      'Alice',
+      name: 'aliceInspectorButton',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Cấu hình máy chủ`
   String get serverConfigButton {
     return Intl.message(
@@ -624,6 +634,26 @@ class S {
     );
   }
 
+  /// `{remaining}/{total} ngày`
+  String profileAnnualDays(int remaining, int total) {
+    return Intl.message(
+      '$remaining/$total ngày',
+      name: 'profileAnnualDays',
+      desc: '',
+      args: [remaining, total],
+    );
+  }
+
+  /// `{days} ngày`
+  String profileSickDays(int days) {
+    return Intl.message(
+      '$days ngày',
+      name: 'profileSickDays',
+      desc: '',
+      args: [days],
+    );
+  }
+
   /// `Chuyến công tác sắp tới`
   String get upcomingTrip {
     return Intl.message(
@@ -672,6 +702,161 @@ class S {
   /// `Công tác`
   String get businessTrip {
     return Intl.message('Công tác', name: 'businessTrip', desc: '', args: []);
+  }
+
+  /// `Chi tiết {title}`
+  String requestDetailTitle(String title) {
+    return Intl.message(
+      'Chi tiết $title',
+      name: 'requestDetailTitle',
+      desc: '',
+      args: [title],
+    );
+  }
+
+  /// `Bạn chưa có đơn nghỉ phép.`
+  String get leaveListEmpty {
+    return Intl.message(
+      'Bạn chưa có đơn nghỉ phép.',
+      name: 'leaveListEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bạn chưa có chuyến công tác.`
+  String get tripListEmpty {
+    return Intl.message(
+      'Bạn chưa có chuyến công tác.',
+      name: 'tripListEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Không tìm thấy yêu cầu này.`
+  String get requestNotFound {
+    return Intl.message(
+      'Không tìm thấy yêu cầu này.',
+      name: 'requestNotFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Không thể tải dữ liệu. Vui lòng kiểm tra kết nối mạng.`
+  String get requestNetworkError {
+    return Intl.message(
+      'Không thể tải dữ liệu. Vui lòng kiểm tra kết nối mạng.',
+      name: 'requestNetworkError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Dữ liệu yêu cầu không hợp lệ. Vui lòng thử lại.`
+  String get requestInvalidResponse {
+    return Intl.message(
+      'Dữ liệu yêu cầu không hợp lệ. Vui lòng thử lại.',
+      name: 'requestInvalidResponse',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mã yêu cầu`
+  String get requestCode {
+    return Intl.message('Mã yêu cầu', name: 'requestCode', desc: '', args: []);
+  }
+
+  /// `Mã nhân viên`
+  String get employeeCode {
+    return Intl.message(
+      'Mã nhân viên',
+      name: 'employeeCode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Loại nghỉ phép`
+  String get leaveType {
+    return Intl.message(
+      'Loại nghỉ phép',
+      name: 'leaveType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Phép năm`
+  String get leaveAnnualType {
+    return Intl.message(
+      'Phép năm',
+      name: 'leaveAnnualType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Phép ốm`
+  String get leaveSickType {
+    return Intl.message('Phép ốm', name: 'leaveSickType', desc: '', args: []);
+  }
+
+  /// `Nghỉ không lương`
+  String get leaveUnpaidType {
+    return Intl.message(
+      'Nghỉ không lương',
+      name: 'leaveUnpaidType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Từ ngày`
+  String get requestFrom {
+    return Intl.message('Từ ngày', name: 'requestFrom', desc: '', args: []);
+  }
+
+  /// `Đến ngày`
+  String get requestTo {
+    return Intl.message('Đến ngày', name: 'requestTo', desc: '', args: []);
+  }
+
+  /// `Số ngày`
+  String get leaveDays {
+    return Intl.message('Số ngày', name: 'leaveDays', desc: '', args: []);
+  }
+
+  /// `Lý do`
+  String get leaveReason {
+    return Intl.message('Lý do', name: 'leaveReason', desc: '', args: []);
+  }
+
+  /// `Địa điểm`
+  String get tripDestination {
+    return Intl.message(
+      'Địa điểm',
+      name: 'tripDestination',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mục đích`
+  String get tripPurpose {
+    return Intl.message('Mục đích', name: 'tripPurpose', desc: '', args: []);
+  }
+
+  /// `Ngày tạo`
+  String get requestCreatedAt {
+    return Intl.message(
+      'Ngày tạo',
+      name: 'requestCreatedAt',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `{from} – {to}`
@@ -839,6 +1024,16 @@ class S {
     return Intl.message('Chat', name: 'navigationChat', desc: '', args: []);
   }
 
+  /// `Trợ lý`
+  String get navigationAssistant {
+    return Intl.message(
+      'Trợ lý',
+      name: 'navigationAssistant',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Tin tức`
   String get navigationFeed {
     return Intl.message('Tin tức', name: 'navigationFeed', desc: '', args: []);
@@ -859,6 +1054,46 @@ class S {
     return Intl.message(
       'Tiện ích',
       name: 'navigationUtilities',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nhân viên`
+  String get profileStaffRole {
+    return Intl.message(
+      'Nhân viên',
+      name: 'profileStaffRole',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Quản lý`
+  String get profileManagerRole {
+    return Intl.message(
+      'Quản lý',
+      name: 'profileManagerRole',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Phòng ban`
+  String get profileDepartment {
+    return Intl.message(
+      'Phòng ban',
+      name: 'profileDepartment',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mã quản lý`
+  String get profileManagerCode {
+    return Intl.message(
+      'Mã quản lý',
+      name: 'profileManagerCode',
       desc: '',
       args: [],
     );
@@ -1267,6 +1502,36 @@ class S {
   /// `Ghi âm`
   String get recordVoice {
     return Intl.message('Ghi âm', name: 'recordVoice', desc: '', args: []);
+  }
+
+  /// `Cho phép sử dụng micro?`
+  String get microphonePermissionTitle {
+    return Intl.message(
+      'Cho phép sử dụng micro?',
+      name: 'microphonePermissionTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ứng dụng cần quyền truy cập micro và nhận dạng giọng nói để chuyển lời nói của bạn thành tin nhắn. Chỉ tiếp tục nếu bạn đồng ý.`
+  String get microphonePermissionDescription {
+    return Intl.message(
+      'Ứng dụng cần quyền truy cập micro và nhận dạng giọng nói để chuyển lời nói của bạn thành tin nhắn. Chỉ tiếp tục nếu bạn đồng ý.',
+      name: 'microphonePermissionDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tiếp tục`
+  String get microphonePermissionContinue {
+    return Intl.message(
+      'Tiếp tục',
+      name: 'microphonePermissionContinue',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Xin chào! Tôi là trợ lý AI của bạn. Bạn muốn tôi giúp gì hôm nay?`

@@ -29,6 +29,9 @@ class DeviceSpeechToTextRepository implements SpeechToTextRepository {
   Stream<String> get errors => _errorController.stream;
 
   @override
+  Future<bool> hasPermission() => _speech.hasPermission;
+
+  @override
   Future<bool> initialize() async {
     if (_initialized) return true;
     _initialized = await _speech.initialize(

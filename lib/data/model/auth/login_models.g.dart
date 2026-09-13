@@ -6,46 +6,41 @@ part of 'login_models.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$LoginRequestDtoImpl _$$LoginRequestDtoImplFromJson(
-  Map<String, dynamic> json,
-) => _$LoginRequestDtoImpl(
-  email: json['email'] as String,
-  password: json['password'] as String,
-);
-
-Map<String, dynamic> _$$LoginRequestDtoImplToJson(
-  _$LoginRequestDtoImpl instance,
-) => <String, dynamic>{'email': instance.email, 'password': instance.password};
-
-_$LoginResponseDtoImpl _$$LoginResponseDtoImplFromJson(
-  Map<String, dynamic> json,
-) => _$LoginResponseDtoImpl(
-  accessToken: json['accessToken'] as String,
-  user: AuthUserDto.fromJson(json['user'] as Map<String, dynamic>),
-);
-
-Map<String, dynamic> _$$LoginResponseDtoImplToJson(
-  _$LoginResponseDtoImpl instance,
-) => <String, dynamic>{
-  'accessToken': instance.accessToken,
-  'user': instance.user,
-};
-
-_$AuthUserDtoImpl _$$AuthUserDtoImplFromJson(Map<String, dynamic> json) =>
-    _$AuthUserDtoImpl(
-      id: json['id'] as String,
-      employeeCode: json['employeeCode'] as String,
+_LoginRequestDto _$LoginRequestDtoFromJson(Map<String, dynamic> json) =>
+    _LoginRequestDto(
       email: json['email'] as String,
-      fullName: json['fullName'] as String,
-      role: json['role'] as String,
-      department: json['department'] as String,
-      managerEmployeeCode: json['managerEmployeeCode'] as String?,
-      annualRemaining: (json['annualRemaining'] as num).toInt(),
-      annualTotal: (json['annualTotal'] as num).toInt(),
-      sickRemaining: (json['sickRemaining'] as num).toInt(),
+      password: json['password'] as String,
     );
 
-Map<String, dynamic> _$$AuthUserDtoImplToJson(_$AuthUserDtoImpl instance) =>
+Map<String, dynamic> _$LoginRequestDtoToJson(_LoginRequestDto instance) =>
+    <String, dynamic>{'email': instance.email, 'password': instance.password};
+
+_LoginResponseDto _$LoginResponseDtoFromJson(Map<String, dynamic> json) =>
+    _LoginResponseDto(
+      accessToken: json['accessToken'] as String,
+      user: AuthUserDto.fromJson(json['user'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$LoginResponseDtoToJson(_LoginResponseDto instance) =>
+    <String, dynamic>{
+      'accessToken': instance.accessToken,
+      'user': instance.user,
+    };
+
+_AuthUserDto _$AuthUserDtoFromJson(Map<String, dynamic> json) => _AuthUserDto(
+  id: json['id'] as String,
+  employeeCode: json['employeeCode'] as String,
+  email: json['email'] as String,
+  fullName: json['fullName'] as String,
+  role: json['role'] as String,
+  department: json['department'] as String,
+  managerEmployeeCode: json['managerEmployeeCode'] as String?,
+  annualRemaining: (json['annualRemaining'] as num).toInt(),
+  annualTotal: (json['annualTotal'] as num).toInt(),
+  sickRemaining: (json['sickRemaining'] as num).toInt(),
+);
+
+Map<String, dynamic> _$AuthUserDtoToJson(_AuthUserDto instance) =>
     <String, dynamic>{
       'id': instance.id,
       'employeeCode': instance.employeeCode,

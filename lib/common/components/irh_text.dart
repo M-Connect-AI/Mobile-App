@@ -42,6 +42,25 @@ abstract final class IrhText {
     ),
   );
 
+  static Widget smallMedium(
+    String value, {
+    Key? key,
+    Color? color,
+    TextAlign? textAlign,
+    int? maxLines,
+  }) => Builder(
+    builder: (context) => Text(
+      value,
+      key: key,
+      textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: maxLines == null ? null : TextOverflow.ellipsis,
+      style: AppTextStyle.m14.copyWith(
+        color: color ?? context.appColorScheme.textSecondary,
+      ),
+    ),
+  );
+
   static Widget regular(
     String value, {
     Key? key,

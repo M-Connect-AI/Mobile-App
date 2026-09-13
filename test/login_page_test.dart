@@ -1,9 +1,12 @@
 import 'package:chatbot_project/common/theme/app_theme.dart';
+import 'package:chatbot_project/common/server_config/server_config_scope.dart';
 import 'package:chatbot_project/domain/model/auth_session.dart';
 import 'package:chatbot_project/domain/model/home_data.dart';
+import 'package:chatbot_project/domain/model/server_config.dart';
 import 'package:chatbot_project/domain/repository/auth_repository.dart';
 import 'package:chatbot_project/domain/repository/credential_repository.dart';
 import 'package:chatbot_project/domain/repository/home_repository.dart';
+import 'package:chatbot_project/domain/repository/server_config_repository.dart';
 import 'package:chatbot_project/generated/l10n.dart';
 import 'package:chatbot_project/route/go_router.dart';
 import 'package:flutter/material.dart';
@@ -14,43 +17,50 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
-  testWidgets('real-login flow opens the home screen', (tester) async {
+  testWidgets('server config opens and login flow reaches home', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final auth = _SuccessfulAuthRepository();
+    final serverConfig = _MemoryServerConfigRepository();
     final router = GoRouter(
       initialLocation: const LoginRoute().location,
       routes: appRoutes,
     );
     addTearDown(router.dispose);
     await tester.pumpWidget(
-      MultiRepositoryProvider(
-        providers: [
-          RepositoryProvider<AuthRepository>(create: (_) => auth),
-          RepositoryProvider<CredentialRepository>(
-            create: (_) => _MemoryCredentialRepository(),
-          ),
-          RepositoryProvider<HomeRepository>(
-            create: (_) => const _LoginHomeRepository(),
-          ),
-        ],
-        child: ScreenUtilInit(
-          designSize: const Size(390, 844),
-          minTextAdapt: true,
-          splitScreenMode: true,
-          builder: (context, child) => MaterialApp.router(
-            routerConfig: router,
-            theme: AppTheme.light,
-            locale: const Locale('vi'),
-            supportedLocales: S.delegate.supportedLocales,
-            localizationsDelegates: const [
-              S.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
+      ServerConfigScope(
+        apply: serverConfig.save,
+        child: MultiRepositoryProvider(
+          providers: [
+            RepositoryProvider<AuthRepository>(create: (_) => auth),
+            RepositoryProvider<CredentialRepository>(
+              create: (_) => _MemoryCredentialRepository(),
+            ),
+            RepositoryProvider<HomeRepository>(
+              create: (_) => const _LoginHomeRepository(),
+            ),
+            RepositoryProvider<ServerConfigRepository>.value(
+              value: serverConfig,
+            ),
+          ],
+          child: ScreenUtilInit(
+            designSize: const Size(390, 844),
+            minTextAdapt: true,
+            splitScreenMode: true,
+            builder: (context, child) => MaterialApp.router(
+              routerConfig: router,
+              theme: AppTheme.light,
+              locale: const Locale('vi'),
+              supportedLocales: S.delegate.supportedLocales,
+              localizationsDelegates: const [
+                S.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+            ),
           ),
         ),
       ),
@@ -67,6 +77,11 @@ void main() {
     );
     expect(find.text('© MSB 2023 ALL RIGHT RESERVED'), findsOneWidget);
     expect(find.byKey(const Key('server-config-button')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('server-config-button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('server-config-dialog')), findsOneWidget);
+    await tester.tap(find.text(S.current.cancelButton));
+    await tester.pumpAndSettle();
     expect(
       find.text('Đăng nhập mô phỏng · Chưa kết nối API thật'),
       findsNothing,
@@ -123,6 +138,25 @@ class _MemoryCredentialRepository implements CredentialRepository {
   @override
   Future<void> save(AuthSession value, {required bool persist}) async =>
       session = value;
+}
+
+class _MemoryServerConfigRepository implements ServerConfigRepository {
+  @override
+  final ServerConfig defaults = const ServerConfig(
+    hrApiBaseUrl: 'http://localhost:3002',
+    agentApiBaseUrl: 'http://localhost:3001',
+  );
+
+  ServerConfig? current;
+
+  @override
+  Future<ServerConfig> read() async => current ?? defaults;
+
+  @override
+  Future<void> save(ServerConfig config) async => current = config;
+
+  @override
+  Future<void> clear() async => current = null;
 }
 
 class _LoginHomeRepository implements HomeRepository {

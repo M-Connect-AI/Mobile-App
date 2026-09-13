@@ -4,7 +4,7 @@ part 'login_models.freezed.dart';
 part 'login_models.g.dart';
 
 @freezed
-class LoginRequestDto with _$LoginRequestDto {
+abstract class LoginRequestDto with _$LoginRequestDto {
   const factory LoginRequestDto({
     required String email,
     required String password,
@@ -15,7 +15,7 @@ class LoginRequestDto with _$LoginRequestDto {
 }
 
 @freezed
-class LoginResponseDto with _$LoginResponseDto {
+abstract class LoginResponseDto with _$LoginResponseDto {
   const factory LoginResponseDto({
     required String accessToken,
     required AuthUserDto user,
@@ -26,7 +26,7 @@ class LoginResponseDto with _$LoginResponseDto {
 }
 
 @freezed
-class AuthUserDto with _$AuthUserDto {
+abstract class AuthUserDto with _$AuthUserDto {
   const factory AuthUserDto({
     required String id,
     required String employeeCode,

@@ -8,7 +8,7 @@ part 'home_data.g.dart';
 enum RequestStatus { pending, approved, rejected, cancelled }
 
 @freezed
-class LeaveBalance with _$LeaveBalance {
+abstract class LeaveBalance with _$LeaveBalance {
   const factory LeaveBalance({
     required String employeeCode,
     required int annualRemaining,
@@ -21,7 +21,7 @@ class LeaveBalance with _$LeaveBalance {
 }
 
 @freezed
-class BusinessTrip with _$BusinessTrip {
+abstract class BusinessTrip with _$BusinessTrip {
   const factory BusinessTrip({
     required String id,
     required String employeeCode,
@@ -39,7 +39,7 @@ class BusinessTrip with _$BusinessTrip {
 }
 
 @freezed
-class HomeData with _$HomeData {
+abstract class HomeData with _$HomeData {
   const factory HomeData({
     required AuthUser user,
     required LeaveBalance leaveBalance,

@@ -112,11 +112,6 @@ class _LoginViewState extends State<_LoginView> {
           child: SafeArea(
             child: Stack(
               children: [
-                Positioned(
-                  top: 4.height,
-                  right: 8.width,
-                  child: ServerConfigButton(color: colors.surfaceSecondary),
-                ),
                 Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: 440.width),
@@ -140,6 +135,11 @@ class _LoginViewState extends State<_LoginView> {
                       ],
                     ),
                   ),
+                ),
+                Positioned(
+                  top: 4.height,
+                  right: 8.width,
+                  child: ServerConfigButton(color: colors.surfaceSecondary),
                 ),
               ],
             ),

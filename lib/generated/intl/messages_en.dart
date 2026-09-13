@@ -26,14 +26,21 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m2(appName) => "Sign in to continue with ${appName}";
 
-  static String m3(preview, date) => "${preview} · ${date}";
+  static String m3(remaining, total) => "${remaining}/${total} days";
 
-  static String m4(from, to) => "${from} – ${to}";
+  static String m4(days) => "${days} days";
+
+  static String m5(title) => "${title} details";
+
+  static String m6(preview, date) => "${preview} · ${date}";
+
+  static String m7(from, to) => "${from} – ${to}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "agentApiUrlLabel": MessageLookupByLibrary.simpleMessage("Agent API URL"),
     "aiResponse": MessageLookupByLibrary.simpleMessage("AI response"),
+    "aliceInspectorButton": MessageLookupByLibrary.simpleMessage("Alice"),
     "annualLeave": MessageLookupByLibrary.simpleMessage(
       "Annual remaining / total",
     ),
@@ -74,6 +81,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "emailRequired": MessageLookupByLibrary.simpleMessage(
       "Please enter your email",
     ),
+    "employeeCode": MessageLookupByLibrary.simpleMessage("Employee code"),
     "employeeLeVanC": MessageLookupByLibrary.simpleMessage(
       "Employee — Le Van C",
     ),
@@ -147,6 +155,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Waiting for\napproval",
     ),
     "hrApiUrlLabel": MessageLookupByLibrary.simpleMessage("HR API URL"),
+    "leaveAnnualType": MessageLookupByLibrary.simpleMessage("Annual leave"),
     "leaveBalance": MessageLookupByLibrary.simpleMessage("Leave balance"),
     "leaveBalanceSuggestion": MessageLookupByLibrary.simpleMessage(
       "How many leave days do I have left?",
@@ -154,16 +163,24 @@ class MessageLookup extends MessageLookupByLibrary {
     "leaveCancelSuggestion": MessageLookupByLibrary.simpleMessage(
       "Cancel my latest leave request",
     ),
+    "leaveDays": MessageLookupByLibrary.simpleMessage("Days"),
+    "leaveListEmpty": MessageLookupByLibrary.simpleMessage(
+      "You have no leave requests.",
+    ),
     "leaveListSuggestion": MessageLookupByLibrary.simpleMessage(
       "View my leave requests",
     ),
     "leavePendingSuggestion": MessageLookupByLibrary.simpleMessage(
       "Do I have any pending requests?",
     ),
+    "leaveReason": MessageLookupByLibrary.simpleMessage("Reason"),
     "leaveRequest": MessageLookupByLibrary.simpleMessage("Leave request"),
     "leaveRequestSuggestion": MessageLookupByLibrary.simpleMessage(
       "I want to request leave tomorrow",
     ),
+    "leaveSickType": MessageLookupByLibrary.simpleMessage("Sick leave"),
+    "leaveType": MessageLookupByLibrary.simpleMessage("Leave type"),
+    "leaveUnpaidType": MessageLookupByLibrary.simpleMessage("Unpaid leave"),
     "listening": MessageLookupByLibrary.simpleMessage("Listening..."),
     "loggingIn": MessageLookupByLibrary.simpleMessage("Signing in..."),
     "loginButton": MessageLookupByLibrary.simpleMessage("Sign in"),
@@ -205,6 +222,16 @@ class MessageLookup extends MessageLookupByLibrary {
       "Is anyone off tomorrow?",
     ),
     "menu": MessageLookupByLibrary.simpleMessage("Open menu"),
+    "microphonePermissionContinue": MessageLookupByLibrary.simpleMessage(
+      "Continue",
+    ),
+    "microphonePermissionDescription": MessageLookupByLibrary.simpleMessage(
+      "The app needs microphone and speech recognition access to turn your voice into a message. Continue only if you agree.",
+    ),
+    "microphonePermissionTitle": MessageLookupByLibrary.simpleMessage(
+      "Allow microphone access?",
+    ),
+    "navigationAssistant": MessageLookupByLibrary.simpleMessage("Assistant"),
     "navigationChat": MessageLookupByLibrary.simpleMessage("Chat"),
     "navigationFeed": MessageLookupByLibrary.simpleMessage("Feed"),
     "navigationHome": MessageLookupByLibrary.simpleMessage("Home"),
@@ -240,11 +267,31 @@ class MessageLookup extends MessageLookupByLibrary {
       "Preparing response...",
     ),
     "processing": MessageLookupByLibrary.simpleMessage("Processing..."),
+    "profileAnnualDays": m3,
+    "profileDepartment": MessageLookupByLibrary.simpleMessage("Department"),
+    "profileManagerCode": MessageLookupByLibrary.simpleMessage("Manager code"),
+    "profileManagerRole": MessageLookupByLibrary.simpleMessage("Manager"),
+    "profileSickDays": m4,
+    "profileStaffRole": MessageLookupByLibrary.simpleMessage("Staff"),
     "quickAccess": MessageLookupByLibrary.simpleMessage("Quick access"),
     "recordVoice": MessageLookupByLibrary.simpleMessage("Record voice"),
     "rememberSession": MessageLookupByLibrary.simpleMessage(
       "Keep me signed in",
     ),
+    "requestCode": MessageLookupByLibrary.simpleMessage("Request ID"),
+    "requestCreatedAt": MessageLookupByLibrary.simpleMessage("Created on"),
+    "requestDetailTitle": m5,
+    "requestFrom": MessageLookupByLibrary.simpleMessage("From"),
+    "requestInvalidResponse": MessageLookupByLibrary.simpleMessage(
+      "Invalid request data. Please try again.",
+    ),
+    "requestNetworkError": MessageLookupByLibrary.simpleMessage(
+      "Could not load data. Check your connection and try again.",
+    ),
+    "requestNotFound": MessageLookupByLibrary.simpleMessage(
+      "This request could not be found.",
+    ),
+    "requestTo": MessageLookupByLibrary.simpleMessage("To"),
     "responseCopied": MessageLookupByLibrary.simpleMessage("Response copied"),
     "restoreDefaultsButton": MessageLookupByLibrary.simpleMessage("Defaults"),
     "retry": MessageLookupByLibrary.simpleMessage("Retry"),
@@ -292,9 +339,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "taskThreeCount": MessageLookupByLibrary.simpleMessage("03"),
     "taskTwelveCount": MessageLookupByLibrary.simpleMessage("12"),
     "thinking": MessageLookupByLibrary.simpleMessage("Thinking..."),
-    "threadPreviewWithDate": m3,
+    "threadPreviewWithDate": m6,
     "timeManagement": MessageLookupByLibrary.simpleMessage("Time management"),
-    "tripDateRange": m4,
+    "tripDateRange": m7,
+    "tripDestination": MessageLookupByLibrary.simpleMessage("Destination"),
+    "tripListEmpty": MessageLookupByLibrary.simpleMessage(
+      "You have no business trips.",
+    ),
+    "tripPurpose": MessageLookupByLibrary.simpleMessage("Purpose"),
     "understandingRequest": MessageLookupByLibrary.simpleMessage(
       "Understanding request...",
     ),

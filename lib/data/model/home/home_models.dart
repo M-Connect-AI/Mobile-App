@@ -4,7 +4,7 @@ part 'home_models.freezed.dart';
 part 'home_models.g.dart';
 
 @freezed
-class LeaveBalanceDto with _$LeaveBalanceDto {
+abstract class LeaveBalanceDto with _$LeaveBalanceDto {
   const factory LeaveBalanceDto({
     required String employeeCode,
     required int annualRemaining,
@@ -17,7 +17,7 @@ class LeaveBalanceDto with _$LeaveBalanceDto {
 }
 
 @freezed
-class BusinessTripDto with _$BusinessTripDto {
+abstract class BusinessTripDto with _$BusinessTripDto {
   const factory BusinessTripDto({
     // ignore: invalid_annotation_target
     @JsonKey(name: '_id') String? mongoId,

@@ -46,14 +46,13 @@ class _HomeView extends StatelessWidget {
               current.status == HomeStatus.loggedOut),
       listener: (context, state) => const LoginRoute().go(context),
       child: Scaffold(
-        extendBody: true,
         backgroundColor: colors.surfacePrimary,
         body: BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) {
             if (state.status == HomeStatus.success && state.data != null) {
               return switch (state.tab) {
                 HomeTab.home => _HomeContent(data: state.data!),
-                HomeTab.utilities => const _UtilitiesContent(),
+                HomeTab.utilities => _UtilitiesContent(user: state.data!.user),
               };
             }
             if (state.status == HomeStatus.failure &&
@@ -65,8 +64,8 @@ class _HomeView extends StatelessWidget {
             );
           },
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: _AssistantButton(
+        floatingActionButtonLocation: const _AssistantLauncherLocation(),
+        floatingActionButton: _AssistantLauncher(
           onPressed: () => const HomeChatAiRoute().push(context),
         ),
         bottomNavigationBar: BlocBuilder<HomeCubit, HomeState>(
@@ -75,6 +74,19 @@ class _HomeView extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _AssistantLauncherLocation extends FloatingActionButtonLocation {
+  const _AssistantLauncherLocation();
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final docked = FloatingActionButtonLocation.centerDocked.getOffset(
+      scaffoldGeometry,
+    );
+    final groupHeight = scaffoldGeometry.floatingActionButtonSize.height;
+    return Offset(docked.dx, docked.dy + groupHeight / 2 - 16.height);
   }
 }
 
@@ -88,14 +100,13 @@ class _HomeBottomAppBar extends StatelessWidget {
     final strings = S.of(context);
     final colors = context.appColorScheme;
     return BottomAppBar(
-      height: 72.height + MediaQuery.paddingOf(context).bottom,
+      key: const Key('home-bottom-bar'),
+      height: 64.height + MediaQuery.paddingOf(context).bottom,
       padding: EdgeInsets.zero,
-      color: colors.surfaceSecondary.withValues(alpha: .96),
+      color: colors.surfaceSecondary,
       surfaceTintColor: colors.surfaceSecondary,
-      shadowColor: colors.iconPrimary.withValues(alpha: .12),
-      elevation: 16,
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8.width,
+      shadowColor: colors.iconPrimary.withValues(alpha: .06),
+      elevation: 2,
       child: SafeArea(
         top: false,
         child: Row(
@@ -113,7 +124,7 @@ class _HomeBottomAppBar extends StatelessWidget {
               label: strings.navigationHris,
               onPressed: () {},
             ).expanded(),
-            SizedBox(width: 80.width),
+            SizedBox(width: 72.width),
             _NavigationItem(
               icon: Icons.article_rounded,
               label: strings.navigationFeed,
@@ -151,7 +162,8 @@ class _NavigationItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
-    final color = isSelected ? colors.iconBrand : colors.iconSecondary;
+    final iconColor = isSelected ? colors.iconPrimary : colors.textSecondary;
+    final textColor = isSelected ? colors.iconPrimary : colors.textSecondary;
     return Semantics(
       button: true,
       selected: isSelected,
@@ -166,9 +178,9 @@ class _NavigationItem extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 24.sp, color: color),
+              Icon(icon, size: 24.sp, color: iconColor),
               4.height.heightBox,
-              IrhText.small(label, color: color, maxLines: 1),
+              IrhText.smallMedium(label, color: textColor, maxLines: 1),
             ],
           ),
         ),
@@ -177,105 +189,64 @@ class _NavigationItem extends StatelessWidget {
   }
 }
 
-class _AssistantButton extends StatefulWidget {
-  const _AssistantButton({required this.onPressed});
+class _AssistantLauncher extends StatelessWidget {
+  const _AssistantLauncher({required this.onPressed});
 
   final VoidCallback onPressed;
 
   @override
-  State<_AssistantButton> createState() => _AssistantButtonState();
-}
-
-class _AssistantButtonState extends State<_AssistantButton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _emphasis;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..forward();
-    _emphasis = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween<double>(
-          begin: 0,
-          end: 1,
-        ).chain(CurveTween(curve: Curves.easeOutCubic)),
-        weight: 45,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(
-          begin: 1,
-          end: 0,
-        ).chain(CurveTween(curve: Curves.easeInOutCubic)),
-        weight: 55,
-      ),
-    ]).animate(_controller);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
-    return AnimatedBuilder(
-      animation: _emphasis,
-      builder: (context, child) {
-        final scale = 1 + (_emphasis.value * .05);
-        return Transform.scale(
-          scale: scale,
-          child: Container(
-            width: 72.width,
-            height: 72.width,
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: const Alignment(-.4, -.45),
-                radius: 1.05,
-                colors: [
-                  Color.lerp(colors.iconBrand, colors.surfaceSecondary, .32)!,
-                  colors.iconBrand,
-                  Color.lerp(colors.iconBrand, colors.iconPrimary, .38)!,
-                ],
-                stops: const [0, .58, 1],
-              ),
-              shape: BoxShape.circle,
-              border: Border.all(color: colors.surfacePrimary, width: 4.width),
-              boxShadow: [
-                BoxShadow(
-                  color: colors.iconBrand.withValues(
-                    alpha: .28 + (_emphasis.value * .18),
-                  ),
-                  blurRadius: 16.width + (_emphasis.value * 12.width),
-                  spreadRadius: _emphasis.value * 4.width,
-                  offset: Offset(0, 8.height),
+    return Semantics(
+      button: true,
+      label: S.of(context).navigationAssistant,
+      child: CupertinoButton(
+        key: const Key('assistant-navigation-item'),
+        minimumSize: Size.zero,
+        padding: EdgeInsets.zero,
+        onPressed: onPressed,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              key: const Key('assistant-bubble'),
+              width: 56.width,
+              height: 56.height,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color.lerp(colors.iconBrand, colors.surfaceSecondary, .08)!,
+                    colors.iconBrand,
+                  ],
                 ),
-              ],
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: colors.surfaceSecondary,
+                  width: 3.width,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: colors.iconBrand.withValues(alpha: .14),
+                    blurRadius: 12.width,
+                    offset: Offset(0, 4.height),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.auto_awesome_rounded,
+                color: colors.surfaceSecondary,
+                size: 28.sp,
+              ),
             ),
-            child: child,
-          ),
-        );
-      },
-      child: Semantics(
-        button: true,
-        label: S.of(context).navigationChat,
-        child: CupertinoButton(
-          key: const Key('assistant-bubble'),
-          minimumSize: Size.zero,
-          padding: EdgeInsets.zero,
-          borderRadius: BorderRadius.circular(36),
-          onPressed: widget.onPressed,
-          child: Icon(
-            Icons.auto_awesome_rounded,
-            color: colors.surfaceSecondary,
-            size: 32.sp,
-          ),
+            4.height.heightBox,
+            IrhText.medium(
+              S.of(context).navigationAssistant,
+              color: colors.textBrand,
+            ),
+          ],
         ),
       ),
     );
@@ -283,7 +254,9 @@ class _AssistantButtonState extends State<_AssistantButton>
 }
 
 class _UtilitiesContent extends StatelessWidget {
-  const _UtilitiesContent();
+  const _UtilitiesContent({required this.user});
+
+  final AuthUser user;
 
   @override
   Widget build(BuildContext context) {
@@ -300,7 +273,7 @@ class _UtilitiesContent extends StatelessWidget {
               16.width,
               24.height,
               16.width,
-              120.height,
+              48.height,
             ),
             sliver: SliverList.list(
               children: [
@@ -308,7 +281,19 @@ class _UtilitiesContent extends StatelessWidget {
                   strings.navigationUtilities,
                   color: colors.textPrimary,
                 ),
+                16.height.heightBox,
+                _ProfileCard(user: user),
                 24.height.heightBox,
+                _HrUtilityItem(
+                  label: strings.leaveRequest,
+                  onPressed: () => const LeaveListRoute().push(context),
+                ),
+                12.height.heightBox,
+                _HrUtilityItem(
+                  label: strings.businessTrip,
+                  onPressed: () => const TripListRoute().push(context),
+                ),
+                12.height.heightBox,
                 const _ServerConfigUtilityItem(),
                 12.height.heightBox,
                 const _LogoutUtilityItem(),
@@ -316,6 +301,142 @@ class _UtilitiesContent extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProfileCard extends StatelessWidget {
+  const _ProfileCard({required this.user});
+
+  final AuthUser user;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColorScheme;
+    final strings = S.of(context);
+    final name = user.fullName.trim();
+    final initial = name.isEmpty ? '' : name.substring(0, 1).toUpperCase();
+    final managerCode = user.managerEmployeeCode?.trim();
+    return Container(
+      key: const Key('utilities-profile-card'),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: colors.surfaceSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.borderSecondary),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 56.width,
+                height: 56.height,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: colors.surfaceTemary,
+                  shape: BoxShape.circle,
+                ),
+                child: IrhText.title(initial, color: colors.textBrand),
+              ),
+              12.width.widthBox,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  IrhText.medium(user.fullName, maxLines: 2),
+                  4.height.heightBox,
+                  IrhText.small(
+                    user.role == UserRole.manager
+                        ? strings.profileManagerRole
+                        : strings.profileStaffRole,
+                    color: colors.textBrand,
+                  ),
+                ],
+              ).expanded(),
+            ],
+          ),
+          16.height.heightBox,
+          Divider(height: 16.height, color: colors.borderSecondary),
+          16.height.heightBox,
+          _ProfileField(label: strings.emailLabel, value: user.email),
+          12.height.heightBox,
+          _ProfileField(label: strings.employeeCode, value: user.employeeCode),
+          12.height.heightBox,
+          _ProfileField(
+            label: strings.profileDepartment,
+            value: user.department,
+          ),
+          if (managerCode != null && managerCode.isNotEmpty) ...[
+            12.height.heightBox,
+            _ProfileField(
+              label: strings.profileManagerCode,
+              value: managerCode,
+            ),
+          ],
+          16.height.heightBox,
+          Divider(height: 16.height, color: colors.borderSecondary),
+          16.height.heightBox,
+          IrhText.medium(strings.leaveBalance),
+          12.height.heightBox,
+          _ProfileField(
+            label: strings.annualLeave,
+            value: strings.profileAnnualDays(
+              user.annualRemaining,
+              user.annualTotal,
+            ),
+          ),
+          12.height.heightBox,
+          _ProfileField(
+            label: strings.sickLeave,
+            value: strings.profileSickDays(user.sickRemaining),
+          ),
+        ],
+      ).paddingAll(16.width),
+    );
+  }
+}
+
+class _ProfileField extends StatelessWidget {
+  const _ProfileField({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      IrhText.small(label),
+      4.height.heightBox,
+      IrhText.regular(value),
+    ],
+  );
+}
+
+class _HrUtilityItem extends StatelessWidget {
+  const _HrUtilityItem({required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColorScheme;
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: onPressed,
+      child: Container(
+        height: 64.height,
+        decoration: BoxDecoration(
+          color: colors.surfaceSecondary,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: IrhText.regular(label).paddingSymmetric(horizontal: 16.width),
+        ),
       ),
     );
   }
@@ -425,7 +546,7 @@ class _HomeContent extends StatelessWidget {
               16.width,
               24.height,
               16.width,
-              120.height,
+              48.height,
             ),
             sliver: SliverList.list(
               children: [

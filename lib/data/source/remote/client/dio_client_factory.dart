@@ -8,8 +8,7 @@ import '../../../../common/navigation/root_navigator_key.dart';
 abstract final class DioClientFactory {
   static final Alice _alice = Alice(
     navigatorKey: rootNavigatorKey,
-    showNotification: false,
-    showInspectorOnShake: kDebugMode,
+    showNotification: true,
   );
 
   static Dio create() {
