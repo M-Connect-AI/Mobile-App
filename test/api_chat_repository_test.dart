@@ -22,6 +22,151 @@ void main() {
     );
   });
 
+  test(
+    'restores every supported pending action with its exact summary',
+    () async {
+      final cases =
+          <
+            ({
+              String wireName,
+              ChatConfirmationTool tool,
+              Map<String, dynamic> args,
+              String summary,
+            })
+          >[
+            (
+              wireName: 'create_leave',
+              tool: ChatConfirmationTool.createLeave,
+              args: {
+                'type': 'ANNUAL',
+                'from': '2026-09-20',
+                'to': '2026-09-21',
+                'reason': 'Nghỉ phép',
+              },
+              summary: 'Tạo đơn nghỉ phép',
+            ),
+            (
+              wireName: 'create_trip',
+              tool: ChatConfirmationTool.createTrip,
+              args: {
+                'destination': 'Đà Nẵng',
+                'from': '2026-09-20',
+                'to': '2026-09-21',
+                'purpose': 'Gặp khách hàng',
+              },
+              summary: 'Tạo đơn công tác',
+            ),
+            (
+              wireName: 'cancel_leave',
+              tool: ChatConfirmationTool.cancelLeave,
+              args: {'id': 'leave-1'},
+              summary: 'Hủy đơn nghỉ phép',
+            ),
+            (
+              wireName: 'update_leave',
+              tool: ChatConfirmationTool.updateLeave,
+              args: {'id': 'leave-1', 'reason': 'Lý do mới'},
+              summary: 'Sửa đơn nghỉ phép',
+            ),
+            (
+              wireName: 'approve_leaves',
+              tool: ChatConfirmationTool.approveLeaves,
+              args: {
+                'ids': ['leave-1'],
+              },
+              summary: 'Phê duyệt đơn nghỉ phép',
+            ),
+            (
+              wireName: 'reject_leaves',
+              tool: ChatConfirmationTool.rejectLeaves,
+              args: {
+                'ids': ['leave-1'],
+              },
+              summary: 'Từ chối đơn nghỉ phép',
+            ),
+            (
+              wireName: 'approve_trips',
+              tool: ChatConfirmationTool.approveTrips,
+              args: {
+                'ids': ['trip-1'],
+              },
+              summary: 'Phê duyệt đơn công tác',
+            ),
+            (
+              wireName: 'reject_trips',
+              tool: ChatConfirmationTool.rejectTrips,
+              args: {
+                'ids': ['trip-1'],
+              },
+              summary: 'Từ chối đơn công tác',
+            ),
+            (
+              wireName: 'create_jira_task',
+              tool: ChatConfirmationTool.createJiraTask,
+              args: {
+                'projectKey': 'SCRUM',
+                'summary': 'Hoàn thiện SSE',
+                'issueType': 'Task',
+                'priority': 'High',
+                'dueDate': '2026-09-30',
+                'description': 'Khôi phục compatibility',
+                'labels': ['mobile'],
+                'assignToSprint': false,
+              },
+              summary: 'Tạo Jira task',
+            ),
+          ];
+
+      for (final item in cases) {
+        final repository = ApiChatRepository(
+          _FakeAgentRemote(
+            pendingAction: ChatConfirmationDto(
+              tool: item.wireName,
+              args: item.args,
+              summary: item.summary,
+            ),
+          ),
+          _SessionStore(),
+        );
+
+        final detail = await repository.getThread('thread-1');
+        final action = detail.pendingAction!;
+
+        expect(action.tool, item.tool, reason: item.wireName);
+        expect(action.args, item.args, reason: item.wireName);
+        expect(action.summary, item.summary, reason: item.wireName);
+        expect(action.canExecute, isTrue, reason: item.wireName);
+        expect(detail.messages.last.confirmation, action);
+      }
+    },
+  );
+
+  test('fails closed for future tools and malformed known arguments', () async {
+    final cases = [
+      const ChatConfirmationDto(
+        tool: 'future_privileged_tool',
+        args: {'id': 'resource-1'},
+        summary: 'Future action',
+      ),
+      const ChatConfirmationDto(
+        tool: 'approve_trips',
+        args: {'ids': <String>[]},
+        summary: 'Malformed current action',
+      ),
+    ];
+
+    for (final pendingAction in cases) {
+      final repository = ApiChatRepository(
+        _FakeAgentRemote(pendingAction: pendingAction),
+        _SessionStore(),
+      );
+      final detail = await repository.getThread('thread-1');
+
+      expect(detail.pendingAction?.tool, ChatConfirmationTool.unknown);
+      expect(detail.pendingAction?.canExecute, isFalse);
+    }
+  });
+
   test('maps all SSE event types and keeps server thread id', () async {
     final repository = ApiChatRepository(_FakeAgentRemote(), _SessionStore());
 
@@ -29,11 +174,12 @@ void main() {
         .sendMessage(message: 'Tạo đơn', threadId: 'thread-1')
         .toList();
 
-    expect(events[0], const ChatStreamToken('Xin chào'));
-    expect(events[1], isA<ChatStreamConfirmation>());
-    expect(events[2], isA<ChatStreamResult>());
+    expect(events[0], const ChatStreamStatus('Đang xử lý…'));
+    expect(events[1], const ChatStreamToken('Xin chào'));
+    expect(events[2], isA<ChatStreamConfirmation>());
+    expect(events[3], isA<ChatStreamResult>());
     expect(
-      events[3],
+      events[4],
       const ChatStreamDone(
         threadId: 'server-thread',
         citations: ['Quy định nghỉ phép'],
@@ -68,9 +214,11 @@ void main() {
 }
 
 class _FakeAgentRemote extends AgentChatRemoteDataSource {
-  _FakeAgentRemote({this.error}) : super(baseUrl: 'http://unused');
+  _FakeAgentRemote({this.error, this.pendingAction})
+    : super(baseUrl: 'http://unused');
 
   final AgentRemoteException? error;
+  final ChatConfirmationDto? pendingAction;
 
   void _throwIfNeeded() {
     final failure = error;
@@ -96,17 +244,24 @@ class _FakeAgentRemote extends AgentChatRemoteDataSource {
     String threadId,
   ) async {
     _throwIfNeeded();
-    return const ChatThreadDetailDto(
+    return ChatThreadDetailDto(
       threadId: 'thread-1',
       messages: [
         PersistedChatMessageDto(role: 'user', content: 'Tạo đơn'),
         PersistedChatMessageDto(role: 'assistant', content: 'Xác nhận?'),
       ],
-      pendingAction: ChatConfirmationDto(
-        tool: 'create_leave',
-        args: {'type': 'ANNUAL'},
-        summary: 'Gửi đơn nghỉ phép',
-      ),
+      pendingAction:
+          pendingAction ??
+          const ChatConfirmationDto(
+            tool: 'create_leave',
+            args: {
+              'type': 'ANNUAL',
+              'from': '2026-09-20',
+              'to': '2026-09-21',
+              'reason': 'Nghỉ phép',
+            },
+            summary: 'Gửi đơn nghỉ phép',
+          ),
     );
   }
 
@@ -116,11 +271,17 @@ class _FakeAgentRemote extends AgentChatRemoteDataSource {
     ChatTurnRequestDto request,
   ) async* {
     _throwIfNeeded();
+    yield const AgentStatusEvent('Đang xử lý…');
     yield const AgentTokenEvent('Xin chào');
     yield const AgentConfirmationEvent(
       ChatConfirmationDto(
         tool: 'create_leave',
-        args: {'type': 'ANNUAL'},
+        args: {
+          'type': 'ANNUAL',
+          'from': '2026-09-20',
+          'to': '2026-09-21',
+          'reason': 'Nghỉ phép',
+        },
         summary: 'Gửi đơn nghỉ phép',
       ),
     );

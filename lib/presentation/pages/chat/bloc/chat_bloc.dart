@@ -137,6 +137,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         inputText: '',
         isLoading: true,
         aiProcessingState: AiProcessingState.thinking,
+        clearBackendStatusLabel: true,
         clearError: true,
       ),
     );
@@ -284,6 +285,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         messages: [...state.messages, message],
         isLoading: true,
         aiProcessingState: AiProcessingState.thinking,
+        clearBackendStatusLabel: true,
         clearError: true,
       ),
     );
@@ -304,6 +306,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         messages: updated,
         isLoading: true,
         aiProcessingState: AiProcessingState.thinking,
+        clearBackendStatusLabel: true,
         clearError: true,
       ),
     );
@@ -342,6 +345,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         messages: [...messages, userMessage],
         isLoading: true,
         aiProcessingState: AiProcessingState.thinking,
+        clearBackendStatusLabel: true,
         clearError: true,
       ),
     );
@@ -362,14 +366,20 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         threadId: state.activeThreadId,
         confirm: confirm,
       );
-      await Future<void>.delayed(const Duration(milliseconds: 450));
-      emit(
-        state.copyWith(aiProcessingState: AiProcessingState.generatingResponse),
-      );
       await for (final event in responseStream) {
         assistantMessageId ??=
             'assistant-${DateTime.now().microsecondsSinceEpoch}';
-        if (event is ChatStreamToken) {
+        if (event is ChatStreamStatus) {
+          final label = event.label.trim();
+          if (label.isNotEmpty) {
+            emit(
+              state.copyWith(
+                backendStatusLabel: label,
+                aiProcessingState: AiProcessingState.understanding,
+              ),
+            );
+          }
+        } else if (event is ChatStreamToken) {
           receivedToken = true;
           _upsertAssistant(
             emit,
@@ -406,6 +416,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
               activeThreadId: event.threadId,
               isLoading: false,
               aiProcessingState: AiProcessingState.idle,
+              clearBackendStatusLabel: true,
             ),
           );
         } else if (event is ChatStreamFailure) {
@@ -422,6 +433,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
               error: event.message,
               isLoading: false,
               aiProcessingState: AiProcessingState.idle,
+              clearBackendStatusLabel: true,
             ),
           );
         }
@@ -445,6 +457,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           messages: failed,
           isLoading: false,
           aiProcessingState: AiProcessingState.idle,
+          clearBackendStatusLabel: true,
           error: error.message,
           sessionExpired: error.sessionExpired,
         ),

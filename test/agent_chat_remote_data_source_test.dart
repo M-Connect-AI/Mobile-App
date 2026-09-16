@@ -13,6 +13,7 @@ void main() {
     () async {
       RequestOptions? captured;
       final sse = [
+        'event: status\ndata: {"label":"Đang chuẩn bị đề xuất đơn…"}\n\n',
         'event: token\r\ndata: {"text":\r\ndata: "Xin chào"}\r\n\r\n',
         'event: confirm\ndata: {"tool":"create_leave","args":{"type":"ANNUAL"},"summary":"Gửi đơn"}\n\n',
         'event: result\ndata: {"executed":{"_id":"leave-id"}}\n\n',
@@ -49,12 +50,17 @@ void main() {
         'threadId': 'thread-1',
         'confirm': true,
       });
-      expect(events[0], isA<AgentTokenEvent>());
-      expect((events[0] as AgentTokenEvent).text, 'Xin chào');
-      expect(events[1], isA<AgentConfirmationEvent>());
-      expect(events[2], isA<AgentResultEvent>());
-      expect(events[3], isA<AgentDoneEvent>());
-      expect((events[3] as AgentDoneEvent).citations, ['Quy định nghỉ phép']);
+      expect(events[0], isA<AgentStatusEvent>());
+      expect(
+        (events[0] as AgentStatusEvent).label,
+        'Đang chuẩn bị đề xuất đơn…',
+      );
+      expect(events[1], isA<AgentTokenEvent>());
+      expect((events[1] as AgentTokenEvent).text, 'Xin chào');
+      expect(events[2], isA<AgentConfirmationEvent>());
+      expect(events[3], isA<AgentResultEvent>());
+      expect(events[4], isA<AgentDoneEvent>());
+      expect((events[4] as AgentDoneEvent).citations, ['Quy định nghỉ phép']);
     },
   );
 

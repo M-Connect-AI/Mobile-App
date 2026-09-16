@@ -4,7 +4,12 @@ enum ChatConfirmationTool {
   createLeave,
   createTrip,
   cancelLeave,
+  updateLeave,
   approveLeaves,
+  rejectLeaves,
+  approveTrips,
+  rejectTrips,
+  createJiraTask,
   unknown,
 }
 
@@ -27,6 +32,13 @@ class ChatConfirmAction extends Equatable {
 
 sealed class ChatStreamEvent extends Equatable {
   const ChatStreamEvent();
+}
+
+class ChatStreamStatus extends ChatStreamEvent {
+  const ChatStreamStatus(this.label);
+  final String label;
+  @override
+  List<Object> get props => [label];
 }
 
 class ChatStreamToken extends ChatStreamEvent {

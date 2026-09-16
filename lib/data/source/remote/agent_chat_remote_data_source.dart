@@ -29,6 +29,11 @@ class AgentTokenEvent extends AgentSseEvent {
   final String text;
 }
 
+class AgentStatusEvent extends AgentSseEvent {
+  const AgentStatusEvent(this.label);
+  final String label;
+}
+
 class AgentConfirmationEvent extends AgentSseEvent {
   const AgentConfirmationEvent(this.confirmation);
   final ChatConfirmationDto confirmation;
@@ -231,6 +236,9 @@ class AgentChatRemoteDataSource {
     if (data is! Map) throw _malformed();
     final json = Map<String, dynamic>.from(data);
     return switch (name) {
+      'status' when json['label'] is String => AgentStatusEvent(
+        json['label'] as String,
+      ),
       'token' when json['text'] is String => AgentTokenEvent(
         json['text'] as String,
       ),

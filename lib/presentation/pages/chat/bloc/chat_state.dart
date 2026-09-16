@@ -15,6 +15,7 @@ class ChatState extends Equatable {
     this.recognizedText = '',
     this.isLoading = false,
     this.aiProcessingState = AiProcessingState.idle,
+    this.backendStatusLabel,
     this.error,
     this.activeThreadId,
     this.isRestoring = false,
@@ -28,6 +29,7 @@ class ChatState extends Equatable {
   final String recognizedText;
   final bool isLoading;
   final AiProcessingState aiProcessingState;
+  final String? backendStatusLabel;
   final String? error;
   final String? activeThreadId;
   final bool isRestoring;
@@ -44,6 +46,8 @@ class ChatState extends Equatable {
     String? recognizedText,
     bool? isLoading,
     AiProcessingState? aiProcessingState,
+    String? backendStatusLabel,
+    bool clearBackendStatusLabel = false,
     String? error,
     bool clearError = false,
     String? activeThreadId,
@@ -57,6 +61,9 @@ class ChatState extends Equatable {
     recognizedText: recognizedText ?? this.recognizedText,
     isLoading: isLoading ?? this.isLoading,
     aiProcessingState: aiProcessingState ?? this.aiProcessingState,
+    backendStatusLabel: clearBackendStatusLabel
+        ? null
+        : backendStatusLabel ?? this.backendStatusLabel,
     error: clearError ? null : error ?? this.error,
     activeThreadId: activeThreadId ?? this.activeThreadId,
     isRestoring: isRestoring ?? this.isRestoring,
@@ -72,6 +79,7 @@ class ChatState extends Equatable {
     recognizedText,
     isLoading,
     aiProcessingState,
+    backendStatusLabel,
     error,
     activeThreadId,
     isRestoring,

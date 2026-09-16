@@ -66,6 +66,24 @@ void main() {
     expect(find.textContaining('Tôi đã hiểu yêu cầu'), findsOneWidget);
   });
 
+  testWidgets('shows backend status label while a turn is running', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const _ChatTestApp());
+    await tester.pump();
+    await tester.enterText(find.byKey(const Key('chat-text-field')), '#status');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('chat-action-button')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 30));
+
+    expect(find.text('Đang tra cứu task Jira…'), findsWidgets);
+
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(find.text('Đang tra cứu task Jira…'), findsNothing);
+  });
+
   testWidgets('renders backend confirmation and sends confirm flag', (
     tester,
   ) async {
@@ -200,6 +218,13 @@ class _FakeChatRepository implements ChatRepository {
     await Future<void>.delayed(const Duration(milliseconds: 20));
     if (message == '#fail' && _failedOnce.add(message)) {
       throw const ChatRepositoryException('Không thể gửi tin nhắn');
+    }
+    if (message == '#status') {
+      yield const ChatStreamStatus('Đang tra cứu task Jira…');
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      yield const ChatStreamToken('Đã tìm thấy task Jira.');
+      yield const ChatStreamDone(threadId: 'thread-new', citations: []);
+      return;
     }
     if (message == '#confirm') {
       yield const ChatStreamToken('Bạn có muốn xác nhận?');

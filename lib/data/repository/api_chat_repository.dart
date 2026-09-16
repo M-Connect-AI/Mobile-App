@@ -30,6 +30,7 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
         ),
       )) {
         yield switch (event) {
+          AgentStatusEvent() => ChatStreamStatus(event.label),
           AgentTokenEvent() => ChatStreamToken(event.text),
           AgentConfirmationEvent() => ChatStreamConfirmation(
             _mapConfirmation(event.confirmation),
@@ -152,16 +153,105 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
 
   ChatConfirmAction _mapConfirmation(ChatConfirmationDto dto) =>
       ChatConfirmAction(
-        tool: switch (dto.tool) {
-          'create_leave' => ChatConfirmationTool.createLeave,
-          'create_trip' => ChatConfirmationTool.createTrip,
-          'cancel_leave' => ChatConfirmationTool.cancelLeave,
-          'approve_leaves' => ChatConfirmationTool.approveLeaves,
-          _ => ChatConfirmationTool.unknown,
-        },
+        tool: _mapConfirmationTool(dto.tool, dto.args),
         args: Map<String, dynamic>.unmodifiable(dto.args),
         summary: dto.summary,
       );
+
+  ChatConfirmationTool _mapConfirmationTool(
+    String tool,
+    Map<String, dynamic> args,
+  ) {
+    final mapped = switch (tool) {
+      'create_leave'
+          when _matchesArgs(
+            args,
+            requiredStrings: const {'type', 'from', 'to', 'reason'},
+          ) =>
+        ChatConfirmationTool.createLeave,
+      'create_trip'
+          when _matchesArgs(
+            args,
+            requiredStrings: const {'destination', 'from', 'to', 'purpose'},
+          ) =>
+        ChatConfirmationTool.createTrip,
+      'cancel_leave' when _matchesArgs(args, requiredStrings: const {'id'}) =>
+        ChatConfirmationTool.cancelLeave,
+      'update_leave'
+          when _matchesArgs(
+            args,
+            requiredStrings: const {'id'},
+            optionalStrings: const {'type', 'from', 'to', 'reason'},
+            requireOptionalValue: true,
+          ) =>
+        ChatConfirmationTool.updateLeave,
+      'approve_leaves' when _matchesIdListArgs(args) =>
+        ChatConfirmationTool.approveLeaves,
+      'reject_leaves' when _matchesIdListArgs(args) =>
+        ChatConfirmationTool.rejectLeaves,
+      'approve_trips' when _matchesIdListArgs(args) =>
+        ChatConfirmationTool.approveTrips,
+      'reject_trips' when _matchesIdListArgs(args) =>
+        ChatConfirmationTool.rejectTrips,
+      'create_jira_task' when _matchesJiraArgs(args) =>
+        ChatConfirmationTool.createJiraTask,
+      _ => ChatConfirmationTool.unknown,
+    };
+    return mapped;
+  }
+
+  bool _matchesArgs(
+    Map<String, dynamic> args, {
+    required Set<String> requiredStrings,
+    Set<String> optionalStrings = const {},
+    bool requireOptionalValue = false,
+  }) {
+    final allowedKeys = {...requiredStrings, ...optionalStrings};
+    if (args.keys.any((key) => !allowedKeys.contains(key))) return false;
+    if (requiredStrings.any((key) => !_isNonEmptyString(args[key]))) {
+      return false;
+    }
+    final suppliedOptionalKeys = optionalStrings.where(args.containsKey);
+    if (suppliedOptionalKeys.any((key) => !_isNonEmptyString(args[key]))) {
+      return false;
+    }
+    return !requireOptionalValue || suppliedOptionalKeys.isNotEmpty;
+  }
+
+  bool _matchesIdListArgs(Map<String, dynamic> args) {
+    if (args.length != 1 || !args.containsKey('ids')) return false;
+    final ids = args['ids'];
+    return ids is List && ids.isNotEmpty && ids.every(_isNonEmptyString);
+  }
+
+  bool _matchesJiraArgs(Map<String, dynamic> args) {
+    const stringKeys = {
+      'projectKey',
+      'summary',
+      'description',
+      'issueType',
+      'priority',
+      'dueDate',
+    };
+    const allowedKeys = {...stringKeys, 'labels', 'assignToSprint'};
+    if (args.keys.any((key) => !allowedKeys.contains(key)) ||
+        !_isNonEmptyString(args['projectKey']) ||
+        !_isNonEmptyString(args['summary'])) {
+      return false;
+    }
+    for (final key in stringKeys.difference(const {'projectKey', 'summary'})) {
+      if (args.containsKey(key) && !_isNonEmptyString(args[key])) return false;
+    }
+    if (args.containsKey('labels')) {
+      final labels = args['labels'];
+      if (labels is! List || !labels.every(_isNonEmptyString)) return false;
+    }
+    return !args.containsKey('assignToSprint') ||
+        args['assignToSprint'] is bool;
+  }
+
+  bool _isNonEmptyString(Object? value) =>
+      value is String && value.trim().isNotEmpty;
 
   @override
   void close() => _remote.close();

@@ -103,7 +103,8 @@ class _ChatPageState extends State<ChatPage> {
                   buildWhen: (previous, current) =>
                       previous.messages != current.messages ||
                       previous.isLoading != current.isLoading ||
-                      previous.aiProcessingState != current.aiProcessingState,
+                      previous.aiProcessingState != current.aiProcessingState ||
+                      previous.backendStatusLabel != current.backendStatusLabel,
                   builder: (context, state) {
                     final hasStreamingMessage =
                         state.messages.isNotEmpty &&
@@ -127,6 +128,7 @@ class _ChatPageState extends State<ChatPage> {
                             index == state.messages.length) {
                           return TypingIndicator(
                             stage: state.aiProcessingState,
+                            statusLabel: state.backendStatusLabel,
                           );
                         }
                         return ChatBubble(message: state.messages[index]);
@@ -196,7 +198,8 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 buildWhen: (previous, current) =>
                     previous.isLoading != current.isLoading ||
                     previous.recordingState != current.recordingState ||
-                    previous.aiProcessingState != current.aiProcessingState,
+                    previous.aiProcessingState != current.aiProcessingState ||
+                    previous.backendStatusLabel != current.backendStatusLabel,
                 builder: (context, state) {
                   final (label, color) = _status(
                     context,
@@ -271,6 +274,9 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     final strings = S.of(context);
     if (state.recordingState == RecordingState.recording) {
       return (strings.listening, colors.error);
+    }
+    if (state.isLoading && state.backendStatusLabel != null) {
+      return (state.backendStatusLabel!, colors.primary);
     }
     return switch (state.aiProcessingState) {
       AiProcessingState.thinking => (strings.thinking, colors.primary),

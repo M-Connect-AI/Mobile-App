@@ -4,8 +4,9 @@ import '../../../../generated/l10n.dart';
 import '../bloc/chat_state.dart';
 
 class TypingIndicator extends StatefulWidget {
-  const TypingIndicator({super.key, required this.stage});
+  const TypingIndicator({super.key, required this.stage, this.statusLabel});
   final AiProcessingState stage;
+  final String? statusLabel;
 
   @override
   State<TypingIndicator> createState() => _TypingIndicatorState();
@@ -32,12 +33,15 @@ class _TypingIndicatorState extends State<TypingIndicator> {
   @override
   Widget build(BuildContext context) {
     final strings = S.of(context);
-    final label = switch (widget.stage) {
+    final fallbackLabel = switch (widget.stage) {
       AiProcessingState.thinking => strings.thinking,
       AiProcessingState.understanding => strings.understandingRequest,
       AiProcessingState.generatingResponse => strings.preparingResponse,
       AiProcessingState.idle => strings.thinking,
     };
+    final label = widget.statusLabel?.trim().isNotEmpty ?? false
+        ? widget.statusLabel!.trim()
+        : fallbackLabel;
     final colors = Theme.of(context).colorScheme;
     return Semantics(
       liveRegion: true,
