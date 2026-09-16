@@ -6,6 +6,7 @@ import 'package:chatbot_project/common/themes/theme_extensions/app_color_scheme.
 import 'package:chatbot_project/domain/model/auth_session.dart';
 import 'package:chatbot_project/domain/repository/chat_thread_repository.dart';
 import 'package:chatbot_project/domain/repository/credential_repository.dart';
+import 'package:chatbot_project/domain/service/data_refresh_coordinator.dart';
 import 'package:chatbot_project/generated/l10n.dart';
 import 'package:chatbot_project/presentation/pages/chat/widgets/chat_input.dart';
 import 'package:chatbot_project/presentation/pages/chat/widgets/microphone_permission_dialog.dart';
@@ -27,6 +28,7 @@ class HomeChatAiPage extends StatelessWidget {
           HomeChatAiCubit(
               context.read<ChatThreadRepository>(),
               context.read<CredentialRepository>(),
+              refreshCoordinator: context.read<DataRefreshCoordinator?>(),
             )
             ..loadRole()
             ..loadThreads(),

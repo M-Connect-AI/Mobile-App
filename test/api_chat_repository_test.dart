@@ -208,6 +208,24 @@ void main() {
     expect(result.isMutation, isTrue);
   });
 
+  test('uses Jira runtime status to type an empty Jira preview', () async {
+    final repository = ApiChatRepository(
+      _FakeAgentRemote(
+        statusLabel: 'Đang tra cứu task Jira…',
+        executed: const <Object>[],
+      ),
+      _SessionStore(),
+    );
+
+    final events = await repository
+        .sendMessage(message: 'Task của tôi')
+        .toList();
+    final result = events.whereType<ChatStreamResult>().single.result;
+
+    expect(result, isA<ChatJiraIssuesResult>());
+    expect((result as ChatJiraIssuesResult).data.issues, isEmpty);
+  });
+
   test('clears session when Agent returns 401', () async {
     final sessions = _SessionStore();
     final repository = ApiChatRepository(
@@ -235,12 +253,17 @@ void main() {
 }
 
 class _FakeAgentRemote extends AgentChatRemoteDataSource {
-  _FakeAgentRemote({this.error, this.pendingAction, this.executed})
-    : super(baseUrl: 'http://unused');
+  _FakeAgentRemote({
+    this.error,
+    this.pendingAction,
+    this.executed,
+    this.statusLabel = 'Đang xử lý…',
+  }) : super(baseUrl: 'http://unused');
 
   final AgentRemoteException? error;
   final ChatConfirmationDto? pendingAction;
   final Object? executed;
+  final String statusLabel;
 
   void _throwIfNeeded() {
     final failure = error;
@@ -293,7 +316,7 @@ class _FakeAgentRemote extends AgentChatRemoteDataSource {
     ChatTurnRequestDto request,
   ) async* {
     _throwIfNeeded();
-    yield const AgentStatusEvent('Đang xử lý…');
+    yield AgentStatusEvent(statusLabel);
     yield const AgentTokenEvent('Xin chào');
     yield const AgentConfirmationEvent(
       ChatConfirmationDto(

@@ -12,7 +12,6 @@ import 'package:chatbot_project/domain/repository/speech_to_text_repository.dart
 import 'package:chatbot_project/domain/service/data_refresh_coordinator.dart';
 import 'package:chatbot_project/generated/l10n.dart';
 import 'package:chatbot_project/presentation/pages/home/home_page.dart';
-import 'package:chatbot_project/resources/app_constants.dart';
 import 'package:chatbot_project/route/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -232,15 +231,15 @@ void main() {
       await tester.tap(suggestion);
       await tester.pumpAndSettle();
 
-      expect(find.text(AppConstants.chatbotName), findsOneWidget);
-      expect(find.byKey(const Key('close-assistant')), findsOneWidget);
+      expect(find.text(S.current.newConversationTitle), findsOneWidget);
+      expect(find.byKey(const Key('chat-back-button')), findsOneWidget);
       final chatTextField = tester.widget<TextField>(
         find.byKey(const Key('chat-text-field')),
       );
       expect(chatTextField.controller?.text, isEmpty);
       expect(find.text(S.current.leaveRequestSuggestion), findsOneWidget);
 
-      await tester.tap(find.byKey(const Key('close-assistant')));
+      await tester.tap(find.byKey(const Key('chat-back-button')));
       await tester.pumpAndSettle();
 
       expect(find.text('Tối ưu thao tác,\ntự động quy trình.'), findsOneWidget);
@@ -248,7 +247,7 @@ void main() {
       await tester.tap(find.byKey(const Key('home-chat-input')));
       await tester.pumpAndSettle();
 
-      expect(find.text(AppConstants.chatbotName), findsOneWidget);
+      expect(find.text(S.current.newConversationTitle), findsOneWidget);
       final focusedChatInput = tester.widget<TextField>(
         find.byKey(const Key('chat-text-field')),
       );
@@ -264,7 +263,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(speechRepository.initializeCallCount, 0);
 
-      await tester.tap(find.byKey(const Key('close-assistant')));
+      await tester.tap(find.byKey(const Key('chat-back-button')));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('chat-launcher-microphone')));
@@ -289,10 +288,10 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      expect(find.text(AppConstants.chatbotName), findsOneWidget);
+      expect(find.text(S.current.newConversationTitle), findsOneWidget);
       expect(speechRepository.initializeCallCount, 1);
 
-      await tester.tap(find.byKey(const Key('close-assistant')));
+      await tester.tap(find.byKey(const Key('chat-back-button')));
       await tester.pumpAndSettle();
       await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();
@@ -306,7 +305,7 @@ void main() {
       );
       expect(speechRepository.initializeCallCount, 2);
 
-      await tester.tap(find.byKey(const Key('close-assistant')));
+      await tester.tap(find.byKey(const Key('chat-back-button')));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('home-chat-back-button')));

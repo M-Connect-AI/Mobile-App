@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../domain/model/auth_session.dart';
+import '../../../../domain/model/chat_result.dart';
 import '../../../../domain/model/chat_thread.dart';
 import '../../../../domain/repository/chat_thread_repository.dart';
 import '../../../../domain/repository/credential_repository.dart';
+import '../../../../domain/service/data_refresh_coordinator.dart';
 
 enum ChatThreadStatus { initial, loading, success, failure }
 
@@ -23,22 +27,32 @@ class HomeChatAiState extends Equatable {
     ChatThreadStatus? status,
     List<ChatThread>? threads,
     UserRole? role,
-  }) =>
-      HomeChatAiState(
-        status: status ?? this.status,
-        threads: threads ?? this.threads,
-        role: role ?? this.role,
-      );
+  }) => HomeChatAiState(
+    status: status ?? this.status,
+    threads: threads ?? this.threads,
+    role: role ?? this.role,
+  );
 
   @override
   List<Object> get props => [status, threads, role];
 }
 
 class HomeChatAiCubit extends Cubit<HomeChatAiState> {
-  HomeChatAiCubit(this._repository, this._credentials) : super(const HomeChatAiState());
+  HomeChatAiCubit(
+    this._repository,
+    this._credentials, {
+    DataRefreshCoordinator? refreshCoordinator,
+  }) : super(const HomeChatAiState()) {
+    _refreshSubscription = refreshCoordinator?.changes.listen((scopes) {
+      if (scopes.contains(DataRefreshScope.chatHistory) && !isClosed) {
+        unawaited(loadThreads());
+      }
+    });
+  }
 
   final ChatThreadRepository _repository;
   final CredentialRepository _credentials;
+  StreamSubscription<Set<DataRefreshScope>>? _refreshSubscription;
 
   Future<void> loadRole() async {
     try {
@@ -60,5 +74,11 @@ class HomeChatAiCubit extends Cubit<HomeChatAiState> {
     } on Object {
       emit(state.copyWith(status: ChatThreadStatus.failure));
     }
+  }
+
+  @override
+  Future<void> close() async {
+    await _refreshSubscription?.cancel();
+    return super.close();
   }
 }

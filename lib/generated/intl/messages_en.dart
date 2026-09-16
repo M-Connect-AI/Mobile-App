@@ -34,19 +34,37 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m5(count) => "${count} business trip requests";
 
-  static String m6(fullName) => "Hello, ${fullName} 👋";
+  static String m6(count) => "Processed ${count} requests";
 
-  static String m7(appName) => "Sign in to continue with ${appName}";
+  static String m7(fullName) => "Hello, ${fullName} 👋";
 
-  static String m8(remaining, total) => "${remaining}/${total} days";
+  static String m8(issueType, assignee) =>
+      "${issueType} · Assigned to ${assignee}";
 
-  static String m9(days) => "${days} days";
+  static String m9(key) => "Created ${key}";
 
-  static String m10(title) => "${title} details";
+  static String m10(date) => "Due: ${date}";
 
-  static String m11(preview, date) => "${preview} · ${date}";
+  static String m11(status, priority) => "${status} · ${priority}";
 
-  static String m12(from, to) => "${from} – ${to}";
+  static String m12(count) => "And ${count} more tasks";
+
+  static String m13(total, toDo, inProgress, done) =>
+      "Total: ${total} · To do: ${toDo} · In progress: ${inProgress} · Done: ${done}";
+
+  static String m14(count) => "${count} days";
+
+  static String m15(appName) => "Sign in to continue with ${appName}";
+
+  static String m16(remaining, total) => "${remaining}/${total} days";
+
+  static String m17(days) => "${days} days";
+
+  static String m18(title) => "${title} details";
+
+  static String m19(preview, date) => "${preview} · ${date}";
+
+  static String m20(from, to) => "${from} – ${to}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -57,9 +75,16 @@ class MessageLookup extends MessageLookupByLibrary {
       "Annual remaining / total",
     ),
     "appName": MessageLookupByLibrary.simpleMessage("AI Assistant"),
+    "approveLeavesSuccess": MessageLookupByLibrary.simpleMessage(
+      "Leave request approved successfully",
+    ),
+    "approveTripsSuccess": MessageLookupByLibrary.simpleMessage(
+      "Business trip request approved successfully",
+    ),
     "attendanceSupplement": MessageLookupByLibrary.simpleMessage(
       "Attendance supplement",
     ),
+    "backButton": MessageLookupByLibrary.simpleMessage("Back"),
     "backToChatDashboard": MessageLookupByLibrary.simpleMessage(
       "Back to AI assistant",
     ),
@@ -68,8 +93,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "businessTrip": MessageLookupByLibrary.simpleMessage("Business trip"),
     "cancelAction": MessageLookupByLibrary.simpleMessage("Cancel"),
     "cancelButton": MessageLookupByLibrary.simpleMessage("Cancel"),
+    "cancelLeaveSuccess": MessageLookupByLibrary.simpleMessage(
+      "Leave request cancelled successfully",
+    ),
+    "cancelRequest": MessageLookupByLibrary.simpleMessage("Cancel request"),
     "chatActionCompleted": MessageLookupByLibrary.simpleMessage(
-      "The backend completed this action successfully.",
+      "Action completed successfully.",
     ),
     "chatDashboardSlogan": MessageLookupByLibrary.simpleMessage(
       "Optimize actions,\nautomate workflows.",
@@ -85,12 +114,27 @@ class MessageLookup extends MessageLookupByLibrary {
     "chatPendingResult": m4,
     "chatTripListResult": m5,
     "closeAssistant": MessageLookupByLibrary.simpleMessage("Close assistant"),
+    "completedRequestCount": m6,
     "confirmAction": MessageLookupByLibrary.simpleMessage("Confirm"),
     "confirmButton": MessageLookupByLibrary.simpleMessage("Confirm"),
+    "confirmSubmitButton": MessageLookupByLibrary.simpleMessage("Submit"),
     "connectionInterrupted": MessageLookupByLibrary.simpleMessage(
       "The connection was interrupted before completion.",
     ),
     "copyMessage": MessageLookupByLibrary.simpleMessage("Copy"),
+    "createJiraTaskSuccess": MessageLookupByLibrary.simpleMessage(
+      "Jira task created successfully",
+    ),
+    "createLeaveSuccess": MessageLookupByLibrary.simpleMessage(
+      "Leave request created successfully",
+    ),
+    "createTripSuccess": MessageLookupByLibrary.simpleMessage(
+      "Business trip request created successfully",
+    ),
+    "editButton": MessageLookupByLibrary.simpleMessage("Edit"),
+    "editConfirmationPrompt": MessageLookupByLibrary.simpleMessage(
+      "I want to edit this request: ",
+    ),
     "edocman": MessageLookupByLibrary.simpleMessage("Edocman"),
     "eis": MessageLookupByLibrary.simpleMessage("EIS"),
     "emailHint": MessageLookupByLibrary.simpleMessage("Example@msb.com.vn"),
@@ -142,7 +186,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "homeBannerTitle": MessageLookupByLibrary.simpleMessage("1 Click LÚC ÍCH"),
     "homeGreeting": MessageLookupByLibrary.simpleMessage("Hello, Minh 👋"),
-    "homeGreetingName": m6,
+    "homeGreetingName": m7,
     "homeInvalidResponse": MessageLookupByLibrary.simpleMessage(
       "The Home data is invalid. Please try again.",
     ),
@@ -172,6 +216,23 @@ class MessageLookup extends MessageLookupByLibrary {
       "Waiting for\napproval",
     ),
     "hrApiUrlLabel": MessageLookupByLibrary.simpleMessage("HR API URL"),
+    "jiraCreatedMeta": m8,
+    "jiraCreatedResult": m9,
+    "jiraDueDate": m10,
+    "jiraDueDateLabel": MessageLookupByLibrary.simpleMessage("Due date"),
+    "jiraEmptyResult": MessageLookupByLibrary.simpleMessage(
+      "No Jira tasks match this request.",
+    ),
+    "jiraIssueMeta": m11,
+    "jiraIssueTypeLabel": MessageLookupByLibrary.simpleMessage("Issue type"),
+    "jiraMoreIssues": m12,
+    "jiraOpenIssue": MessageLookupByLibrary.simpleMessage("Open Jira task"),
+    "jiraPossiblyTruncated": MessageLookupByLibrary.simpleMessage(
+      "Results may have been limited to 50 tasks.",
+    ),
+    "jiraProject": MessageLookupByLibrary.simpleMessage("Project"),
+    "jiraStatsResult": m13,
+    "jiraTaskSummary": MessageLookupByLibrary.simpleMessage("Summary"),
     "leaveAnnualType": MessageLookupByLibrary.simpleMessage("Annual leave"),
     "leaveBalance": MessageLookupByLibrary.simpleMessage("Leave balance"),
     "leaveBalanceSuggestion": MessageLookupByLibrary.simpleMessage(
@@ -180,6 +241,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "leaveCancelSuggestion": MessageLookupByLibrary.simpleMessage(
       "Cancel my latest leave request",
     ),
+    "leaveDayCount": m14,
     "leaveDays": MessageLookupByLibrary.simpleMessage("Days"),
     "leaveListEmpty": MessageLookupByLibrary.simpleMessage(
       "You have no leave requests.",
@@ -198,6 +260,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "leaveSickType": MessageLookupByLibrary.simpleMessage("Sick leave"),
     "leaveType": MessageLookupByLibrary.simpleMessage("Leave type"),
     "leaveUnpaidType": MessageLookupByLibrary.simpleMessage("Unpaid leave"),
+    "linkOpenFailed": MessageLookupByLibrary.simpleMessage(
+      "Unable to open this link.",
+    ),
     "listening": MessageLookupByLibrary.simpleMessage("Listening..."),
     "loggingIn": MessageLookupByLibrary.simpleMessage("Signing in..."),
     "loginButton": MessageLookupByLibrary.simpleMessage("Sign in"),
@@ -216,7 +281,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "loginServerError": MessageLookupByLibrary.simpleMessage(
       "The server is unavailable. Please try again later.",
     ),
-    "loginSubtitle": m7,
+    "loginSubtitle": m15,
     "loginValidationError": MessageLookupByLibrary.simpleMessage(
       "The sign-in details are invalid.",
     ),
@@ -256,6 +321,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "navigationPersonal": MessageLookupByLibrary.simpleMessage("Personal"),
     "navigationSearch": MessageLookupByLibrary.simpleMessage("Search"),
     "navigationUtilities": MessageLookupByLibrary.simpleMessage("Utilities"),
+    "newConversationTitle": MessageLookupByLibrary.simpleMessage(
+      "New conversation",
+    ),
     "newMembers": MessageLookupByLibrary.simpleMessage("New members"),
     "newsKnowledgeTitle": MessageLookupByLibrary.simpleMessage(
       "You may be interested in: MSB knowledge",
@@ -284,20 +352,32 @@ class MessageLookup extends MessageLookupByLibrary {
       "Preparing response...",
     ),
     "processing": MessageLookupByLibrary.simpleMessage("Processing..."),
-    "profileAnnualDays": m8,
+    "profileAnnualDays": m16,
     "profileDepartment": MessageLookupByLibrary.simpleMessage("Department"),
     "profileManagerCode": MessageLookupByLibrary.simpleMessage("Manager code"),
     "profileManagerRole": MessageLookupByLibrary.simpleMessage("Manager"),
-    "profileSickDays": m9,
+    "profileSickDays": m17,
     "profileStaffRole": MessageLookupByLibrary.simpleMessage("Staff"),
     "quickAccess": MessageLookupByLibrary.simpleMessage("Quick access"),
     "recordVoice": MessageLookupByLibrary.simpleMessage("Record voice"),
+    "rejectLeavesSuccess": MessageLookupByLibrary.simpleMessage(
+      "Leave request rejected successfully",
+    ),
+    "rejectTripsSuccess": MessageLookupByLibrary.simpleMessage(
+      "Business trip request rejected successfully",
+    ),
     "rememberSession": MessageLookupByLibrary.simpleMessage(
       "Keep me signed in",
     ),
+    "requestCancelled": MessageLookupByLibrary.simpleMessage(
+      "Action cancelled",
+    ),
     "requestCode": MessageLookupByLibrary.simpleMessage("Request ID"),
     "requestCreatedAt": MessageLookupByLibrary.simpleMessage("Created on"),
-    "requestDetailTitle": m10,
+    "requestDetailTitle": m18,
+    "requestFailed": MessageLookupByLibrary.simpleMessage(
+      "Unable to submit the request. Please try again.",
+    ),
     "requestFrom": MessageLookupByLibrary.simpleMessage("From"),
     "requestInvalidResponse": MessageLookupByLibrary.simpleMessage(
       "Invalid request data. Please try again.",
@@ -308,10 +388,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "requestNotFound": MessageLookupByLibrary.simpleMessage(
       "This request could not be found.",
     ),
+    "requestPeriod": MessageLookupByLibrary.simpleMessage("Period"),
+    "requestSubmitted": MessageLookupByLibrary.simpleMessage(
+      "Request submitted successfully",
+    ),
     "requestTo": MessageLookupByLibrary.simpleMessage("To"),
     "responseCopied": MessageLookupByLibrary.simpleMessage("Response copied"),
     "restoreDefaultsButton": MessageLookupByLibrary.simpleMessage("Defaults"),
     "retry": MessageLookupByLibrary.simpleMessage("Retry"),
+    "reviewRequestTitle": MessageLookupByLibrary.simpleMessage(
+      "Review information",
+    ),
     "saveButton": MessageLookupByLibrary.simpleMessage("Save"),
     "seeAll": MessageLookupByLibrary.simpleMessage("See all"),
     "selectButton": MessageLookupByLibrary.simpleMessage("Select"),
@@ -349,6 +436,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "statusCancelled": MessageLookupByLibrary.simpleMessage("Cancelled"),
     "statusPending": MessageLookupByLibrary.simpleMessage("Pending approval"),
     "statusRejected": MessageLookupByLibrary.simpleMessage("Rejected"),
+    "submittingRequest": MessageLookupByLibrary.simpleMessage(
+      "Submitting request...",
+    ),
     "suggestedAccounts": MessageLookupByLibrary.simpleMessage(
       "Suggested accounts",
     ),
@@ -356,9 +446,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "taskThreeCount": MessageLookupByLibrary.simpleMessage("03"),
     "taskTwelveCount": MessageLookupByLibrary.simpleMessage("12"),
     "thinking": MessageLookupByLibrary.simpleMessage("Thinking..."),
-    "threadPreviewWithDate": m11,
+    "threadPreviewWithDate": m19,
     "timeManagement": MessageLookupByLibrary.simpleMessage("Time management"),
-    "tripDateRange": m12,
+    "tripDateRange": m20,
     "tripDestination": MessageLookupByLibrary.simpleMessage("Destination"),
     "tripListEmpty": MessageLookupByLibrary.simpleMessage(
       "You have no business trips.",
@@ -372,6 +462,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "upcomingTrip": MessageLookupByLibrary.simpleMessage(
       "Upcoming business trip",
+    ),
+    "updateLeaveSuccess": MessageLookupByLibrary.simpleMessage(
+      "Leave request updated successfully",
     ),
     "voiceListening": MessageLookupByLibrary.simpleMessage("Listening..."),
     "voiceStopAndSend": MessageLookupByLibrary.simpleMessage("Stop and send"),

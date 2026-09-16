@@ -37,6 +37,7 @@ final List<RouteBase> appRoutes = [
     path: ChatRoute.path,
     pageBuilder: (context, state) => ChatRoute(
       threadId: state.uri.queryParameters['threadId'],
+      title: state.uri.queryParameters['title'],
       initialMessage: state.uri.queryParameters['initialMessage'],
       autoSendInitialMessage:
           state.uri.queryParameters['autoSendInitialMessage'] == 'true',
@@ -128,6 +129,7 @@ class ChatHistoryRoute extends GoRouteData {
 class ChatRoute extends GoRouteData {
   const ChatRoute({
     this.threadId,
+    this.title,
     this.initialMessage,
     this.autoSendInitialMessage = false,
     this.startRecording = false,
@@ -136,6 +138,7 @@ class ChatRoute extends GoRouteData {
   static const path = '/chat';
 
   final String? threadId;
+  final String? title;
   final String? initialMessage;
   final bool autoSendInitialMessage;
   final bool startRecording;
@@ -145,6 +148,7 @@ class ChatRoute extends GoRouteData {
       path: path,
       queryParameters: {
         if (threadId != null) 'threadId': threadId,
+        if (title?.trim().isNotEmpty == true) 'title': title!.trim(),
         if (initialMessage != null) 'initialMessage': initialMessage,
         if (autoSendInitialMessage) 'autoSendInitialMessage': 'true',
         if (startRecording) 'startRecording': 'true',
@@ -174,6 +178,7 @@ class ChatRoute extends GoRouteData {
               ),
             ),
         child: ChatPage(
+          title: title,
           showCloseButton: true,
           autofocusInput:
               threadId == null && !autoSendInitialMessage && !startRecording,

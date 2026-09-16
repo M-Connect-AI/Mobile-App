@@ -98,4 +98,23 @@ abstract final class IrhText {
       ),
     ),
   );
+
+  static Widget semibold(
+    String value, {
+    Key? key,
+    Color? color,
+    TextAlign? textAlign,
+    int? maxLines,
+  }) => Builder(
+    builder: (context) => Text(
+      value,
+      key: key,
+      textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: maxLines == null ? null : TextOverflow.ellipsis,
+      style: AppTextStyle.sm16.copyWith(
+        color: color ?? context.appColorScheme.textPrimary,
+      ),
+    ),
+  );
 }

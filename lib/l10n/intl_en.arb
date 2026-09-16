@@ -90,7 +90,9 @@
   "leaveUnpaidType": "Unpaid leave",
   "requestFrom": "From",
   "requestTo": "To",
+  "requestPeriod": "Period",
   "leaveDays": "Days",
+  "leaveDayCount": "{count} days",
   "leaveReason": "Reason",
   "tripDestination": "Destination",
   "tripPurpose": "Purpose",
@@ -106,6 +108,9 @@
   "homeInvalidResponse": "The Home data is invalid. Please try again.",
   "homeSessionExpired": "Your session has expired.",
   "closeAssistant": "Close assistant",
+  "backButton": "Back",
+  "cancelRequest": "Cancel request",
+  "newConversationTitle": "New conversation",
   "options": "Options",
   "online": "Online",
   "listening": "Listening...",
@@ -152,13 +157,45 @@
   "retry": "Retry",
   "responseCopied": "Response copied",
   "confirmButton": "Confirm",
+  "confirmSubmitButton": "Submit",
+  "editButton": "Edit",
+  "editConfirmationPrompt": "I want to edit this request: ",
+  "reviewRequestTitle": "Review information",
+  "submittingRequest": "Submitting request...",
+  "requestSubmitted": "Request submitted successfully",
+  "requestFailed": "Unable to submit the request. Please try again.",
+  "requestCancelled": "Action cancelled",
+  "completedRequestCount": "Processed {count} requests",
+  "jiraProject": "Project",
+  "jiraTaskSummary": "Summary",
+  "jiraIssueTypeLabel": "Issue type",
+  "jiraDueDateLabel": "Due date",
   "unsupportedChatAction": "This app version does not support this action.",
-  "chatActionCompleted": "The backend completed this action successfully.",
+  "chatActionCompleted": "Action completed successfully.",
+  "createLeaveSuccess": "Leave request created successfully",
+  "updateLeaveSuccess": "Leave request updated successfully",
+  "cancelLeaveSuccess": "Leave request cancelled successfully",
+  "createTripSuccess": "Business trip request created successfully",
+  "approveLeavesSuccess": "Leave request approved successfully",
+  "rejectLeavesSuccess": "Leave request rejected successfully",
+  "approveTripsSuccess": "Business trip request approved successfully",
+  "rejectTripsSuccess": "Business trip request rejected successfully",
+  "createJiraTaskSuccess": "Jira task created successfully",
   "chatLeaveBalanceResult": "Annual leave: {remaining}/{total} days · Sick leave: {sick} days",
   "chatLeaveListResult": "{count} leave requests",
   "chatTripListResult": "{count} business trip requests",
   "chatPendingResult": "Pending: {leaveCount} leave requests · {tripCount} business trips",
   "chatJiraListResult": "{count} Jira tasks",
+  "jiraEmptyResult": "No Jira tasks match this request.",
+  "jiraStatsResult": "Total: {total} · To do: {toDo} · In progress: {inProgress} · Done: {done}",
+  "jiraIssueMeta": "{status} · {priority}",
+  "jiraDueDate": "Due: {date}",
+  "jiraMoreIssues": "And {count} more tasks",
+  "jiraPossiblyTruncated": "Results may have been limited to 50 tasks.",
+  "jiraCreatedResult": "Created {key}",
+  "jiraCreatedMeta": "{issueType} · Assigned to {assignee}",
+  "jiraOpenIssue": "Open Jira task",
+  "linkOpenFailed": "Unable to open this link.",
   "@chatLeaveBalanceResult": {
     "placeholders": {
       "remaining": {"type": "int"},
@@ -175,6 +212,29 @@
     }
   },
   "@chatJiraListResult": {"placeholders": {"count": {"type": "int"}}},
+  "@jiraStatsResult": {
+    "placeholders": {
+      "total": {"type": "int"},
+      "toDo": {"type": "int"},
+      "inProgress": {"type": "int"},
+      "done": {"type": "int"}
+    }
+  },
+  "@jiraIssueMeta": {
+    "placeholders": {
+      "status": {"type": "String"},
+      "priority": {"type": "String"}
+    }
+  },
+  "@jiraDueDate": {"placeholders": {"date": {"type": "String"}}},
+  "@jiraMoreIssues": {"placeholders": {"count": {"type": "int"}}},
+  "@jiraCreatedResult": {"placeholders": {"key": {"type": "String"}}},
+  "@jiraCreatedMeta": {
+    "placeholders": {
+      "issueType": {"type": "String"},
+      "assignee": {"type": "String"}
+    }
+  },
   "threadPreviewWithDate": "{preview} · {date}",
   "chatHistoryTitle": "Chat history",
   "backToChatDashboard": "Back to AI assistant",

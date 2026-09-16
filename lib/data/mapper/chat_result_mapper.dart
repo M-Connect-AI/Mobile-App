@@ -5,18 +5,21 @@ import '../model/home/home_models.dart';
 import '../model/hr/hr_request_dto.dart';
 import 'hr_request_mapper.dart';
 
+enum ChatResultPreviewHint { leaveList, tripList, jiraIssues }
+
 class ChatResultMapper {
   const ChatResultMapper._();
 
   static ChatResultEnvelope map(
     Object? raw, {
     ChatConfirmationTool? confirmedTool,
+    ChatResultPreviewHint? previewHint,
   }) {
     try {
       if (confirmedTool != null) {
         return _mapMutation(raw, confirmedTool);
       }
-      return _mapPreview(raw);
+      return _mapPreview(raw, previewHint: previewHint);
     } on Object {
       return ChatResultEnvelope.unknown(raw);
     }
@@ -70,7 +73,10 @@ class ChatResultMapper {
     };
   }
 
-  static ChatResultEnvelope _mapPreview(Object? raw) {
+  static ChatResultEnvelope _mapPreview(
+    Object? raw, {
+    ChatResultPreviewHint? previewHint,
+  }) {
     if (raw is Map) {
       final json = Map<String, dynamic>.from(raw);
       if (_hasKeys(json, const {
@@ -93,7 +99,19 @@ class ChatResultMapper {
       }
       return ChatResultEnvelope.unknown(raw);
     }
-    if (raw is List && raw.isNotEmpty) {
+    if (raw is List && raw.isEmpty) {
+      return switch (previewHint) {
+        ChatResultPreviewHint.leaveList => const ChatResultEnvelope.leaveList(
+          [],
+        ),
+        ChatResultPreviewHint.tripList => const ChatResultEnvelope.tripList([]),
+        ChatResultPreviewHint.jiraIssues => ChatResultEnvelope.jiraIssues(
+          JiraIssueList(issues: const [], stats: _jiraStats(const [])),
+        ),
+        null => ChatResultEnvelope.unknown(raw),
+      };
+    }
+    if (raw is List) {
       final first = _map(raw.first);
       if (_hasKeys(first, const {'type', 'days', 'reason'})) {
         return ChatResultEnvelope.leaveList(_leaveList(raw));
@@ -108,8 +126,13 @@ class ChatResultMapper {
         'priority',
         'projectKey',
       })) {
+        final issues = raw.map(_jiraIssue).toList(growable: false);
         return ChatResultEnvelope.jiraIssues(
-          raw.map(_jiraIssue).toList(growable: false),
+          JiraIssueList(
+            issues: issues,
+            stats: _jiraStats(issues),
+            mayBeTruncated: issues.length >= 50,
+          ),
         );
       }
     }
@@ -177,9 +200,66 @@ class ChatResultMapper {
         projectKey: _string(json, 'projectKey'),
         issueType: _string(json, 'issueType'),
         assigneeEmail: _string(json, 'assigneeEmail'),
-        url: _string(json, 'url'),
+        url: _nullableString(json, 'url'),
         message: _string(json, 'message'),
       );
+
+  static JiraStats _jiraStats(List<JiraIssue> issues) {
+    final now = DateTime.now().toUtc();
+    final today = DateTime.utc(now.year, now.month, now.day);
+    final staleBefore = today.subtract(const Duration(days: 14));
+    var toDo = 0;
+    var inProgress = 0;
+    var done = 0;
+    var unknown = 0;
+    var overdue = 0;
+    var stale = 0;
+    var withoutDueDate = 0;
+    final byStatus = <String, int>{};
+    final byPriority = <String, int>{};
+    final byIssueType = <String, int>{};
+    final byProject = <String, int>{};
+    for (final issue in issues) {
+      switch (issue.statusCategory) {
+        case 'TO_DO':
+          toDo++;
+        case 'IN_PROGRESS':
+          inProgress++;
+        case 'DONE':
+          done++;
+        default:
+          unknown++;
+      }
+      _increment(byStatus, issue.status);
+      _increment(byPriority, issue.priority);
+      _increment(byIssueType, issue.issueType);
+      _increment(byProject, issue.projectKey);
+      final isDone = issue.statusCategory == 'DONE';
+      final dueDate = DateTime.tryParse(issue.dueDate ?? '');
+      if (!isDone && issue.dueDate == null) withoutDueDate++;
+      if (!isDone && dueDate != null && dueDate.isBefore(today)) overdue++;
+      final updated = DateTime.tryParse(issue.updated ?? '')?.toUtc();
+      if (!isDone && updated != null && updated.isBefore(staleBefore)) stale++;
+    }
+    return JiraStats(
+      total: issues.length,
+      toDo: toDo,
+      inProgress: inProgress,
+      done: done,
+      unknown: unknown,
+      overdue: overdue,
+      stale: stale,
+      withoutDueDate: withoutDueDate,
+      byStatus: byStatus,
+      byPriority: byPriority,
+      byIssueType: byIssueType,
+      byProject: byProject,
+    );
+  }
+
+  static void _increment(Map<String, int> values, String key) {
+    values[key] = (values[key] ?? 0) + 1;
+  }
 
   static Map<String, dynamic> _map(Object? raw) {
     if (raw is! Map) throw const FormatException('Expected map');

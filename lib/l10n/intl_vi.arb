@@ -90,7 +90,9 @@
   "leaveUnpaidType": "Nghỉ không lương",
   "requestFrom": "Từ ngày",
   "requestTo": "Đến ngày",
+  "requestPeriod": "Thời gian",
   "leaveDays": "Số ngày",
+  "leaveDayCount": "{count} ngày",
   "leaveReason": "Lý do",
   "tripDestination": "Địa điểm",
   "tripPurpose": "Mục đích",
@@ -106,6 +108,9 @@
   "homeInvalidResponse": "Dữ liệu Home không hợp lệ. Vui lòng thử lại.",
   "homeSessionExpired": "Phiên đăng nhập đã hết hạn.",
   "closeAssistant": "Đóng trợ lý",
+  "backButton": "Quay lại",
+  "cancelRequest": "Hủy đơn",
+  "newConversationTitle": "Cuộc trò chuyện mới",
   "options": "Tùy chọn",
   "online": "Trực tuyến",
   "listening": "Đang nghe...",
@@ -152,13 +157,45 @@
   "retry": "Thử lại",
   "responseCopied": "Đã sao chép phản hồi",
   "confirmButton": "Xác nhận",
+  "confirmSubmitButton": "Xác nhận gửi",
+  "editButton": "Chỉnh sửa",
+  "editConfirmationPrompt": "Tôi muốn chỉnh sửa thông tin yêu cầu này: ",
+  "reviewRequestTitle": "Kiểm tra thông tin",
+  "submittingRequest": "Đang gửi yêu cầu...",
+  "requestSubmitted": "Đã gửi yêu cầu thành công",
+  "requestFailed": "Không thể gửi yêu cầu. Vui lòng thử lại.",
+  "requestCancelled": "Đã hủy thao tác",
+  "completedRequestCount": "Đã xử lý {count} yêu cầu",
+  "jiraProject": "Dự án",
+  "jiraTaskSummary": "Nội dung",
+  "jiraIssueTypeLabel": "Loại công việc",
+  "jiraDueDateLabel": "Hạn hoàn thành",
   "unsupportedChatAction": "Phiên bản ứng dụng chưa hỗ trợ thao tác này.",
-  "chatActionCompleted": "Thao tác đã được backend thực thi thành công.",
+  "chatActionCompleted": "Thao tác đã được thực hiện thành công.",
+  "createLeaveSuccess": "Tạo đơn nghỉ phép thành công",
+  "updateLeaveSuccess": "Cập nhật đơn nghỉ phép thành công",
+  "cancelLeaveSuccess": "Hủy đơn nghỉ phép thành công",
+  "createTripSuccess": "Tạo đơn công tác thành công",
+  "approveLeavesSuccess": "Phê duyệt đơn nghỉ phép thành công",
+  "rejectLeavesSuccess": "Từ chối đơn nghỉ phép thành công",
+  "approveTripsSuccess": "Phê duyệt đơn công tác thành công",
+  "rejectTripsSuccess": "Từ chối đơn công tác thành công",
+  "createJiraTaskSuccess": "Tạo Jira task thành công",
   "chatLeaveBalanceResult": "Phép năm: {remaining}/{total} ngày · Phép ốm: {sick} ngày",
   "chatLeaveListResult": "{count} đơn nghỉ phép",
   "chatTripListResult": "{count} đơn công tác",
   "chatPendingResult": "Đang chờ: {leaveCount} đơn nghỉ phép · {tripCount} đơn công tác",
   "chatJiraListResult": "{count} Jira task",
+  "jiraEmptyResult": "Không có Jira task nào khớp yêu cầu.",
+  "jiraStatsResult": "Tổng: {total} · Cần làm: {toDo} · Đang làm: {inProgress} · Hoàn tất: {done}",
+  "jiraIssueMeta": "{status} · {priority}",
+  "jiraDueDate": "Hạn: {date}",
+  "jiraMoreIssues": "Và {count} task khác",
+  "jiraPossiblyTruncated": "Kết quả có thể đã được giới hạn ở 50 task.",
+  "jiraCreatedResult": "Đã tạo {key}",
+  "jiraCreatedMeta": "{issueType} · Gán cho {assignee}",
+  "jiraOpenIssue": "Mở Jira task",
+  "linkOpenFailed": "Không thể mở liên kết này.",
   "@chatLeaveBalanceResult": {
     "placeholders": {
       "remaining": {"type": "int"},
@@ -175,6 +212,29 @@
     }
   },
   "@chatJiraListResult": {"placeholders": {"count": {"type": "int"}}},
+  "@jiraStatsResult": {
+    "placeholders": {
+      "total": {"type": "int"},
+      "toDo": {"type": "int"},
+      "inProgress": {"type": "int"},
+      "done": {"type": "int"}
+    }
+  },
+  "@jiraIssueMeta": {
+    "placeholders": {
+      "status": {"type": "String"},
+      "priority": {"type": "String"}
+    }
+  },
+  "@jiraDueDate": {"placeholders": {"date": {"type": "String"}}},
+  "@jiraMoreIssues": {"placeholders": {"count": {"type": "int"}}},
+  "@jiraCreatedResult": {"placeholders": {"key": {"type": "String"}}},
+  "@jiraCreatedMeta": {
+    "placeholders": {
+      "issueType": {"type": "String"},
+      "assignee": {"type": "String"}
+    }
+  },
   "threadPreviewWithDate": "{preview} · {date}",
   "chatHistoryTitle": "Lịch sử trò chuyện",
   "backToChatDashboard": "Quay lại trang trợ lý AI",

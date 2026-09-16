@@ -1,9 +1,17 @@
+import 'dart:ui';
+
+import 'package:awesome_extensions/awesome_extensions.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../common/components/app_toast.dart';
+import '../../../common/components/irh_text.dart';
+import '../../../common/extensions/responsive_extension.dart';
+import '../../../common/themes/theme_extensions/app_color_scheme.dart';
 import '../../../domain/model/chat_message.dart';
+import '../../../gen/assets.gen.dart';
 import '../../../generated/l10n.dart';
 import '../../../resources/app_constants.dart';
 import '../../../route/go_router.dart';
@@ -13,12 +21,9 @@ import 'widgets/chat_input.dart';
 import 'widgets/typing_indicator.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({
-    super.key,
-    this.showCloseButton = false,
-    this.autofocusInput = false,
-  });
+  const ChatPage({super.key, this.title, this.showCloseButton = false, this.autofocusInput = false});
 
+  final String? title;
   final bool showCloseButton;
   final bool autofocusInput;
 
@@ -26,17 +31,24 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   final _scrollController = ScrollController();
+  final _isHeaderScrolled = ValueNotifier(false);
   bool _initialThreadScrollScheduled = false;
+  double _lastKeyboardInset = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _scrollController.addListener(_updateHeaderAppearance);
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final state = context.read<ChatBloc>().state;
-    if (!_initialThreadScrollScheduled &&
-        state.activeThreadId != null &&
-        !state.isRestoring) {
+    if (!_initialThreadScrollScheduled && state.activeThreadId != null && !state.isRestoring) {
       _initialThreadScrollScheduled = true;
       _scrollToBottom(immediately: true);
     }
@@ -44,8 +56,28 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _scrollController.removeListener(_updateHeaderAppearance);
     _scrollController.dispose();
+    _isHeaderScrolled.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    if (!mounted) return;
+
+    final view = View.of(context);
+    final keyboardInset = view.viewInsets.bottom / view.devicePixelRatio;
+    final keyboardIsOpening = keyboardInset > _lastKeyboardInset;
+    _lastKeyboardInset = keyboardInset;
+
+    if (!keyboardIsOpening) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    });
   }
 
   void _scrollToBottom({bool immediately = false}) {
@@ -60,12 +92,23 @@ class _ChatPageState extends State<ChatPage> {
         });
         return;
       }
-      _scrollController.animateTo(
-        target,
-        duration: const Duration(milliseconds: 320),
-        curve: Curves.easeOutCubic,
-      );
+      _scrollController
+          .animateTo(target, duration: const Duration(milliseconds: 320), curve: Curves.easeOutCubic)
+          .whenComplete(() {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted || !_scrollController.hasClients) return;
+              _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+            });
+          });
     });
+  }
+
+  void _updateHeaderAppearance() {
+    if (!_scrollController.hasClients) return;
+    final isScrolled = _scrollController.offset > 4.height;
+    if (_isHeaderScrolled.value != isScrolled) {
+      _isHeaderScrolled.value = isScrolled;
+    }
   }
 
   @override
@@ -78,10 +121,7 @@ class _ChatPageState extends State<ChatPage> {
           previous.aiProcessingState != current.aiProcessingState ||
           previous.error != current.error,
       listener: (context, state) {
-        final restoredThread =
-            state.activeThreadId != null &&
-            !state.isLoading &&
-            !state.isRestoring;
+        final restoredThread = state.activeThreadId != null && !state.isLoading && !state.isRestoring;
         if (restoredThread) _initialThreadScrollScheduled = true;
         _scrollToBottom(immediately: restoredThread);
         if (state.sessionExpired) {
@@ -93,54 +133,72 @@ class _ChatPageState extends State<ChatPage> {
         }
       },
       child: Scaffold(
-        appBar: _ChatAppBar(showCloseButton: widget.showCloseButton),
+        backgroundColor: context.appColorScheme.surfaceSecondary,
         body: SafeArea(
           top: false,
-          child: Column(
+          child: Stack(
             children: [
-              Expanded(
-                child: BlocBuilder<ChatBloc, ChatState>(
-                  buildWhen: (previous, current) =>
-                      previous.messages != current.messages ||
-                      previous.isLoading != current.isLoading ||
-                      previous.aiProcessingState != current.aiProcessingState ||
-                      previous.backendStatusLabel != current.backendStatusLabel,
-                  builder: (context, state) {
-                    final hasStreamingMessage =
-                        state.messages.isNotEmpty &&
-                        state.messages.last.sender == MessageSender.assistant &&
-                        state.messages.last.status == MessageStatus.processing;
-                    final showTypingIndicator =
-                        state.isLoading && !hasStreamingMessage;
-                    final itemCount =
-                        state.messages.length + (showTypingIndicator ? 1 : 0);
-                    return ListView.separated(
-                      key: const Key('chat-list'),
-                      controller: _scrollController,
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      padding: const EdgeInsets.fromLTRB(16, 22, 16, 16),
-                      itemCount: itemCount,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 16),
-                      itemBuilder: (context, index) {
-                        if (showTypingIndicator &&
-                            index == state.messages.length) {
-                          return TypingIndicator(
-                            stage: state.aiProcessingState,
-                            statusLabel: state.backendStatusLabel,
-                          );
-                        }
-                        return ChatBubble(message: state.messages[index]);
-                      },
-                    );
-                  },
-                ),
+              Column(
+                children: [
+                  BlocBuilder<ChatBloc, ChatState>(
+                    buildWhen: (previous, current) =>
+                        previous.messages != current.messages ||
+                        previous.isLoading != current.isLoading ||
+                        previous.aiProcessingState != current.aiProcessingState ||
+                        previous.backendStatusLabel != current.backendStatusLabel,
+                    builder: (context, state) {
+                      final hasStreamingMessage =
+                          state.messages.isNotEmpty &&
+                          state.messages.last.sender == MessageSender.assistant &&
+                          state.messages.last.status == MessageStatus.processing;
+                      final showTypingIndicator = state.isLoading && !hasStreamingMessage;
+                      final itemCount = state.messages.length + (showTypingIndicator ? 1 : 0);
+                      return ListView.separated(
+                        key: const Key('chat-list'),
+                        controller: _scrollController,
+                        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                        padding: EdgeInsets.fromLTRB(
+                          16.width,
+                          MediaQuery.paddingOf(context).top + 84.height,
+                          16.width,
+                          16.height,
+                        ),
+                        itemCount: itemCount,
+                        separatorBuilder: (context, index) {
+                          if (index >= state.messages.length - 1) {
+                            return 12.height.heightBox;
+                          }
+                          final current = state.messages[index];
+                          final next = state.messages[index + 1];
+                          return (current.sender == next.sender ? 8 : 16).height.heightBox;
+                        },
+                        itemBuilder: (context, index) {
+                          if (showTypingIndicator && index == state.messages.length) {
+                            return TypingIndicator(
+                              stage: state.aiProcessingState,
+                              statusLabel: state.backendStatusLabel,
+                            );
+                          }
+                          return ChatBubble(message: state.messages[index]);
+                        },
+                      );
+                    },
+                  ).expanded(),
+                  Container(
+                    color: context.appColorScheme.surfaceSecondary,
+                    child: ChatInput(
+                      autofocus: widget.autofocusInput,
+                    ).paddingLTRB(14.width, 12.height, 14.width, 12.height),
+                  ),
+                ],
               ),
-              Container(
-                color: Theme.of(context).colorScheme.surface,
-                padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                child: ChatInput(autofocus: widget.autofocusInput),
+              ValueListenableBuilder<bool>(
+                valueListenable: _isHeaderScrolled,
+                builder: (context, isScrolled, child) => _FloatingChatNavigation(
+                  title: widget.title,
+                  showCloseButton: widget.showCloseButton,
+                  isScrolled: isScrolled,
+                ),
               ),
             ],
           ),
@@ -150,142 +208,212 @@ class _ChatPageState extends State<ChatPage> {
   }
 }
 
-class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _ChatAppBar({required this.showCloseButton});
+class _FloatingChatNavigation extends StatelessWidget {
+  const _FloatingChatNavigation({required this.title, required this.showCloseButton, required this.isScrolled});
 
+  final String? title;
   final bool showCloseButton;
-
-  @override
-  Size get preferredSize => const Size.fromHeight(70);
+  final bool isScrolled;
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      toolbarHeight: 70,
-      surfaceTintColor: Colors.transparent,
-      scrolledUnderElevation: 0,
-      titleSpacing: 16,
-      automaticallyImplyLeading: false,
-      title: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFF8A45), Color(0xFFF4600C)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(14),
+    final mediaQuery = MediaQuery.of(context);
+    final useOpaqueFallback =
+        mediaQuery.disableAnimations || mediaQuery.accessibleNavigation || mediaQuery.highContrast;
+    return SafeArea(
+      bottom: false,
+      child: SizedBox(
+        height: 72.height,
+        child: Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: _ScrollEdgeGradient(isScrolled: isScrolled),
             ),
-            child: const Icon(
-              Icons.auto_awesome_rounded,
-              color: Colors.white,
-              size: 21,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                AppConstants.chatbotName,
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 2),
-              BlocBuilder<ChatBloc, ChatState>(
-                buildWhen: (previous, current) =>
-                    previous.isLoading != current.isLoading ||
-                    previous.recordingState != current.recordingState ||
-                    previous.aiProcessingState != current.aiProcessingState ||
-                    previous.backendStatusLabel != current.backendStatusLabel,
-                builder: (context, state) {
-                  final (label, color) = _status(
-                    context,
-                    state,
-                    Theme.of(context).colorScheme,
-                  );
-                  return AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 180),
-                    child: Row(
-                      key: ValueKey(label),
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 7,
-                          height: 7,
-                          decoration: BoxDecoration(
-                            color: color,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          label,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: color,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+            Row(
+              children: [
+                _AssistantIdentityCapsule(
+                  title: title,
+                  isCollapsed: isScrolled,
+                  useOpaqueFallback: useOpaqueFallback,
+                ).expanded(),
+                12.width.widthBox,
+                SizedBox(
+                  width: 44.width,
+                  height: 44.height,
+                  child: _GlassSurface(
+                    isScrolled: isScrolled,
+                    useOpaqueFallback: useOpaqueFallback,
+                    height: 44.height,
+                    borderRadius: 24,
+                    child: Semantics(
+                      button: true,
+                      enabled: showCloseButton,
+                      label: S.of(context).closeAssistant,
+                      child: CupertinoButton(
+                        key: const Key('close-assistant'),
+                        minimumSize: Size.zero,
+                        padding: EdgeInsets.zero,
+                        borderRadius: BorderRadius.circular(24),
+                        onPressed: showCloseButton ? () => GoRouterHelper(context).pop() : null,
+                        child: Icon(CupertinoIcons.xmark, size: 20.sp, color: context.appColorScheme.iconPrimary),
+                      ),
                     ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-      actions: [
-        if (showCloseButton)
-          IconButton(
-            key: const Key('close-assistant'),
-            tooltip: S.of(context).closeAssistant,
-            onPressed: () => context.pop(),
-            icon: const Icon(Icons.close_rounded),
-          )
-        else
-          IconButton(
-            tooltip: S.of(context).options,
-            onPressed: () {},
-            icon: const Icon(Icons.more_horiz_rounded),
-          ),
-        const SizedBox(width: 6),
-      ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Divider(
-          height: 1,
-          color: Theme.of(
-            context,
-          ).colorScheme.outlineVariant.withValues(alpha: .45),
+                  ),
+                ),
+              ],
+            ).paddingSymmetric(horizontal: 16.width, vertical: 8.height),
+          ],
         ),
       ),
     );
   }
+}
 
-  (String, Color) _status(
-    BuildContext context,
-    ChatState state,
-    ColorScheme colors,
-  ) {
-    final strings = S.of(context);
-    if (state.recordingState == RecordingState.recording) {
-      return (strings.listening, colors.error);
-    }
-    if (state.isLoading && state.backendStatusLabel != null) {
-      return (state.backendStatusLabel!, colors.primary);
-    }
-    return switch (state.aiProcessingState) {
-      AiProcessingState.thinking => (strings.thinking, colors.primary),
-      AiProcessingState.understanding => (strings.processing, colors.primary),
-      AiProcessingState.generatingResponse => (
-        strings.processing,
-        colors.primary,
+class _AssistantIdentityCapsule extends StatelessWidget {
+  const _AssistantIdentityCapsule({required this.title, required this.isCollapsed, required this.useOpaqueFallback});
+
+  final String? title;
+  final bool isCollapsed;
+  final bool useOpaqueFallback;
+
+  @override
+  Widget build(BuildContext context) {
+    final normalizedTitle = title?.trim();
+    return _GlassSurface(
+      isScrolled: isCollapsed,
+      useOpaqueFallback: useOpaqueFallback,
+      height: (isCollapsed ? 48 : 56).height,
+      borderRadius: 28,
+      child: Row(
+        children: [
+          AnimatedContainer(
+            key: const Key('assistant-logo'),
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            width: (isCollapsed ? 36 : 40).width,
+            height: (isCollapsed ? 36 : 40).height,
+            child: Assets.image.logo.svg(fit: BoxFit.cover, alignment: Alignment.topLeft, excludeFromSemantics: true),
+          ),
+          12.width.widthBox,
+          LayoutBuilder(
+            builder: (context, constraints) => FittedBox(
+              alignment: Alignment.centerLeft,
+              fit: BoxFit.scaleDown,
+              child: SizedBox(
+                width: constraints.maxWidth,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    IrhText.semibold(
+                      normalizedTitle?.isNotEmpty == true ? normalizedTitle! : S.of(context).newConversationTitle,
+                      maxLines: 1,
+                    ),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 180),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      transitionBuilder: (child, animation) => SizeTransition(
+                        sizeFactor: animation,
+                        axisAlignment: -1,
+                        child: FadeTransition(opacity: animation, child: child),
+                      ),
+                      child: isCollapsed
+                          ? const SizedBox.shrink(key: Key('collapsed-subtitle'))
+                          : IrhText.small(AppConstants.chatbotName, key: const Key('assistant-subtitle'), maxLines: 1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ).expanded(),
+        ],
+      ).paddingSymmetric(horizontal: 12.width),
+    );
+  }
+}
+
+class _GlassSurface extends StatelessWidget {
+  const _GlassSurface({
+    required this.isScrolled,
+    required this.useOpaqueFallback,
+    required this.height,
+    required this.borderRadius,
+    required this.child,
+  });
+
+  final bool isScrolled;
+  final bool useOpaqueFallback;
+  final double height;
+  final double borderRadius;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColorScheme;
+    final glassContent = AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        color: colors.surfacePrimary.withValues(alpha: useOpaqueFallback ? .98 : (isScrolled ? .88 : .7)),
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(color: colors.borderTertiary.withValues(alpha: isScrolled ? .9 : .6), width: .5),
       ),
-      AiProcessingState.idle => (strings.online, const Color(0xFF2EAD72)),
-    };
+      child: child,
+    );
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      height: height,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: colors.textPrimary.withValues(alpha: isScrolled ? .1 : .04),
+            blurRadius: isScrolled ? 16 : 8,
+            offset: Offset(0, isScrolled ? 6.height : 4.height),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: useOpaqueFallback
+            ? glassContent
+            : BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: isScrolled ? 12 : 10, sigmaY: isScrolled ? 12 : 10),
+                child: glassContent,
+              ),
+      ),
+    );
+  }
+}
+
+class _ScrollEdgeGradient extends StatelessWidget {
+  const _ScrollEdgeGradient({required this.isScrolled});
+
+  final bool isScrolled;
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = context.appColorScheme.surfaceSecondary;
+    return IgnorePointer(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        height: 28.height,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              surface.withValues(alpha: isScrolled ? .28 : .12),
+              surface.withValues(alpha: 0),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

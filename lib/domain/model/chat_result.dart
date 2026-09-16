@@ -17,7 +17,7 @@ enum ChatMutationType {
   createJiraTask,
 }
 
-enum DataRefreshScope { leaves, trips, home, jira }
+enum DataRefreshScope { leaves, trips, home, jira, chatHistory }
 
 @freezed
 abstract class PendingApprovals with _$PendingApprovals {
@@ -61,6 +61,33 @@ abstract class JiraIssue with _$JiraIssue {
 }
 
 @freezed
+abstract class JiraStats with _$JiraStats {
+  const factory JiraStats({
+    required int total,
+    required int toDo,
+    required int inProgress,
+    required int done,
+    required int unknown,
+    required int overdue,
+    required int stale,
+    required int withoutDueDate,
+    required Map<String, int> byStatus,
+    required Map<String, int> byPriority,
+    required Map<String, int> byIssueType,
+    required Map<String, int> byProject,
+  }) = _JiraStats;
+}
+
+@freezed
+abstract class JiraIssueList with _$JiraIssueList {
+  const factory JiraIssueList({
+    required List<JiraIssue> issues,
+    required JiraStats stats,
+    @Default(false) bool mayBeTruncated,
+  }) = _JiraIssueList;
+}
+
+@freezed
 abstract class JiraCreateResult with _$JiraCreateResult {
   const factory JiraCreateResult({
     required String key,
@@ -68,7 +95,7 @@ abstract class JiraCreateResult with _$JiraCreateResult {
     required String projectKey,
     required String issueType,
     required String assigneeEmail,
-    required String url,
+    String? url,
     required String message,
   }) = _JiraCreateResult;
 }
@@ -85,7 +112,7 @@ sealed class ChatResultEnvelope with _$ChatResultEnvelope {
       ChatTripListResult;
   const factory ChatResultEnvelope.pendingApprovals(PendingApprovals data) =
       ChatPendingApprovalsResult;
-  const factory ChatResultEnvelope.jiraIssues(List<JiraIssue> data) =
+  const factory ChatResultEnvelope.jiraIssues(JiraIssueList data) =
       ChatJiraIssuesResult;
   const factory ChatResultEnvelope.leaveMutation({
     required ChatMutationType mutation,

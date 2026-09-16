@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 import '../extensions/responsive_extension.dart';
 import '../themes/theme_extensions/app_color_scheme.dart';
@@ -11,11 +10,15 @@ class IrhButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.height,
+    this.secondary = false,
+    this.loading = false,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final double? height;
+  final bool secondary;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +27,20 @@ class IrhButton extends StatelessWidget {
       height: height ?? 52.height,
       width: double.infinity,
       child: CupertinoButton(
-        onPressed: onPressed,
-        color: colors.iconBrand,
+        onPressed: loading ? null : onPressed,
+        color: secondary ? colors.surfaceTemary : colors.iconBrand,
         disabledColor: colors.borderPrimary,
         borderRadius: BorderRadius.circular(16),
-        child: Text(
-          label,
-          style: AppTextStyle.b16.copyWith(color: Colors.white),
-        ),
+        child: loading
+            ? CupertinoActivityIndicator(
+                color: secondary ? colors.iconBrand : colors.surfaceSecondary,
+              )
+            : Text(
+                label,
+                style: AppTextStyle.b16.copyWith(
+                  color: secondary ? colors.textBrand : colors.surfaceSecondary,
+                ),
+              ),
       ),
     );
   }

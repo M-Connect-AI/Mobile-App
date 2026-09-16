@@ -18,6 +18,8 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
     required this.iconPrimary,
     required this.iconSecondary,
     required this.iconBrand,
+    required this.userBubble,
+    required this.userText,
   });
 
   final Color textPrimary;
@@ -35,6 +37,8 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
   final Color iconPrimary;
   final Color iconSecondary;
   final Color iconBrand;
+  final Color userBubble;
+  final Color userText;
 
   static const light = AppColorScheme(
     textPrimary: Color(0xFF17171F),
@@ -52,6 +56,8 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
     iconPrimary: Color(0xFF33333D),
     iconSecondary: Color(0xFF777785),
     iconBrand: Color(0xFFF4600C),
+    userBubble: Color(0xFFF4600C),
+    userText: Color(0xFFFFFFFF),
   );
 
   static const dark = AppColorScheme(
@@ -70,6 +76,8 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
     iconPrimary: Color(0xFFE9E9EF),
     iconSecondary: Color(0xFFA4A4AF),
     iconBrand: Color(0xFFF4600C),
+    userBubble: Color(0xFFF4600C),
+    userText: Color(0xFFFFFFFF),
   );
 
   @override
@@ -89,6 +97,8 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
     Color? iconPrimary,
     Color? iconSecondary,
     Color? iconBrand,
+    Color? userBubble,
+    Color? userText,
   }) {
     return AppColorScheme(
       textPrimary: textPrimary ?? this.textPrimary,
@@ -106,6 +116,8 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
       iconPrimary: iconPrimary ?? this.iconPrimary,
       iconSecondary: iconSecondary ?? this.iconSecondary,
       iconBrand: iconBrand ?? this.iconBrand,
+      userBubble: userBubble ?? this.userBubble,
+      userText: userText ?? this.userText,
     );
   }
 
@@ -120,11 +132,7 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
       textError: Color.lerp(textError, other.textError, t)!,
       textSuccess: Color.lerp(textSuccess, other.textSuccess, t)!,
       surfacePrimary: Color.lerp(surfacePrimary, other.surfacePrimary, t)!,
-      surfaceSecondary: Color.lerp(
-        surfaceSecondary,
-        other.surfaceSecondary,
-        t,
-      )!,
+      surfaceSecondary: Color.lerp(surfaceSecondary, other.surfaceSecondary, t)!,
       surfaceTemary: Color.lerp(surfaceTemary, other.surfaceTemary, t)!,
       borderPrimary: Color.lerp(borderPrimary, other.borderPrimary, t)!,
       borderSecondary: Color.lerp(borderSecondary, other.borderSecondary, t)!,
@@ -132,11 +140,12 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
       iconPrimary: Color.lerp(iconPrimary, other.iconPrimary, t)!,
       iconSecondary: Color.lerp(iconSecondary, other.iconSecondary, t)!,
       iconBrand: Color.lerp(iconBrand, other.iconBrand, t)!,
+      userBubble: Color.lerp(userBubble, other.userBubble, t)!,
+      userText: Color.lerp(userText, other.userText, t)!,
     );
   }
 }
 
 extension AppColorSchemeContext on BuildContext {
-  AppColorScheme get appColorScheme =>
-      Theme.of(this).extension<AppColorScheme>() ?? AppColorScheme.light;
+  AppColorScheme get appColorScheme => Theme.of(this).extension<AppColorScheme>() ?? AppColorScheme.light;
 }

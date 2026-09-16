@@ -3,6 +3,7 @@ import 'package:chatbot_project/common/components/app_text_style.dart';
 import 'package:chatbot_project/common/extensions/responsive_extension.dart';
 import 'package:chatbot_project/common/themes/theme_extensions/app_color_scheme.dart';
 import 'package:chatbot_project/domain/repository/chat_thread_repository.dart';
+import 'package:chatbot_project/domain/service/data_refresh_coordinator.dart';
 import 'package:chatbot_project/generated/l10n.dart';
 import 'package:chatbot_project/presentation/pages/home/bloc/home_chat_ai_cubit.dart';
 import 'package:chatbot_project/presentation/pages/home/widgets/chat_thread_history.dart';
@@ -21,6 +22,7 @@ class ChatHistoryPage extends StatelessWidget {
       create: (_) => HomeChatAiCubit(
         context.read<ChatThreadRepository>(),
         context.read<CredentialRepository>(),
+        refreshCoordinator: context.read<DataRefreshCoordinator?>(),
       )..loadThreads(),
       child: const _ChatHistoryView(),
     );

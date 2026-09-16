@@ -33,6 +33,41 @@ void main() {
       expect(result.isMutation, isFalse);
       expect(result.refreshScopes, isEmpty);
     }
+
+    final jira = ChatResultMapper.map([_jiraIssue]) as ChatJiraIssuesResult;
+    expect(jira.data.stats.total, 1);
+    expect(jira.data.stats.toDo, 1);
+    expect(jira.data.stats.byPriority, {'High': 1});
+  });
+
+  test('uses a trusted runtime hint to type an empty Jira result', () {
+    final result = ChatResultMapper.map(
+      const [],
+      previewHint: ChatResultPreviewHint.jiraIssues,
+    );
+
+    expect(result, isA<ChatJiraIssuesResult>());
+    final data = (result as ChatJiraIssuesResult).data;
+    expect(data.issues, isEmpty);
+    expect(data.stats.total, 0);
+    expect(data.mayBeTruncated, isFalse);
+  });
+
+  test('accepts nullable Jira dates and URLs', () {
+    final preview = ChatResultMapper.map([_jiraIssue]) as ChatJiraIssuesResult;
+    expect(preview.data.issues.single.dueDate, isNull);
+    expect(preview.data.issues.single.updated, isNull);
+    expect(preview.data.issues.single.url, isNull);
+
+    final createPayload = Map<String, dynamic>.from(_jiraCreate)
+      ..['url'] = null;
+    final mutation =
+        ChatResultMapper.map(
+              createPayload,
+              confirmedTool: ChatConfirmationTool.createJiraTask,
+            )
+            as ChatJiraMutationResult;
+    expect(mutation.data.url, isNull);
   });
 
   test('classifies mutations only with a matching confirmed tool', () {

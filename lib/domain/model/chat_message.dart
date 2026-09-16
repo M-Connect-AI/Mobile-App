@@ -9,6 +9,8 @@ enum MessageType { text, audio }
 
 enum MessageStatus { sending, sent, processing, success, failed }
 
+enum ConfirmationStatus { pending, submitting, success, failure, cancelled }
+
 class ChatMessage extends Equatable {
   const ChatMessage({
     required this.id,
@@ -20,6 +22,8 @@ class ChatMessage extends Equatable {
     this.audioPath,
     this.duration,
     this.confirmation,
+    this.confirmationStatus = ConfirmationStatus.pending,
+    this.confirmationError,
     this.confirmedTool,
     this.citations = const [],
     this.executedResult,
@@ -32,6 +36,8 @@ class ChatMessage extends Equatable {
   final String? audioPath;
   final Duration? duration;
   final ChatConfirmAction? confirmation;
+  final ConfirmationStatus confirmationStatus;
+  final String? confirmationError;
   final ChatConfirmationTool? confirmedTool;
   final List<String> citations;
   final ChatResultEnvelope? executedResult;
@@ -44,10 +50,13 @@ class ChatMessage extends Equatable {
     Duration? duration,
     MessageStatus? status,
     ChatConfirmAction? confirmation,
+    ConfirmationStatus? confirmationStatus,
+    String? confirmationError,
     ChatConfirmationTool? confirmedTool,
     List<String>? citations,
     ChatResultEnvelope? executedResult,
     bool clearConfirmation = false,
+    bool clearConfirmationError = false,
   }) {
     return ChatMessage(
       id: id,
@@ -61,6 +70,10 @@ class ChatMessage extends Equatable {
       confirmation: clearConfirmation
           ? null
           : confirmation ?? this.confirmation,
+      confirmationStatus: confirmationStatus ?? this.confirmationStatus,
+      confirmationError: clearConfirmationError
+          ? null
+          : confirmationError ?? this.confirmationError,
       confirmedTool: confirmedTool ?? this.confirmedTool,
       citations: citations ?? this.citations,
       executedResult: executedResult ?? this.executedResult,
@@ -78,6 +91,8 @@ class ChatMessage extends Equatable {
     createdAt,
     status,
     confirmation,
+    confirmationStatus,
+    confirmationError,
     confirmedTool,
     citations,
     executedResult,

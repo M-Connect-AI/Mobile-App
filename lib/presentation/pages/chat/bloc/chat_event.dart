@@ -79,6 +79,24 @@ final class ConfirmationResponded extends ChatEvent {
   List<Object?> get props => [messageId, confirmed];
 }
 
+final class ConfirmationEditRequested extends ChatEvent {
+  const ConfirmationEditRequested(this.messageId);
+
+  final String messageId;
+
+  @override
+  List<Object?> get props => [messageId];
+}
+
+final class ConfirmationRetryRequested extends ChatEvent {
+  const ConfirmationRetryRequested(this.messageId);
+
+  final String messageId;
+
+  @override
+  List<Object?> get props => [messageId];
+}
+
 final class RecordingTicked extends ChatEvent {
   const RecordingTicked();
 }

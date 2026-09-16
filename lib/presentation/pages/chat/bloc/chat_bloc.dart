@@ -32,6 +32,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<SendVoiceMessage>(_onSendVoice);
     on<RetryMessage>(_onRetry);
     on<ConfirmationResponded>(_onConfirmationResponded);
+    on<ConfirmationEditRequested>(_onConfirmationEditRequested);
+    on<ConfirmationRetryRequested>(_onConfirmationRetryRequested);
     on<RecordingTicked>(_onRecordingTicked);
     on<SpeechRecognitionUpdated>(_onSpeechRecognitionUpdated);
     on<SpeechRecognitionFailed>(_onSpeechRecognitionFailed);
@@ -340,10 +342,13 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
     final messages = [...state.messages]
       ..[confirmationIndex] = state.messages[confirmationIndex].copyWith(
-        clearConfirmation: true,
+        confirmationStatus: event.confirmed
+            ? ConfirmationStatus.submitting
+            : ConfirmationStatus.cancelled,
+        clearConfirmationError: true,
       );
-    final userMessage = ChatMessage(
-      id: 'user-${DateTime.now().microsecondsSinceEpoch}',
+    final actionMessage = ChatMessage(
+      id: 'confirmation-${DateTime.now().microsecondsSinceEpoch}',
       type: MessageType.text,
       sender: MessageSender.user,
       content: event.confirmed
@@ -355,7 +360,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     );
     emit(
       state.copyWith(
-        messages: [...messages, userMessage],
+        messages: messages,
         isLoading: true,
         aiProcessingState: AiProcessingState.thinking,
         clearBackendStatusLabel: true,
@@ -363,10 +368,73 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       ),
     );
     await _sendAndReceive(
-      userMessage,
+      actionMessage,
       emit,
       confirm: event.confirmed,
       confirmedTool: event.confirmed ? confirmation.tool : null,
+      confirmationMessageId: event.confirmed ? event.messageId : null,
+    );
+  }
+
+  void _onConfirmationEditRequested(
+    ConfirmationEditRequested event,
+    Emitter<ChatState> emit,
+  ) {
+    final message = state.messages
+        .where(
+          (item) => item.id == event.messageId && item.confirmation != null,
+        )
+        .firstOrNull;
+    if (message == null || state.isLoading) return;
+    emit(
+      state.copyWith(
+        inputText: S.current.editConfirmationPrompt,
+        clearError: true,
+      ),
+    );
+  }
+
+  Future<void> _onConfirmationRetryRequested(
+    ConfirmationRetryRequested event,
+    Emitter<ChatState> emit,
+  ) async {
+    if (state.isLoading) return;
+    final message = state.messages
+        .where(
+          (item) => item.id == event.messageId && item.confirmation != null,
+        )
+        .firstOrNull;
+    final confirmation = message?.confirmation;
+    if (confirmation == null || !confirmation.canExecute) return;
+    _updateConfirmation(
+      emit,
+      event.messageId,
+      status: ConfirmationStatus.submitting,
+      clearError: true,
+    );
+    emit(
+      state.copyWith(
+        isLoading: true,
+        aiProcessingState: AiProcessingState.thinking,
+        clearBackendStatusLabel: true,
+        clearError: true,
+      ),
+    );
+    final actionMessage = ChatMessage(
+      id: 'confirmation-${DateTime.now().microsecondsSinceEpoch}',
+      type: MessageType.text,
+      sender: MessageSender.user,
+      content: S.current.confirmAction,
+      createdAt: DateTime.now(),
+      status: MessageStatus.sending,
+      confirmedTool: confirmation.tool,
+    );
+    await _sendAndReceive(
+      actionMessage,
+      emit,
+      confirm: true,
+      confirmedTool: confirmation.tool,
+      confirmationMessageId: event.messageId,
     );
   }
 
@@ -375,6 +443,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit, {
     bool confirm = false,
     ChatConfirmationTool? confirmedTool,
+    String? confirmationMessageId,
   }) async {
     String? assistantMessageId;
     var receivedToken = false;
@@ -415,25 +484,40 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             confirmation: event.action,
           );
         } else if (event is ChatStreamResult) {
-          _upsertAssistant(
-            emit,
-            userMessage,
-            assistantMessageId,
-            executedResult: event.result,
-          );
+          if (confirmationMessageId != null && event.result.isMutation) {
+            _updateConfirmation(
+              emit,
+              confirmationMessageId,
+              status: ConfirmationStatus.success,
+              result: event.result,
+              clearError: true,
+            );
+          } else {
+            _upsertAssistant(
+              emit,
+              userMessage,
+              assistantMessageId,
+              executedResult: event.result,
+            );
+          }
           if (event.result.isMutation) {
             _refreshCoordinator?.notify(event.result.refreshScopes);
           }
         } else if (event is ChatStreamDone) {
           terminalEventSeen = true;
-          _upsertAssistant(
-            emit,
-            userMessage,
-            assistantMessageId,
-            status: MessageStatus.success,
-            citations: event.citations,
-            isLoading: false,
+          final hasAssistantMessage = state.messages.any(
+            (message) => message.id == assistantMessageId,
           );
+          if (confirmationMessageId == null || hasAssistantMessage) {
+            _upsertAssistant(
+              emit,
+              userMessage,
+              assistantMessageId,
+              status: MessageStatus.success,
+              citations: event.citations,
+              isLoading: false,
+            );
+          }
           emit(
             state.copyWith(
               activeThreadId: event.threadId,
@@ -442,15 +526,26 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
               clearBackendStatusLabel: true,
             ),
           );
+          _refreshCoordinator?.notify(const {DataRefreshScope.chatHistory});
         } else if (event is ChatStreamFailure) {
           terminalEventSeen = true;
-          _upsertAssistant(
-            emit,
-            userMessage,
-            assistantMessageId,
-            status: MessageStatus.failed,
-            isLoading: false,
-          );
+          if (confirmationMessageId != null) {
+            _updateConfirmation(
+              emit,
+              confirmationMessageId,
+              status: ConfirmationStatus.failure,
+              error: event.message,
+            );
+          } else {
+            _upsertAssistant(
+              emit,
+              userMessage,
+              assistantMessageId,
+              content: event.message,
+              status: MessageStatus.failed,
+              isLoading: false,
+            );
+          }
           emit(
             state.copyWith(
               error: event.message,
@@ -465,6 +560,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         throw ChatRepositoryException(S.current.connectionInterrupted);
       }
     } on ChatRepositoryException catch (error) {
+      if (confirmationMessageId != null) {
+        _updateConfirmation(
+          emit,
+          confirmationMessageId,
+          status: ConfirmationStatus.failure,
+          error: error.message,
+        );
+      }
       final failed = state.messages
           .where((item) => item.id != assistantMessageId)
           .map(
@@ -486,6 +589,29 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         ),
       );
     }
+  }
+
+  void _updateConfirmation(
+    Emitter<ChatState> emit,
+    String messageId, {
+    required ConfirmationStatus status,
+    ChatResultEnvelope? result,
+    String? error,
+    bool clearError = false,
+  }) {
+    final messages = state.messages
+        .map(
+          (message) => message.id == messageId
+              ? message.copyWith(
+                  confirmationStatus: status,
+                  confirmationError: error,
+                  executedResult: result,
+                  clearConfirmationError: clearError,
+                )
+              : message,
+        )
+        .toList();
+    emit(state.copyWith(messages: messages));
   }
 
   String _assistantContent(String id) =>

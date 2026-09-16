@@ -22,6 +22,7 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
     ChatConfirmationTool? confirmedTool,
   }) async* {
     final token = await _accessToken();
+    ChatResultPreviewHint? previewHint;
     try {
       await for (final event in _remote.streamTurn(
         token,
@@ -31,6 +32,9 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
           confirm: confirm ? true : null,
         ),
       )) {
+        if (event is AgentStatusEvent) {
+          previewHint ??= _previewHint(event.label);
+        }
         yield switch (event) {
           AgentStatusEvent() => ChatStreamStatus(event.label),
           AgentTokenEvent() => ChatStreamToken(event.text),
@@ -41,6 +45,7 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
             ChatResultMapper.map(
               event.executed,
               confirmedTool: confirm ? confirmedTool : null,
+              previewHint: previewHint,
             ),
           ),
           AgentDoneEvent() => ChatStreamDone(
@@ -259,6 +264,15 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
 
   bool _isNonEmptyString(Object? value) =>
       value is String && value.trim().isNotEmpty;
+
+  ChatResultPreviewHint? _previewHint(String label) => switch (label.trim()) {
+    'Đang tra cứu đơn nghỉ phép…' => ChatResultPreviewHint.leaveList,
+    'Đang tra cứu công tác…' => ChatResultPreviewHint.tripList,
+    'Đang tổng hợp công việc Jira…' ||
+    'Đang tra cứu task Jira…' ||
+    'Đang phân tích backlog Jira…' => ChatResultPreviewHint.jiraIssues,
+    _ => null,
+  };
 
   @override
   void close() => _remote.close();

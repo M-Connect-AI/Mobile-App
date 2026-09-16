@@ -1103,9 +1103,610 @@ as String?,
 }
 
 /// @nodoc
+mixin _$JiraStats {
+
+ int get total; int get toDo; int get inProgress; int get done; int get unknown; int get overdue; int get stale; int get withoutDueDate; Map<String, int> get byStatus; Map<String, int> get byPriority; Map<String, int> get byIssueType; Map<String, int> get byProject;
+/// Create a copy of JiraStats
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$JiraStatsCopyWith<JiraStats> get copyWith => _$JiraStatsCopyWithImpl<JiraStats>(this as JiraStats, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JiraStats&&(identical(other.total, total) || other.total == total)&&(identical(other.toDo, toDo) || other.toDo == toDo)&&(identical(other.inProgress, inProgress) || other.inProgress == inProgress)&&(identical(other.done, done) || other.done == done)&&(identical(other.unknown, unknown) || other.unknown == unknown)&&(identical(other.overdue, overdue) || other.overdue == overdue)&&(identical(other.stale, stale) || other.stale == stale)&&(identical(other.withoutDueDate, withoutDueDate) || other.withoutDueDate == withoutDueDate)&&const DeepCollectionEquality().equals(other.byStatus, byStatus)&&const DeepCollectionEquality().equals(other.byPriority, byPriority)&&const DeepCollectionEquality().equals(other.byIssueType, byIssueType)&&const DeepCollectionEquality().equals(other.byProject, byProject));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,total,toDo,inProgress,done,unknown,overdue,stale,withoutDueDate,const DeepCollectionEquality().hash(byStatus),const DeepCollectionEquality().hash(byPriority),const DeepCollectionEquality().hash(byIssueType),const DeepCollectionEquality().hash(byProject));
+
+@override
+String toString() {
+  return 'JiraStats(total: $total, toDo: $toDo, inProgress: $inProgress, done: $done, unknown: $unknown, overdue: $overdue, stale: $stale, withoutDueDate: $withoutDueDate, byStatus: $byStatus, byPriority: $byPriority, byIssueType: $byIssueType, byProject: $byProject)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $JiraStatsCopyWith<$Res>  {
+  factory $JiraStatsCopyWith(JiraStats value, $Res Function(JiraStats) _then) = _$JiraStatsCopyWithImpl;
+@useResult
+$Res call({
+ int total, int toDo, int inProgress, int done, int unknown, int overdue, int stale, int withoutDueDate, Map<String, int> byStatus, Map<String, int> byPriority, Map<String, int> byIssueType, Map<String, int> byProject
+});
+
+
+
+
+}
+/// @nodoc
+class _$JiraStatsCopyWithImpl<$Res>
+    implements $JiraStatsCopyWith<$Res> {
+  _$JiraStatsCopyWithImpl(this._self, this._then);
+
+  final JiraStats _self;
+  final $Res Function(JiraStats) _then;
+
+/// Create a copy of JiraStats
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? total = null,Object? toDo = null,Object? inProgress = null,Object? done = null,Object? unknown = null,Object? overdue = null,Object? stale = null,Object? withoutDueDate = null,Object? byStatus = null,Object? byPriority = null,Object? byIssueType = null,Object? byProject = null,}) {
+  return _then(_self.copyWith(
+total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
+as int,toDo: null == toDo ? _self.toDo : toDo // ignore: cast_nullable_to_non_nullable
+as int,inProgress: null == inProgress ? _self.inProgress : inProgress // ignore: cast_nullable_to_non_nullable
+as int,done: null == done ? _self.done : done // ignore: cast_nullable_to_non_nullable
+as int,unknown: null == unknown ? _self.unknown : unknown // ignore: cast_nullable_to_non_nullable
+as int,overdue: null == overdue ? _self.overdue : overdue // ignore: cast_nullable_to_non_nullable
+as int,stale: null == stale ? _self.stale : stale // ignore: cast_nullable_to_non_nullable
+as int,withoutDueDate: null == withoutDueDate ? _self.withoutDueDate : withoutDueDate // ignore: cast_nullable_to_non_nullable
+as int,byStatus: null == byStatus ? _self.byStatus : byStatus // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,byPriority: null == byPriority ? _self.byPriority : byPriority // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,byIssueType: null == byIssueType ? _self.byIssueType : byIssueType // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,byProject: null == byProject ? _self.byProject : byProject // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [JiraStats].
+extension JiraStatsPatterns on JiraStats {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _JiraStats value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _JiraStats() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _JiraStats value)  $default,){
+final _that = this;
+switch (_that) {
+case _JiraStats():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _JiraStats value)?  $default,){
+final _that = this;
+switch (_that) {
+case _JiraStats() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int total,  int toDo,  int inProgress,  int done,  int unknown,  int overdue,  int stale,  int withoutDueDate,  Map<String, int> byStatus,  Map<String, int> byPriority,  Map<String, int> byIssueType,  Map<String, int> byProject)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _JiraStats() when $default != null:
+return $default(_that.total,_that.toDo,_that.inProgress,_that.done,_that.unknown,_that.overdue,_that.stale,_that.withoutDueDate,_that.byStatus,_that.byPriority,_that.byIssueType,_that.byProject);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int total,  int toDo,  int inProgress,  int done,  int unknown,  int overdue,  int stale,  int withoutDueDate,  Map<String, int> byStatus,  Map<String, int> byPriority,  Map<String, int> byIssueType,  Map<String, int> byProject)  $default,) {final _that = this;
+switch (_that) {
+case _JiraStats():
+return $default(_that.total,_that.toDo,_that.inProgress,_that.done,_that.unknown,_that.overdue,_that.stale,_that.withoutDueDate,_that.byStatus,_that.byPriority,_that.byIssueType,_that.byProject);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int total,  int toDo,  int inProgress,  int done,  int unknown,  int overdue,  int stale,  int withoutDueDate,  Map<String, int> byStatus,  Map<String, int> byPriority,  Map<String, int> byIssueType,  Map<String, int> byProject)?  $default,) {final _that = this;
+switch (_that) {
+case _JiraStats() when $default != null:
+return $default(_that.total,_that.toDo,_that.inProgress,_that.done,_that.unknown,_that.overdue,_that.stale,_that.withoutDueDate,_that.byStatus,_that.byPriority,_that.byIssueType,_that.byProject);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _JiraStats implements JiraStats {
+  const _JiraStats({required this.total, required this.toDo, required this.inProgress, required this.done, required this.unknown, required this.overdue, required this.stale, required this.withoutDueDate, required final  Map<String, int> byStatus, required final  Map<String, int> byPriority, required final  Map<String, int> byIssueType, required final  Map<String, int> byProject}): _byStatus = byStatus,_byPriority = byPriority,_byIssueType = byIssueType,_byProject = byProject;
+  
+
+@override final  int total;
+@override final  int toDo;
+@override final  int inProgress;
+@override final  int done;
+@override final  int unknown;
+@override final  int overdue;
+@override final  int stale;
+@override final  int withoutDueDate;
+ final  Map<String, int> _byStatus;
+@override Map<String, int> get byStatus {
+  if (_byStatus is EqualUnmodifiableMapView) return _byStatus;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_byStatus);
+}
+
+ final  Map<String, int> _byPriority;
+@override Map<String, int> get byPriority {
+  if (_byPriority is EqualUnmodifiableMapView) return _byPriority;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_byPriority);
+}
+
+ final  Map<String, int> _byIssueType;
+@override Map<String, int> get byIssueType {
+  if (_byIssueType is EqualUnmodifiableMapView) return _byIssueType;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_byIssueType);
+}
+
+ final  Map<String, int> _byProject;
+@override Map<String, int> get byProject {
+  if (_byProject is EqualUnmodifiableMapView) return _byProject;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_byProject);
+}
+
+
+/// Create a copy of JiraStats
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$JiraStatsCopyWith<_JiraStats> get copyWith => __$JiraStatsCopyWithImpl<_JiraStats>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _JiraStats&&(identical(other.total, total) || other.total == total)&&(identical(other.toDo, toDo) || other.toDo == toDo)&&(identical(other.inProgress, inProgress) || other.inProgress == inProgress)&&(identical(other.done, done) || other.done == done)&&(identical(other.unknown, unknown) || other.unknown == unknown)&&(identical(other.overdue, overdue) || other.overdue == overdue)&&(identical(other.stale, stale) || other.stale == stale)&&(identical(other.withoutDueDate, withoutDueDate) || other.withoutDueDate == withoutDueDate)&&const DeepCollectionEquality().equals(other._byStatus, _byStatus)&&const DeepCollectionEquality().equals(other._byPriority, _byPriority)&&const DeepCollectionEquality().equals(other._byIssueType, _byIssueType)&&const DeepCollectionEquality().equals(other._byProject, _byProject));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,total,toDo,inProgress,done,unknown,overdue,stale,withoutDueDate,const DeepCollectionEquality().hash(_byStatus),const DeepCollectionEquality().hash(_byPriority),const DeepCollectionEquality().hash(_byIssueType),const DeepCollectionEquality().hash(_byProject));
+
+@override
+String toString() {
+  return 'JiraStats(total: $total, toDo: $toDo, inProgress: $inProgress, done: $done, unknown: $unknown, overdue: $overdue, stale: $stale, withoutDueDate: $withoutDueDate, byStatus: $byStatus, byPriority: $byPriority, byIssueType: $byIssueType, byProject: $byProject)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$JiraStatsCopyWith<$Res> implements $JiraStatsCopyWith<$Res> {
+  factory _$JiraStatsCopyWith(_JiraStats value, $Res Function(_JiraStats) _then) = __$JiraStatsCopyWithImpl;
+@override @useResult
+$Res call({
+ int total, int toDo, int inProgress, int done, int unknown, int overdue, int stale, int withoutDueDate, Map<String, int> byStatus, Map<String, int> byPriority, Map<String, int> byIssueType, Map<String, int> byProject
+});
+
+
+
+
+}
+/// @nodoc
+class __$JiraStatsCopyWithImpl<$Res>
+    implements _$JiraStatsCopyWith<$Res> {
+  __$JiraStatsCopyWithImpl(this._self, this._then);
+
+  final _JiraStats _self;
+  final $Res Function(_JiraStats) _then;
+
+/// Create a copy of JiraStats
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? total = null,Object? toDo = null,Object? inProgress = null,Object? done = null,Object? unknown = null,Object? overdue = null,Object? stale = null,Object? withoutDueDate = null,Object? byStatus = null,Object? byPriority = null,Object? byIssueType = null,Object? byProject = null,}) {
+  return _then(_JiraStats(
+total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
+as int,toDo: null == toDo ? _self.toDo : toDo // ignore: cast_nullable_to_non_nullable
+as int,inProgress: null == inProgress ? _self.inProgress : inProgress // ignore: cast_nullable_to_non_nullable
+as int,done: null == done ? _self.done : done // ignore: cast_nullable_to_non_nullable
+as int,unknown: null == unknown ? _self.unknown : unknown // ignore: cast_nullable_to_non_nullable
+as int,overdue: null == overdue ? _self.overdue : overdue // ignore: cast_nullable_to_non_nullable
+as int,stale: null == stale ? _self.stale : stale // ignore: cast_nullable_to_non_nullable
+as int,withoutDueDate: null == withoutDueDate ? _self.withoutDueDate : withoutDueDate // ignore: cast_nullable_to_non_nullable
+as int,byStatus: null == byStatus ? _self._byStatus : byStatus // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,byPriority: null == byPriority ? _self._byPriority : byPriority // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,byIssueType: null == byIssueType ? _self._byIssueType : byIssueType // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,byProject: null == byProject ? _self._byProject : byProject // ignore: cast_nullable_to_non_nullable
+as Map<String, int>,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$JiraIssueList {
+
+ List<JiraIssue> get issues; JiraStats get stats; bool get mayBeTruncated;
+/// Create a copy of JiraIssueList
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$JiraIssueListCopyWith<JiraIssueList> get copyWith => _$JiraIssueListCopyWithImpl<JiraIssueList>(this as JiraIssueList, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JiraIssueList&&const DeepCollectionEquality().equals(other.issues, issues)&&(identical(other.stats, stats) || other.stats == stats)&&(identical(other.mayBeTruncated, mayBeTruncated) || other.mayBeTruncated == mayBeTruncated));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(issues),stats,mayBeTruncated);
+
+@override
+String toString() {
+  return 'JiraIssueList(issues: $issues, stats: $stats, mayBeTruncated: $mayBeTruncated)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $JiraIssueListCopyWith<$Res>  {
+  factory $JiraIssueListCopyWith(JiraIssueList value, $Res Function(JiraIssueList) _then) = _$JiraIssueListCopyWithImpl;
+@useResult
+$Res call({
+ List<JiraIssue> issues, JiraStats stats, bool mayBeTruncated
+});
+
+
+$JiraStatsCopyWith<$Res> get stats;
+
+}
+/// @nodoc
+class _$JiraIssueListCopyWithImpl<$Res>
+    implements $JiraIssueListCopyWith<$Res> {
+  _$JiraIssueListCopyWithImpl(this._self, this._then);
+
+  final JiraIssueList _self;
+  final $Res Function(JiraIssueList) _then;
+
+/// Create a copy of JiraIssueList
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? issues = null,Object? stats = null,Object? mayBeTruncated = null,}) {
+  return _then(_self.copyWith(
+issues: null == issues ? _self.issues : issues // ignore: cast_nullable_to_non_nullable
+as List<JiraIssue>,stats: null == stats ? _self.stats : stats // ignore: cast_nullable_to_non_nullable
+as JiraStats,mayBeTruncated: null == mayBeTruncated ? _self.mayBeTruncated : mayBeTruncated // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+/// Create a copy of JiraIssueList
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$JiraStatsCopyWith<$Res> get stats {
+  
+  return $JiraStatsCopyWith<$Res>(_self.stats, (value) {
+    return _then(_self.copyWith(stats: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [JiraIssueList].
+extension JiraIssueListPatterns on JiraIssueList {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _JiraIssueList value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _JiraIssueList() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _JiraIssueList value)  $default,){
+final _that = this;
+switch (_that) {
+case _JiraIssueList():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _JiraIssueList value)?  $default,){
+final _that = this;
+switch (_that) {
+case _JiraIssueList() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<JiraIssue> issues,  JiraStats stats,  bool mayBeTruncated)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _JiraIssueList() when $default != null:
+return $default(_that.issues,_that.stats,_that.mayBeTruncated);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<JiraIssue> issues,  JiraStats stats,  bool mayBeTruncated)  $default,) {final _that = this;
+switch (_that) {
+case _JiraIssueList():
+return $default(_that.issues,_that.stats,_that.mayBeTruncated);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<JiraIssue> issues,  JiraStats stats,  bool mayBeTruncated)?  $default,) {final _that = this;
+switch (_that) {
+case _JiraIssueList() when $default != null:
+return $default(_that.issues,_that.stats,_that.mayBeTruncated);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _JiraIssueList implements JiraIssueList {
+  const _JiraIssueList({required final  List<JiraIssue> issues, required this.stats, this.mayBeTruncated = false}): _issues = issues;
+  
+
+ final  List<JiraIssue> _issues;
+@override List<JiraIssue> get issues {
+  if (_issues is EqualUnmodifiableListView) return _issues;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_issues);
+}
+
+@override final  JiraStats stats;
+@override@JsonKey() final  bool mayBeTruncated;
+
+/// Create a copy of JiraIssueList
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$JiraIssueListCopyWith<_JiraIssueList> get copyWith => __$JiraIssueListCopyWithImpl<_JiraIssueList>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _JiraIssueList&&const DeepCollectionEquality().equals(other._issues, _issues)&&(identical(other.stats, stats) || other.stats == stats)&&(identical(other.mayBeTruncated, mayBeTruncated) || other.mayBeTruncated == mayBeTruncated));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_issues),stats,mayBeTruncated);
+
+@override
+String toString() {
+  return 'JiraIssueList(issues: $issues, stats: $stats, mayBeTruncated: $mayBeTruncated)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$JiraIssueListCopyWith<$Res> implements $JiraIssueListCopyWith<$Res> {
+  factory _$JiraIssueListCopyWith(_JiraIssueList value, $Res Function(_JiraIssueList) _then) = __$JiraIssueListCopyWithImpl;
+@override @useResult
+$Res call({
+ List<JiraIssue> issues, JiraStats stats, bool mayBeTruncated
+});
+
+
+@override $JiraStatsCopyWith<$Res> get stats;
+
+}
+/// @nodoc
+class __$JiraIssueListCopyWithImpl<$Res>
+    implements _$JiraIssueListCopyWith<$Res> {
+  __$JiraIssueListCopyWithImpl(this._self, this._then);
+
+  final _JiraIssueList _self;
+  final $Res Function(_JiraIssueList) _then;
+
+/// Create a copy of JiraIssueList
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? issues = null,Object? stats = null,Object? mayBeTruncated = null,}) {
+  return _then(_JiraIssueList(
+issues: null == issues ? _self._issues : issues // ignore: cast_nullable_to_non_nullable
+as List<JiraIssue>,stats: null == stats ? _self.stats : stats // ignore: cast_nullable_to_non_nullable
+as JiraStats,mayBeTruncated: null == mayBeTruncated ? _self.mayBeTruncated : mayBeTruncated // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+/// Create a copy of JiraIssueList
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$JiraStatsCopyWith<$Res> get stats {
+  
+  return $JiraStatsCopyWith<$Res>(_self.stats, (value) {
+    return _then(_self.copyWith(stats: value));
+  });
+}
+}
+
+/// @nodoc
 mixin _$JiraCreateResult {
 
- String get key; String get summary; String get projectKey; String get issueType; String get assigneeEmail; String get url; String get message;
+ String get key; String get summary; String get projectKey; String get issueType; String get assigneeEmail; String? get url; String get message;
 /// Create a copy of JiraCreateResult
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1136,7 +1737,7 @@ abstract mixin class $JiraCreateResultCopyWith<$Res>  {
   factory $JiraCreateResultCopyWith(JiraCreateResult value, $Res Function(JiraCreateResult) _then) = _$JiraCreateResultCopyWithImpl;
 @useResult
 $Res call({
- String key, String summary, String projectKey, String issueType, String assigneeEmail, String url, String message
+ String key, String summary, String projectKey, String issueType, String assigneeEmail, String? url, String message
 });
 
 
@@ -1153,15 +1754,15 @@ class _$JiraCreateResultCopyWithImpl<$Res>
 
 /// Create a copy of JiraCreateResult
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? key = null,Object? summary = null,Object? projectKey = null,Object? issueType = null,Object? assigneeEmail = null,Object? url = null,Object? message = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? key = null,Object? summary = null,Object? projectKey = null,Object? issueType = null,Object? assigneeEmail = null,Object? url = freezed,Object? message = null,}) {
   return _then(_self.copyWith(
 key: null == key ? _self.key : key // ignore: cast_nullable_to_non_nullable
 as String,summary: null == summary ? _self.summary : summary // ignore: cast_nullable_to_non_nullable
 as String,projectKey: null == projectKey ? _self.projectKey : projectKey // ignore: cast_nullable_to_non_nullable
 as String,issueType: null == issueType ? _self.issueType : issueType // ignore: cast_nullable_to_non_nullable
 as String,assigneeEmail: null == assigneeEmail ? _self.assigneeEmail : assigneeEmail // ignore: cast_nullable_to_non_nullable
-as String,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
-as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,url: freezed == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String?,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -1247,7 +1848,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String key,  String summary,  String projectKey,  String issueType,  String assigneeEmail,  String url,  String message)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String key,  String summary,  String projectKey,  String issueType,  String assigneeEmail,  String? url,  String message)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _JiraCreateResult() when $default != null:
 return $default(_that.key,_that.summary,_that.projectKey,_that.issueType,_that.assigneeEmail,_that.url,_that.message);case _:
@@ -1268,7 +1869,7 @@ return $default(_that.key,_that.summary,_that.projectKey,_that.issueType,_that.a
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String key,  String summary,  String projectKey,  String issueType,  String assigneeEmail,  String url,  String message)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String key,  String summary,  String projectKey,  String issueType,  String assigneeEmail,  String? url,  String message)  $default,) {final _that = this;
 switch (_that) {
 case _JiraCreateResult():
 return $default(_that.key,_that.summary,_that.projectKey,_that.issueType,_that.assigneeEmail,_that.url,_that.message);case _:
@@ -1288,7 +1889,7 @@ return $default(_that.key,_that.summary,_that.projectKey,_that.issueType,_that.a
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String key,  String summary,  String projectKey,  String issueType,  String assigneeEmail,  String url,  String message)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String key,  String summary,  String projectKey,  String issueType,  String assigneeEmail,  String? url,  String message)?  $default,) {final _that = this;
 switch (_that) {
 case _JiraCreateResult() when $default != null:
 return $default(_that.key,_that.summary,_that.projectKey,_that.issueType,_that.assigneeEmail,_that.url,_that.message);case _:
@@ -1303,7 +1904,7 @@ return $default(_that.key,_that.summary,_that.projectKey,_that.issueType,_that.a
 
 
 class _JiraCreateResult implements JiraCreateResult {
-  const _JiraCreateResult({required this.key, required this.summary, required this.projectKey, required this.issueType, required this.assigneeEmail, required this.url, required this.message});
+  const _JiraCreateResult({required this.key, required this.summary, required this.projectKey, required this.issueType, required this.assigneeEmail, this.url, required this.message});
   
 
 @override final  String key;
@@ -1311,7 +1912,7 @@ class _JiraCreateResult implements JiraCreateResult {
 @override final  String projectKey;
 @override final  String issueType;
 @override final  String assigneeEmail;
-@override final  String url;
+@override final  String? url;
 @override final  String message;
 
 /// Create a copy of JiraCreateResult
@@ -1344,7 +1945,7 @@ abstract mixin class _$JiraCreateResultCopyWith<$Res> implements $JiraCreateResu
   factory _$JiraCreateResultCopyWith(_JiraCreateResult value, $Res Function(_JiraCreateResult) _then) = __$JiraCreateResultCopyWithImpl;
 @override @useResult
 $Res call({
- String key, String summary, String projectKey, String issueType, String assigneeEmail, String url, String message
+ String key, String summary, String projectKey, String issueType, String assigneeEmail, String? url, String message
 });
 
 
@@ -1361,15 +1962,15 @@ class __$JiraCreateResultCopyWithImpl<$Res>
 
 /// Create a copy of JiraCreateResult
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? key = null,Object? summary = null,Object? projectKey = null,Object? issueType = null,Object? assigneeEmail = null,Object? url = null,Object? message = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? key = null,Object? summary = null,Object? projectKey = null,Object? issueType = null,Object? assigneeEmail = null,Object? url = freezed,Object? message = null,}) {
   return _then(_JiraCreateResult(
 key: null == key ? _self.key : key // ignore: cast_nullable_to_non_nullable
 as String,summary: null == summary ? _self.summary : summary // ignore: cast_nullable_to_non_nullable
 as String,projectKey: null == projectKey ? _self.projectKey : projectKey // ignore: cast_nullable_to_non_nullable
 as String,issueType: null == issueType ? _self.issueType : issueType // ignore: cast_nullable_to_non_nullable
 as String,assigneeEmail: null == assigneeEmail ? _self.assigneeEmail : assigneeEmail // ignore: cast_nullable_to_non_nullable
-as String,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
-as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,url: freezed == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String?,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -1512,7 +2113,7 @@ return unknown(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( LeaveBalance data)?  leaveBalance,TResult Function( List<LeaveRequest> data)?  leaveList,TResult Function( List<TripRequest> data)?  tripList,TResult Function( PendingApprovals data)?  pendingApprovals,TResult Function( List<JiraIssue> data)?  jiraIssues,TResult Function( ChatMutationType mutation,  LeaveRequest data)?  leaveMutation,TResult Function( ChatMutationType mutation,  TripRequest data)?  tripMutation,TResult Function( ChatMutationType mutation,  LeaveBatchMutation data)?  leaveBatchMutation,TResult Function( ChatMutationType mutation,  TripBatchMutation data)?  tripBatchMutation,TResult Function( ChatMutationType mutation,  JiraCreateResult data)?  jiraMutation,TResult Function( Object? raw)?  unknown,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( LeaveBalance data)?  leaveBalance,TResult Function( List<LeaveRequest> data)?  leaveList,TResult Function( List<TripRequest> data)?  tripList,TResult Function( PendingApprovals data)?  pendingApprovals,TResult Function( JiraIssueList data)?  jiraIssues,TResult Function( ChatMutationType mutation,  LeaveRequest data)?  leaveMutation,TResult Function( ChatMutationType mutation,  TripRequest data)?  tripMutation,TResult Function( ChatMutationType mutation,  LeaveBatchMutation data)?  leaveBatchMutation,TResult Function( ChatMutationType mutation,  TripBatchMutation data)?  tripBatchMutation,TResult Function( ChatMutationType mutation,  JiraCreateResult data)?  jiraMutation,TResult Function( Object? raw)?  unknown,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case ChatLeaveBalanceResult() when leaveBalance != null:
 return leaveBalance(_that.data);case ChatLeaveListResult() when leaveList != null:
@@ -1543,7 +2144,7 @@ return unknown(_that.raw);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( LeaveBalance data)  leaveBalance,required TResult Function( List<LeaveRequest> data)  leaveList,required TResult Function( List<TripRequest> data)  tripList,required TResult Function( PendingApprovals data)  pendingApprovals,required TResult Function( List<JiraIssue> data)  jiraIssues,required TResult Function( ChatMutationType mutation,  LeaveRequest data)  leaveMutation,required TResult Function( ChatMutationType mutation,  TripRequest data)  tripMutation,required TResult Function( ChatMutationType mutation,  LeaveBatchMutation data)  leaveBatchMutation,required TResult Function( ChatMutationType mutation,  TripBatchMutation data)  tripBatchMutation,required TResult Function( ChatMutationType mutation,  JiraCreateResult data)  jiraMutation,required TResult Function( Object? raw)  unknown,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( LeaveBalance data)  leaveBalance,required TResult Function( List<LeaveRequest> data)  leaveList,required TResult Function( List<TripRequest> data)  tripList,required TResult Function( PendingApprovals data)  pendingApprovals,required TResult Function( JiraIssueList data)  jiraIssues,required TResult Function( ChatMutationType mutation,  LeaveRequest data)  leaveMutation,required TResult Function( ChatMutationType mutation,  TripRequest data)  tripMutation,required TResult Function( ChatMutationType mutation,  LeaveBatchMutation data)  leaveBatchMutation,required TResult Function( ChatMutationType mutation,  TripBatchMutation data)  tripBatchMutation,required TResult Function( ChatMutationType mutation,  JiraCreateResult data)  jiraMutation,required TResult Function( Object? raw)  unknown,}) {final _that = this;
 switch (_that) {
 case ChatLeaveBalanceResult():
 return leaveBalance(_that.data);case ChatLeaveListResult():
@@ -1570,7 +2171,7 @@ return unknown(_that.raw);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( LeaveBalance data)?  leaveBalance,TResult? Function( List<LeaveRequest> data)?  leaveList,TResult? Function( List<TripRequest> data)?  tripList,TResult? Function( PendingApprovals data)?  pendingApprovals,TResult? Function( List<JiraIssue> data)?  jiraIssues,TResult? Function( ChatMutationType mutation,  LeaveRequest data)?  leaveMutation,TResult? Function( ChatMutationType mutation,  TripRequest data)?  tripMutation,TResult? Function( ChatMutationType mutation,  LeaveBatchMutation data)?  leaveBatchMutation,TResult? Function( ChatMutationType mutation,  TripBatchMutation data)?  tripBatchMutation,TResult? Function( ChatMutationType mutation,  JiraCreateResult data)?  jiraMutation,TResult? Function( Object? raw)?  unknown,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( LeaveBalance data)?  leaveBalance,TResult? Function( List<LeaveRequest> data)?  leaveList,TResult? Function( List<TripRequest> data)?  tripList,TResult? Function( PendingApprovals data)?  pendingApprovals,TResult? Function( JiraIssueList data)?  jiraIssues,TResult? Function( ChatMutationType mutation,  LeaveRequest data)?  leaveMutation,TResult? Function( ChatMutationType mutation,  TripRequest data)?  tripMutation,TResult? Function( ChatMutationType mutation,  LeaveBatchMutation data)?  leaveBatchMutation,TResult? Function( ChatMutationType mutation,  TripBatchMutation data)?  tripBatchMutation,TResult? Function( ChatMutationType mutation,  JiraCreateResult data)?  jiraMutation,TResult? Function( Object? raw)?  unknown,}) {final _that = this;
 switch (_that) {
 case ChatLeaveBalanceResult() when leaveBalance != null:
 return leaveBalance(_that.data);case ChatLeaveListResult() when leaveList != null:
@@ -1889,16 +2490,10 @@ $PendingApprovalsCopyWith<$Res> get data {
 
 
 class ChatJiraIssuesResult extends ChatResultEnvelope {
-  const ChatJiraIssuesResult(final  List<JiraIssue> data): _data = data,super._();
+  const ChatJiraIssuesResult(this.data): super._();
   
 
- final  List<JiraIssue> _data;
- List<JiraIssue> get data {
-  if (_data is EqualUnmodifiableListView) return _data;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_data);
-}
-
+ final  JiraIssueList data;
 
 /// Create a copy of ChatResultEnvelope
 /// with the given fields replaced by the non-null parameter values.
@@ -1910,12 +2505,12 @@ $ChatJiraIssuesResultCopyWith<ChatJiraIssuesResult> get copyWith => _$ChatJiraIs
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatJiraIssuesResult&&const DeepCollectionEquality().equals(other._data, _data));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatJiraIssuesResult&&(identical(other.data, data) || other.data == data));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_data));
+int get hashCode => Object.hash(runtimeType,data);
 
 @override
 String toString() {
@@ -1930,11 +2525,11 @@ abstract mixin class $ChatJiraIssuesResultCopyWith<$Res> implements $ChatResultE
   factory $ChatJiraIssuesResultCopyWith(ChatJiraIssuesResult value, $Res Function(ChatJiraIssuesResult) _then) = _$ChatJiraIssuesResultCopyWithImpl;
 @useResult
 $Res call({
- List<JiraIssue> data
+ JiraIssueList data
 });
 
 
-
+$JiraIssueListCopyWith<$Res> get data;
 
 }
 /// @nodoc
@@ -1949,12 +2544,21 @@ class _$ChatJiraIssuesResultCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') $Res call({Object? data = null,}) {
   return _then(ChatJiraIssuesResult(
-null == data ? _self._data : data // ignore: cast_nullable_to_non_nullable
-as List<JiraIssue>,
+null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as JiraIssueList,
   ));
 }
 
-
+/// Create a copy of ChatResultEnvelope
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$JiraIssueListCopyWith<$Res> get data {
+  
+  return $JiraIssueListCopyWith<$Res>(_self.data, (value) {
+    return _then(_self.copyWith(data: value));
+  });
+}
 }
 
 /// @nodoc

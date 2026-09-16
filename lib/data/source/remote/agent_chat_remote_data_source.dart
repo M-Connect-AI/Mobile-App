@@ -9,11 +9,7 @@ import 'agent_api_url.dart';
 enum AgentRemoteErrorType { unauthorized, notFound, network, server, malformed }
 
 class AgentRemoteException implements Exception {
-  const AgentRemoteException({
-    required this.type,
-    required this.message,
-    this.statusCode,
-  });
+  const AgentRemoteException({required this.type, required this.message, this.statusCode});
 
   final AgentRemoteErrorType type;
   final String message;
@@ -60,12 +56,9 @@ class AgentInterruptedEvent extends AgentSseEvent {
 }
 
 class AgentChatRemoteDataSource {
-  AgentChatRemoteDataSource({
-    required String baseUrl,
-    Dio? dio,
-    this.timeout = const Duration(seconds: 60),
-  }) : _baseUrl = normalizeAgentApiBaseUrl(baseUrl),
-       _dio = dio ?? Dio();
+  AgentChatRemoteDataSource({required String baseUrl, Dio? dio, this.timeout = const Duration(seconds: 60)})
+    : _baseUrl = normalizeAgentApiBaseUrl(baseUrl),
+      _dio = dio ?? Dio();
 
   final String _baseUrl;
   final Dio _dio;
@@ -76,21 +69,14 @@ class AgentChatRemoteDataSource {
     if (data is! List) throw _malformed();
     try {
       return data
-          .map(
-            (item) => ChatThreadSummaryDto.fromJson(
-              Map<String, dynamic>.from(item as Map),
-            ),
-          )
+          .map((item) => ChatThreadSummaryDto.fromJson(Map<String, dynamic>.from(item as Map)))
           .toList(growable: false);
     } on Object {
       throw _malformed();
     }
   }
 
-  Future<ChatThreadDetailDto> getThread(
-    String accessToken,
-    String threadId,
-  ) async {
+  Future<ChatThreadDetailDto> getThread(String accessToken, String threadId) async {
     final encodedId = Uri.encodeComponent(threadId);
     final data = await _get('/chat/threads/$encodedId', accessToken);
     if (data is! Map) throw _malformed();
@@ -101,10 +87,7 @@ class AgentChatRemoteDataSource {
     }
   }
 
-  Stream<AgentSseEvent> streamTurn(
-    String accessToken,
-    ChatTurnRequestDto request,
-  ) async* {
+  Stream<AgentSseEvent> streamTurn(String accessToken, ChatTurnRequestDto request) async* {
     try {
       final response = await _dio.post<ResponseBody>(
         '$_baseUrl/chat/stream',
@@ -125,10 +108,7 @@ class AgentChatRemoteDataSource {
       if (body == null) throw _malformed();
       final statusCode = response.statusCode ?? 0;
       if (statusCode < 200 || statusCode >= 300) {
-        final bytes = await body.stream.fold<List<int>>(
-          <int>[],
-          (buffer, chunk) => buffer..addAll(chunk),
-        );
+        final bytes = await body.stream.fold<List<int>>(<int>[], (buffer, chunk) => buffer..addAll(chunk));
         throw _httpError(statusCode, _decodeJson(bytes));
       }
 
@@ -173,10 +153,7 @@ class AgentChatRemoteDataSource {
       final response = await _dio.get<Object?>(
         '$_baseUrl$path',
         options: Options(
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $accessToken',
-          },
+          headers: {'Accept': 'application/json', 'Authorization': 'Bearer $accessToken'},
           sendTimeout: timeout,
           receiveTimeout: timeout,
           validateStatus: (_) => true,
@@ -197,23 +174,14 @@ class AgentChatRemoteDataSource {
           message: 'Không thể kết nối tới máy chủ chatbot.',
         );
       }
-      throw const AgentRemoteException(
-        type: AgentRemoteErrorType.server,
-        message: 'Máy chủ không thể xử lý yêu cầu.',
-      );
+      throw const AgentRemoteException(type: AgentRemoteErrorType.server, message: 'Máy chủ không thể xử lý yêu cầu.');
     }
   }
 
-  Stream<({String name, String data})> _decodeSse(
-    Stream<List<int>> bytes,
-  ) async* {
+  Stream<({String name, String data})> _decodeSse(Stream<List<int>> bytes) async* {
     String? eventName;
     final dataLines = <String>[];
-    await for (final line
-        in bytes
-            .transform(utf8.decoder)
-            .transform(const LineSplitter())
-            .timeout(timeout)) {
+    await for (final line in bytes.transform(utf8.decoder).transform(const LineSplitter()).timeout(timeout)) {
       if (line.isEmpty) {
         if (eventName != null && dataLines.isNotEmpty) {
           yield (name: eventName, data: dataLines.join('\n'));
@@ -236,24 +204,16 @@ class AgentChatRemoteDataSource {
     if (data is! Map) throw _malformed();
     final json = Map<String, dynamic>.from(data);
     return switch (name) {
-      'status' when json['label'] is String => AgentStatusEvent(
-        json['label'] as String,
-      ),
-      'token' when json['text'] is String => AgentTokenEvent(
-        json['text'] as String,
-      ),
+      'status' when json['label'] is String => AgentStatusEvent(json['label'] as String),
+      'token' when json['text'] is String => AgentTokenEvent(json['text'] as String),
       'confirm' => AgentConfirmationEvent(ChatConfirmationDto.fromJson(json)),
       'result' => AgentResultEvent(json['executed']),
       'done' when json['threadId'] is String => AgentDoneEvent(
         threadId: json['threadId'] as String,
-        citations: (json['citations'] as List? ?? const [])
-            .whereType<String>()
-            .toList(growable: false),
+        citations: (json['citations'] as List? ?? const []).whereType<String>().toList(growable: false),
       ),
       'error' => AgentErrorEvent(
-        json['message'] is String
-            ? json['message'] as String
-            : 'Agent không thể xử lý yêu cầu.',
+        json['message'] is String ? json['message'] as String : 'Agent không thể xử lý yêu cầu.',
       ),
       _ => null,
     };
@@ -267,25 +227,22 @@ class AgentChatRemoteDataSource {
     }
   }
 
-  AgentRemoteException _httpError(int statusCode, Object? data) =>
-      AgentRemoteException(
-        type: switch (statusCode) {
-          401 => AgentRemoteErrorType.unauthorized,
-          404 => AgentRemoteErrorType.notFound,
-          _ => AgentRemoteErrorType.server,
-        },
-        message: _errorMessage(data),
-        statusCode: statusCode,
-      );
+  AgentRemoteException _httpError(int statusCode, Object? data) => AgentRemoteException(
+    type: switch (statusCode) {
+      401 => AgentRemoteErrorType.unauthorized,
+      404 => AgentRemoteErrorType.notFound,
+      _ => AgentRemoteErrorType.server,
+    },
+    message: _errorMessage(data),
+    statusCode: statusCode,
+  );
 
   String _errorMessage(Object? data) {
     if (data is Map) {
       final message = data['message'];
       if (message is String && message.trim().isNotEmpty) return message.trim();
       if (message is List) {
-        final values = message.whereType<String>().where(
-          (item) => item.isNotEmpty,
-        );
+        final values = message.whereType<String>().where((item) => item.isNotEmpty);
         if (values.isNotEmpty) return values.join('\n');
       }
     }

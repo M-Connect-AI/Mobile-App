@@ -22,16 +22,19 @@ class ChatThreadHistory extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<HomeChatAiCubit, HomeChatAiState>(
       buildWhen: (previous, current) =>
-          previous.status != current.status || previous.threads != current.threads,
+          previous.status != current.status ||
+          previous.threads != current.threads,
       builder: (context, state) {
         return switch (state.status) {
-          ChatThreadStatus.initial || ChatThreadStatus.loading => const _HistoryLoading(),
+          ChatThreadStatus.initial ||
+          ChatThreadStatus.loading => const _HistoryLoading(),
           ChatThreadStatus.failure => const _HistoryFailure(),
-          ChatThreadStatus.success when state.threads.isEmpty => const _HistoryEmpty(),
+          ChatThreadStatus.success when state.threads.isEmpty =>
+            const _HistoryEmpty(),
           ChatThreadStatus.success => _HistoryList(
-              threads: state.threads,
-              maxItems: maxItems,
-            ),
+            threads: state.threads,
+            maxItems: maxItems,
+          ),
         };
       },
     );
@@ -114,7 +117,8 @@ class _HistoryList extends StatelessWidget {
       colors.textBrand,
       colors.iconSecondary,
     ];
-    final sortedThreads = [...threads]..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    final sortedThreads = [...threads]
+      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     final visibleThreads = maxItems != null && sortedThreads.length > maxItems!
         ? sortedThreads.sublist(0, maxItems!)
         : sortedThreads;
@@ -155,7 +159,10 @@ class _HistoryItem extends StatelessWidget {
         CupertinoButton(
           minimumSize: Size.zero,
           padding: EdgeInsets.symmetric(vertical: 8.height),
-          onPressed: () => ChatRoute(threadId: thread.threadId).push(context),
+          onPressed: () => ChatRoute(
+            threadId: thread.threadId,
+            title: thread.title,
+          ).push(context),
           child: Row(
             children: [
               _HistoryMark(color: accentColor),
@@ -171,7 +178,9 @@ class _HistoryItem extends StatelessWidget {
                   ),
                   4.height.heightBox,
                   Text(
-                    S.of(context).threadPreviewWithDate(thread.preview, updatedDate),
+                    S
+                        .of(context)
+                        .threadPreviewWithDate(thread.preview, updatedDate),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyle.r12.copyWith(
