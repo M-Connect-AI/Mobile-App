@@ -4,6 +4,7 @@ import '../../domain/model/chat_thread.dart';
 import '../../domain/repository/chat_repository.dart';
 import '../../domain/repository/chat_thread_repository.dart';
 import '../../domain/repository/credential_repository.dart';
+import '../mapper/chat_result_mapper.dart';
 import '../model/chat/chat_api_models.dart';
 import '../source/remote/agent_chat_remote_data_source.dart';
 
@@ -18,6 +19,7 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
     required String message,
     String? threadId,
     bool confirm = false,
+    ChatConfirmationTool? confirmedTool,
   }) async* {
     final token = await _accessToken();
     try {
@@ -35,7 +37,12 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
           AgentConfirmationEvent() => ChatStreamConfirmation(
             _mapConfirmation(event.confirmation),
           ),
-          AgentResultEvent() => ChatStreamResult(event.executed),
+          AgentResultEvent() => ChatStreamResult(
+            ChatResultMapper.map(
+              event.executed,
+              confirmedTool: confirm ? confirmedTool : null,
+            ),
+          ),
           AgentDoneEvent() => ChatStreamDone(
             threadId: event.threadId,
             citations: event.citations,

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../common/navigation/root_navigator_key.dart';
 import '../domain/repository/chat_repository.dart';
 import '../domain/repository/speech_to_text_repository.dart';
+import '../domain/service/data_refresh_coordinator.dart';
 import '../presentation/pages/chat/bloc/chat_bloc.dart';
 import '../presentation/pages/chat/chat_page.dart';
 import '../presentation/pages/home/chat_history_page.dart';
@@ -163,6 +164,7 @@ class ChatRoute extends GoRouteData {
             ChatBloc(
               context.read<ChatRepository>(),
               context.read<SpeechToTextRepository>(),
+              refreshCoordinator: context.read<DataRefreshCoordinator?>(),
             )..add(
               ChatStarted(
                 threadId: threadId,

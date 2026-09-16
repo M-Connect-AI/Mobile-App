@@ -11,6 +11,7 @@ import '../../../domain/model/auth_session.dart';
 import '../../../domain/model/home_data.dart';
 import '../../../domain/repository/credential_repository.dart';
 import '../../../domain/repository/home_repository.dart';
+import '../../../domain/service/data_refresh_coordinator.dart';
 import '../../../gen/assets.gen.dart';
 import '../../../generated/l10n.dart';
 import '../../../route/go_router.dart';
@@ -26,6 +27,7 @@ class HomePage extends StatelessWidget {
       create: (context) => HomeCubit(
         context.read<HomeRepository>(),
         context.read<CredentialRepository>(),
+        refreshCoordinator: context.read<DataRefreshCoordinator?>(),
       )..load(),
       child: const _HomeView(),
     );

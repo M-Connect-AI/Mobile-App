@@ -1,8 +1,12 @@
 import 'package:chatbot_project/domain/model/chat_stream_event.dart';
+import 'package:chatbot_project/domain/model/chat_result.dart';
+import 'package:chatbot_project/domain/model/home_data.dart';
+import 'package:chatbot_project/domain/model/hr_request.dart';
 import 'package:chatbot_project/domain/model/chat_message.dart';
 import 'package:chatbot_project/domain/model/chat_thread.dart';
 import 'package:chatbot_project/domain/repository/chat_repository.dart';
 import 'package:chatbot_project/domain/repository/speech_to_text_repository.dart';
+import 'package:chatbot_project/domain/service/data_refresh_coordinator.dart';
 import 'package:chatbot_project/presentation/pages/chat/bloc/chat_bloc.dart';
 import 'package:chatbot_project/presentation/pages/chat/chat_page.dart';
 import 'package:chatbot_project/generated/l10n.dart';
@@ -110,11 +114,68 @@ void main() {
 
     expect(repository.requests.last.message, 'Xác nhận');
     expect(repository.requests.last.confirm, isTrue);
+    expect(
+      repository.requests.last.confirmedTool,
+      ChatConfirmationTool.createLeave,
+    );
     expect(repository.requests.last.threadId, 'thread-new');
     expect(
       find.text('Thao tác đã được backend thực thi thành công.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('renders read preview without a completed-action label', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const _ChatTestApp());
+    await tester.pump();
+    await tester.enterText(
+      find.byKey(const Key('chat-text-field')),
+      '#preview',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('chat-action-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Phép năm: 9/12 ngày · Phép ốm: 30 ngày'), findsOneWidget);
+    expect(find.text(S.current.chatActionCompleted), findsNothing);
+  });
+
+  testWidgets('notifies affected data only after a confirmed mutation', (
+    tester,
+  ) async {
+    final coordinator = DataRefreshCoordinator();
+    addTearDown(coordinator.close);
+    final changes = <Set<DataRefreshScope>>[];
+    final subscription = coordinator.changes.listen(changes.add);
+    addTearDown(subscription.cancel);
+
+    await tester.pumpWidget(_ChatTestApp(refreshCoordinator: coordinator));
+    await tester.pump();
+    await tester.enterText(
+      find.byKey(const Key('chat-text-field')),
+      '#preview',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('chat-action-button')));
+    await tester.pumpAndSettle();
+    expect(changes, isEmpty);
+
+    await tester.enterText(
+      find.byKey(const Key('chat-text-field')),
+      '#confirm',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('chat-action-button')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text(S.current.confirmButton));
+    await tester.tap(find.text(S.current.confirmButton));
+    await tester.pumpAndSettle();
+
+    expect(changes, [
+      {DataRefreshScope.leaves, DataRefreshScope.home},
+    ]);
   });
 
   testWidgets('dismisses keyboard when tapping outside the chat input', (
@@ -167,10 +228,11 @@ void main() {
 }
 
 class _ChatTestApp extends StatelessWidget {
-  const _ChatTestApp({this.repository, this.threadId});
+  const _ChatTestApp({this.repository, this.threadId, this.refreshCoordinator});
 
   final _FakeChatRepository? repository;
   final String? threadId;
+  final DataRefreshCoordinator? refreshCoordinator;
 
   @override
   Widget build(BuildContext context) {
@@ -189,6 +251,7 @@ class _ChatTestApp extends StatelessWidget {
           create: (_) => ChatBloc(
             repository ?? _FakeChatRepository(),
             FakeSpeechToTextRepository(),
+            refreshCoordinator: refreshCoordinator,
           )..add(ChatStarted(threadId: threadId)),
           child: const ChatPage(),
         ),
@@ -202,7 +265,15 @@ class _FakeChatRepository implements ChatRepository {
 
   final List<ChatMessage> detailMessages;
   final Set<String> _failedOnce = {};
-  final List<({String message, String? threadId, bool confirm})> requests = [];
+  final List<
+    ({
+      String message,
+      String? threadId,
+      bool confirm,
+      ChatConfirmationTool? confirmedTool,
+    })
+  >
+  requests = [];
 
   @override
   Future<ChatThreadDetail> getThread(String threadId) async =>
@@ -213,8 +284,14 @@ class _FakeChatRepository implements ChatRepository {
     required String message,
     String? threadId,
     bool confirm = false,
+    ChatConfirmationTool? confirmedTool,
   }) async* {
-    requests.add((message: message, threadId: threadId, confirm: confirm));
+    requests.add((
+      message: message,
+      threadId: threadId,
+      confirm: confirm,
+      confirmedTool: confirmedTool,
+    ));
     await Future<void>.delayed(const Duration(milliseconds: 20));
     if (message == '#fail' && _failedOnce.add(message)) {
       throw const ChatRepositoryException('Không thể gửi tin nhắn');
@@ -223,6 +300,20 @@ class _FakeChatRepository implements ChatRepository {
       yield const ChatStreamStatus('Đang tra cứu task Jira…');
       await Future<void>.delayed(const Duration(milliseconds: 500));
       yield const ChatStreamToken('Đã tìm thấy task Jira.');
+      yield const ChatStreamDone(threadId: 'thread-new', citations: []);
+      return;
+    }
+    if (message == '#preview') {
+      yield const ChatStreamResult(
+        ChatResultEnvelope.leaveBalance(
+          LeaveBalance(
+            employeeCode: 'EMP001',
+            annualRemaining: 9,
+            annualTotal: 12,
+            sickRemaining: 30,
+          ),
+        ),
+      );
       yield const ChatStreamDone(threadId: 'thread-new', citations: []);
       return;
     }
@@ -239,7 +330,21 @@ class _FakeChatRepository implements ChatRepository {
       return;
     }
     if (confirm) {
-      yield const ChatStreamResult({'_id': 'leave-id'});
+      yield ChatStreamResult(
+        ChatResultEnvelope.leaveMutation(
+          mutation: ChatMutationType.createLeave,
+          data: LeaveRequest(
+            id: 'leave-id',
+            employeeCode: 'EMP001',
+            type: LeaveType.annual,
+            from: DateTime(2026, 9, 20),
+            to: DateTime(2026, 9, 20),
+            days: 1,
+            reason: 'Nghỉ phép',
+            status: RequestStatus.pending,
+          ),
+        ),
+      );
       yield ChatStreamDone(
         threadId: threadId ?? 'thread-new',
         citations: const [],

@@ -10,6 +10,7 @@ import '../../../common/themes/theme_extensions/app_color_scheme.dart';
 import '../../../domain/model/home_data.dart';
 import '../../../domain/model/hr_request.dart';
 import '../../../domain/repository/hr_request_repository.dart';
+import '../../../domain/service/data_refresh_coordinator.dart';
 import '../../../generated/l10n.dart';
 import '../../../route/go_router.dart';
 import '../home/widgets/home_back_button.dart';
@@ -22,8 +23,10 @@ class HrRequestListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-    create: (context) =>
-        HrRequestCubit(context.read<HrRequestRepository>())..loadList(kind),
+    create: (context) => HrRequestCubit(
+      context.read<HrRequestRepository>(),
+      refreshCoordinator: context.read<DataRefreshCoordinator?>(),
+    )..loadList(kind),
     child: _RequestScreen(kind: kind),
   );
 }
@@ -36,9 +39,10 @@ class HrRequestDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-    create: (context) =>
-        HrRequestCubit(context.read<HrRequestRepository>())
-          ..loadDetail(kind, id),
+    create: (context) => HrRequestCubit(
+      context.read<HrRequestRepository>(),
+      refreshCoordinator: context.read<DataRefreshCoordinator?>(),
+    )..loadDetail(kind, id),
     child: _RequestScreen(kind: kind, id: id),
   );
 }

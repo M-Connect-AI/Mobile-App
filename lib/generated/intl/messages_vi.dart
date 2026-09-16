@@ -22,19 +22,31 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m0(name) => "Nhắn tin cho ${name}...";
 
-  static String m1(fullName) => "Chào, ${fullName}";
+  static String m1(count) => "${count} Jira task";
 
-  static String m2(appName) => "Đăng nhập để tiếp tục với ${appName}";
+  static String m2(remaining, total, sick) =>
+      "Phép năm: ${remaining}/${total} ngày · Phép ốm: ${sick} ngày";
 
-  static String m3(remaining, total) => "${remaining}/${total} ngày";
+  static String m3(count) => "${count} đơn nghỉ phép";
 
-  static String m4(days) => "${days} ngày";
+  static String m4(leaveCount, tripCount) =>
+      "Đang chờ: ${leaveCount} đơn nghỉ phép · ${tripCount} đơn công tác";
 
-  static String m5(title) => "Chi tiết ${title}";
+  static String m5(count) => "${count} đơn công tác";
 
-  static String m6(preview, date) => "${preview} · ${date}";
+  static String m6(fullName) => "Chào, ${fullName}";
 
-  static String m7(from, to) => "${from} – ${to}";
+  static String m7(appName) => "Đăng nhập để tiếp tục với ${appName}";
+
+  static String m8(remaining, total) => "${remaining}/${total} ngày";
+
+  static String m9(days) => "${days} ngày";
+
+  static String m10(title) => "Chi tiết ${title}";
+
+  static String m11(preview, date) => "${preview} · ${date}";
+
+  static String m12(from, to) => "${from} – ${to}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -69,6 +81,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "Nhắn tin cho Trợ lý AI...",
     ),
     "chatInputHintName": m0,
+    "chatJiraListResult": m1,
+    "chatLeaveBalanceResult": m2,
+    "chatLeaveListResult": m3,
+    "chatPendingResult": m4,
+    "chatTripListResult": m5,
     "closeAssistant": MessageLookupByLibrary.simpleMessage("Đóng trợ lý"),
     "confirmAction": MessageLookupByLibrary.simpleMessage("Xác nhận"),
     "confirmButton": MessageLookupByLibrary.simpleMessage("Xác nhận"),
@@ -131,7 +148,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "homeBannerTitle": MessageLookupByLibrary.simpleMessage("1 Click LÚC ÍCH"),
     "homeGreeting": MessageLookupByLibrary.simpleMessage("Chào, Minh"),
-    "homeGreetingName": m1,
+    "homeGreetingName": m6,
     "homeInvalidResponse": MessageLookupByLibrary.simpleMessage(
       "Dữ liệu Home không hợp lệ. Vui lòng thử lại.",
     ),
@@ -205,7 +222,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "loginServerError": MessageLookupByLibrary.simpleMessage(
       "Máy chủ đang gặp sự cố. Vui lòng thử lại sau.",
     ),
-    "loginSubtitle": m2,
+    "loginSubtitle": m7,
     "loginValidationError": MessageLookupByLibrary.simpleMessage(
       "Thông tin đăng nhập không hợp lệ.",
     ),
@@ -273,11 +290,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "Đang chuẩn bị phản hồi...",
     ),
     "processing": MessageLookupByLibrary.simpleMessage("Đang xử lý..."),
-    "profileAnnualDays": m3,
+    "profileAnnualDays": m8,
     "profileDepartment": MessageLookupByLibrary.simpleMessage("Phòng ban"),
     "profileManagerCode": MessageLookupByLibrary.simpleMessage("Mã quản lý"),
     "profileManagerRole": MessageLookupByLibrary.simpleMessage("Quản lý"),
-    "profileSickDays": m4,
+    "profileSickDays": m9,
     "profileStaffRole": MessageLookupByLibrary.simpleMessage("Nhân viên"),
     "quickAccess": MessageLookupByLibrary.simpleMessage("Truy cập nhanh"),
     "recordVoice": MessageLookupByLibrary.simpleMessage("Ghi âm"),
@@ -286,7 +303,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "requestCode": MessageLookupByLibrary.simpleMessage("Mã yêu cầu"),
     "requestCreatedAt": MessageLookupByLibrary.simpleMessage("Ngày tạo"),
-    "requestDetailTitle": m5,
+    "requestDetailTitle": m10,
     "requestFrom": MessageLookupByLibrary.simpleMessage("Từ ngày"),
     "requestInvalidResponse": MessageLookupByLibrary.simpleMessage(
       "Dữ liệu yêu cầu không hợp lệ. Vui lòng thử lại.",
@@ -347,9 +364,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "taskThreeCount": MessageLookupByLibrary.simpleMessage("03"),
     "taskTwelveCount": MessageLookupByLibrary.simpleMessage("12"),
     "thinking": MessageLookupByLibrary.simpleMessage("Đang suy nghĩ..."),
-    "threadPreviewWithDate": m6,
+    "threadPreviewWithDate": m11,
     "timeManagement": MessageLookupByLibrary.simpleMessage("Quản lý thời gian"),
-    "tripDateRange": m7,
+    "tripDateRange": m12,
     "tripDestination": MessageLookupByLibrary.simpleMessage("Địa điểm"),
     "tripListEmpty": MessageLookupByLibrary.simpleMessage(
       "Bạn chưa có chuyến công tác.",

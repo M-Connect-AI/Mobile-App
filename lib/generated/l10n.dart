@@ -1384,6 +1384,56 @@ class S {
     );
   }
 
+  /// `Phép năm: {remaining}/{total} ngày · Phép ốm: {sick} ngày`
+  String chatLeaveBalanceResult(int remaining, int total, int sick) {
+    return Intl.message(
+      'Phép năm: $remaining/$total ngày · Phép ốm: $sick ngày',
+      name: 'chatLeaveBalanceResult',
+      desc: '',
+      args: [remaining, total, sick],
+    );
+  }
+
+  /// `{count} đơn nghỉ phép`
+  String chatLeaveListResult(int count) {
+    return Intl.message(
+      '$count đơn nghỉ phép',
+      name: 'chatLeaveListResult',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} đơn công tác`
+  String chatTripListResult(int count) {
+    return Intl.message(
+      '$count đơn công tác',
+      name: 'chatTripListResult',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Đang chờ: {leaveCount} đơn nghỉ phép · {tripCount} đơn công tác`
+  String chatPendingResult(int leaveCount, int tripCount) {
+    return Intl.message(
+      'Đang chờ: $leaveCount đơn nghỉ phép · $tripCount đơn công tác',
+      name: 'chatPendingResult',
+      desc: '',
+      args: [leaveCount, tripCount],
+    );
+  }
+
+  /// `{count} Jira task`
+  String chatJiraListResult(int count) {
+    return Intl.message(
+      '$count Jira task',
+      name: 'chatJiraListResult',
+      desc: '',
+      args: [count],
+    );
+  }
+
   /// `{preview} · {date}`
   String threadPreviewWithDate(String preview, String date) {
     return Intl.message(

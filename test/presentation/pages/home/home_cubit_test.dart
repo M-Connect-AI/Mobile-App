@@ -1,8 +1,10 @@
 import 'package:chatbot_project/domain/model/auth_session.dart';
 import 'package:chatbot_project/domain/model/home_data.dart';
+import 'package:chatbot_project/domain/model/chat_result.dart';
 import 'package:chatbot_project/domain/repository/home_repository.dart';
 import 'package:chatbot_project/domain/repository/credential_repository.dart';
 import 'package:chatbot_project/presentation/pages/home/bloc/home_cubit.dart';
+import 'package:chatbot_project/domain/service/data_refresh_coordinator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -54,6 +56,27 @@ void main() {
     expect(credentials.wasCleared, isTrue);
     expect(cubit.state.status, HomeStatus.loggedOut);
   });
+
+  test('refetches home data only for affected mutation scopes', () async {
+    final repository = _HomeRepository(data: _data);
+    final coordinator = DataRefreshCoordinator();
+    final cubit = HomeCubit(
+      repository,
+      _CredentialRepository(),
+      refreshCoordinator: coordinator,
+    );
+    addTearDown(cubit.close);
+    addTearDown(coordinator.close);
+
+    await cubit.load();
+    coordinator.notify(const {DataRefreshScope.jira});
+    await Future<void>.delayed(Duration.zero);
+    expect(repository.calls, 1);
+
+    coordinator.notify(const {DataRefreshScope.home});
+    await Future<void>.delayed(Duration.zero);
+    expect(repository.calls, 2);
+  });
 }
 
 class _CredentialRepository implements CredentialRepository {
@@ -70,13 +93,15 @@ class _CredentialRepository implements CredentialRepository {
 }
 
 class _HomeRepository implements HomeRepository {
-  const _HomeRepository({this.data, this.error});
+  _HomeRepository({this.data, this.error});
 
   final HomeData? data;
   final HomeException? error;
+  int calls = 0;
 
   @override
   Future<HomeData> getHomeData() async {
+    calls++;
     final failure = error;
     if (failure != null) throw failure;
     return data!;

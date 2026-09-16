@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import 'chat_stream_event.dart';
+import 'chat_result.dart';
 
 enum MessageSender { user, assistant, system }
 
@@ -19,6 +20,7 @@ class ChatMessage extends Equatable {
     this.audioPath,
     this.duration,
     this.confirmation,
+    this.confirmedTool,
     this.citations = const [],
     this.executedResult,
   });
@@ -30,8 +32,9 @@ class ChatMessage extends Equatable {
   final String? audioPath;
   final Duration? duration;
   final ChatConfirmAction? confirmation;
+  final ChatConfirmationTool? confirmedTool;
   final List<String> citations;
-  final Object? executedResult;
+  final ChatResultEnvelope? executedResult;
   final DateTime createdAt;
   final MessageStatus status;
 
@@ -41,8 +44,9 @@ class ChatMessage extends Equatable {
     Duration? duration,
     MessageStatus? status,
     ChatConfirmAction? confirmation,
+    ChatConfirmationTool? confirmedTool,
     List<String>? citations,
-    Object? executedResult,
+    ChatResultEnvelope? executedResult,
     bool clearConfirmation = false,
   }) {
     return ChatMessage(
@@ -57,6 +61,7 @@ class ChatMessage extends Equatable {
       confirmation: clearConfirmation
           ? null
           : confirmation ?? this.confirmation,
+      confirmedTool: confirmedTool ?? this.confirmedTool,
       citations: citations ?? this.citations,
       executedResult: executedResult ?? this.executedResult,
     );
@@ -73,6 +78,7 @@ class ChatMessage extends Equatable {
     createdAt,
     status,
     confirmation,
+    confirmedTool,
     citations,
     executedResult,
   ];

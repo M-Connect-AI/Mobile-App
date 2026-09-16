@@ -4,9 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../domain/model/chat_message.dart';
+import '../../../../domain/model/chat_result.dart';
 import '../../../../domain/model/chat_stream_event.dart';
 import '../../../../domain/repository/chat_repository.dart';
 import '../../../../domain/repository/speech_to_text_repository.dart';
+import '../../../../domain/service/data_refresh_coordinator.dart';
 import '../../../../generated/l10n.dart';
 import 'chat_event.dart';
 import 'chat_state.dart';
@@ -15,8 +17,12 @@ export 'chat_event.dart';
 export 'chat_state.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
-  ChatBloc(this._chatRepository, this._speechRepository)
-    : super(const ChatState()) {
+  ChatBloc(
+    this._chatRepository,
+    this._speechRepository, {
+    DataRefreshCoordinator? refreshCoordinator,
+  }) : _refreshCoordinator = refreshCoordinator,
+       super(const ChatState()) {
     on<ChatStarted>(_onStarted);
     on<MessageChanged>(_onMessageChanged);
     on<SendTextMessage>(_onSendText);
@@ -47,6 +53,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   final ChatRepository _chatRepository;
   final SpeechToTextRepository _speechRepository;
+  final DataRefreshCoordinator? _refreshCoordinator;
   late final StreamSubscription<SpeechTranscript> _transcriptSubscription;
   late final StreamSubscription<SpeechSessionStatus> _statusSubscription;
   late final StreamSubscription<String> _errorSubscription;
@@ -310,7 +317,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         clearError: true,
       ),
     );
-    await _sendAndReceive(message, emit);
+    await _sendAndReceive(
+      message,
+      emit,
+      confirm: message.confirmedTool != null,
+      confirmedTool: message.confirmedTool,
+    );
   }
 
   Future<void> _onConfirmationResponded(
@@ -339,6 +351,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           : S.current.cancelAction,
       createdAt: DateTime.now(),
       status: MessageStatus.sending,
+      confirmedTool: event.confirmed ? confirmation.tool : null,
     );
     emit(
       state.copyWith(
@@ -349,13 +362,19 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         clearError: true,
       ),
     );
-    await _sendAndReceive(userMessage, emit, confirm: event.confirmed);
+    await _sendAndReceive(
+      userMessage,
+      emit,
+      confirm: event.confirmed,
+      confirmedTool: event.confirmed ? confirmation.tool : null,
+    );
   }
 
   Future<void> _sendAndReceive(
     ChatMessage userMessage,
     Emitter<ChatState> emit, {
     bool confirm = false,
+    ChatConfirmationTool? confirmedTool,
   }) async {
     String? assistantMessageId;
     var receivedToken = false;
@@ -365,6 +384,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         message: userMessage.content!,
         threadId: state.activeThreadId,
         confirm: confirm,
+        confirmedTool: confirmedTool,
       );
       await for (final event in responseStream) {
         assistantMessageId ??=
@@ -399,8 +419,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             emit,
             userMessage,
             assistantMessageId,
-            executedResult: event.executed,
+            executedResult: event.result,
           );
+          if (event.result.isMutation) {
+            _refreshCoordinator?.notify(event.result.refreshScopes);
+          }
         } else if (event is ChatStreamDone) {
           terminalEventSeen = true;
           _upsertAssistant(
@@ -480,7 +503,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     MessageStatus status = MessageStatus.processing,
     ChatConfirmAction? confirmation,
     List<String>? citations,
-    Object? executedResult,
+    ChatResultEnvelope? executedResult,
     bool isLoading = true,
   }) {
     final current = state.messages

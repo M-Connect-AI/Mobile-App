@@ -2,6 +2,7 @@ import 'package:chatbot_project/common/theme/app_theme.dart';
 import 'package:chatbot_project/domain/model/home_data.dart';
 import 'package:chatbot_project/domain/model/hr_request.dart';
 import 'package:chatbot_project/domain/repository/hr_request_repository.dart';
+import 'package:chatbot_project/domain/service/data_refresh_coordinator.dart';
 import 'package:chatbot_project/generated/l10n.dart';
 import 'package:chatbot_project/presentation/pages/hr/bloc/hr_request_cubit.dart';
 import 'package:chatbot_project/presentation/pages/hr/hr_request_pages.dart';
@@ -53,8 +54,15 @@ void main() {
 }
 
 Widget _app({required ThemeData theme, required Widget page}) =>
-    RepositoryProvider<HrRequestRepository>.value(
-      value: const _FakeRepository(),
+    MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<HrRequestRepository>.value(
+          value: const _FakeRepository(),
+        ),
+        RepositoryProvider<DataRefreshCoordinator>(
+          create: (_) => DataRefreshCoordinator(),
+        ),
+      ],
       child: ScreenUtilInit(
         designSize: const Size(390, 844),
         builder: (context, child) => MaterialApp(

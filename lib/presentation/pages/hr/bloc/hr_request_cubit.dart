@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../domain/model/hr_request.dart';
+import '../../../../domain/model/chat_result.dart';
 import '../../../../domain/repository/hr_request_repository.dart';
+import '../../../../domain/service/data_refresh_coordinator.dart';
 
 enum HrRequestKind { leave, trip }
 
@@ -30,11 +34,34 @@ class HrRequestState extends Equatable {
 }
 
 class HrRequestCubit extends Cubit<HrRequestState> {
-  HrRequestCubit(this._repository) : super(const HrRequestState());
+  HrRequestCubit(this._repository, {DataRefreshCoordinator? refreshCoordinator})
+    : super(const HrRequestState()) {
+    _refreshSubscription = refreshCoordinator?.changes.listen(_onRefresh);
+  }
 
   final HrRequestRepository _repository;
+  StreamSubscription<Set<DataRefreshScope>>? _refreshSubscription;
+  HrRequestKind? _activeKind;
+  String? _activeId;
+
+  void _onRefresh(Set<DataRefreshScope> scopes) {
+    final kind = _activeKind;
+    if (kind == null || isClosed) return;
+    final affected = kind == HrRequestKind.leave
+        ? scopes.contains(DataRefreshScope.leaves)
+        : scopes.contains(DataRefreshScope.trips);
+    if (!affected) return;
+    final id = _activeId;
+    if (id == null) {
+      unawaited(loadList(kind));
+    } else {
+      unawaited(loadDetail(kind, id));
+    }
+  }
 
   Future<void> loadList(HrRequestKind kind) async {
+    _activeKind = kind;
+    _activeId = null;
     emit(const HrRequestState());
     try {
       if (kind == HrRequestKind.leave) {
@@ -60,6 +87,8 @@ class HrRequestCubit extends Cubit<HrRequestState> {
   }
 
   Future<void> loadDetail(HrRequestKind kind, String id) async {
+    _activeKind = kind;
+    _activeId = id;
     emit(const HrRequestState());
     try {
       if (kind == HrRequestKind.leave) {
@@ -83,5 +112,11 @@ class HrRequestCubit extends Cubit<HrRequestState> {
         HrRequestState(status: HrRequestStatus.failure, failure: error.type),
       );
     }
+  }
+
+  @override
+  Future<void> close() async {
+    await _refreshSubscription?.cancel();
+    return super.close();
   }
 }

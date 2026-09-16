@@ -2,6 +2,7 @@ import 'package:chatbot_project/data/model/chat/chat_api_models.dart';
 import 'package:chatbot_project/data/repository/api_chat_repository.dart';
 import 'package:chatbot_project/data/source/remote/agent_chat_remote_data_source.dart';
 import 'package:chatbot_project/domain/model/auth_session.dart';
+import 'package:chatbot_project/domain/model/chat_result.dart';
 import 'package:chatbot_project/domain/model/chat_stream_event.dart';
 import 'package:chatbot_project/domain/repository/chat_repository.dart';
 import 'package:chatbot_project/domain/repository/credential_repository.dart';
@@ -187,6 +188,26 @@ void main() {
     );
   });
 
+  test('uses confirmed tool context to mark a typed mutation', () async {
+    final repository = ApiChatRepository(
+      _FakeAgentRemote(executed: _leaveResult),
+      _SessionStore(),
+    );
+
+    final events = await repository
+        .sendMessage(
+          message: 'Xác nhận',
+          threadId: 'thread-1',
+          confirm: true,
+          confirmedTool: ChatConfirmationTool.createLeave,
+        )
+        .toList();
+    final result = events.whereType<ChatStreamResult>().single.result;
+
+    expect(result, isA<ChatLeaveMutationResult>());
+    expect(result.isMutation, isTrue);
+  });
+
   test('clears session when Agent returns 401', () async {
     final sessions = _SessionStore();
     final repository = ApiChatRepository(
@@ -214,11 +235,12 @@ void main() {
 }
 
 class _FakeAgentRemote extends AgentChatRemoteDataSource {
-  _FakeAgentRemote({this.error, this.pendingAction})
+  _FakeAgentRemote({this.error, this.pendingAction, this.executed})
     : super(baseUrl: 'http://unused');
 
   final AgentRemoteException? error;
   final ChatConfirmationDto? pendingAction;
+  final Object? executed;
 
   void _throwIfNeeded() {
     final failure = error;
@@ -285,7 +307,7 @@ class _FakeAgentRemote extends AgentChatRemoteDataSource {
         summary: 'Gửi đơn nghỉ phép',
       ),
     );
-    yield const AgentResultEvent({'_id': 'leave-id'});
+    yield AgentResultEvent(executed ?? const {'_id': 'leave-id'});
     yield const AgentDoneEvent(
       threadId: 'server-thread',
       citations: ['Quy định nghỉ phép'],
@@ -327,3 +349,14 @@ const _session = AuthSession(
     sickRemaining: 30,
   ),
 );
+
+const _leaveResult = <String, dynamic>{
+  '_id': 'leave-id',
+  'employeeCode': 'EMP001',
+  'type': 'ANNUAL',
+  'from': '2026-09-20',
+  'to': '2026-09-20',
+  'days': 1,
+  'reason': 'Nghỉ phép',
+  'status': 'PENDING',
+};

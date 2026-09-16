@@ -9,6 +9,7 @@ import 'package:chatbot_project/domain/model/auth_session.dart';
 import 'package:chatbot_project/domain/model/home_data.dart';
 import 'package:chatbot_project/domain/repository/home_repository.dart';
 import 'package:chatbot_project/domain/repository/speech_to_text_repository.dart';
+import 'package:chatbot_project/domain/service/data_refresh_coordinator.dart';
 import 'package:chatbot_project/generated/l10n.dart';
 import 'package:chatbot_project/presentation/pages/home/home_page.dart';
 import 'package:chatbot_project/resources/app_constants.dart';
@@ -44,6 +45,9 @@ void main() {
               ),
               RepositoryProvider<CredentialRepository>(
                 create: (_) => _FakeCredentialRepository(),
+              ),
+              RepositoryProvider<DataRefreshCoordinator>(
+                create: (_) => DataRefreshCoordinator(),
               ),
             ],
             child: MultiRepositoryProvider(
@@ -332,6 +336,9 @@ void main() {
           RepositoryProvider<CredentialRepository>(
             create: (_) => _FakeCredentialRepository(),
           ),
+          RepositoryProvider<DataRefreshCoordinator>(
+            create: (_) => DataRefreshCoordinator(),
+          ),
         ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),
@@ -399,6 +406,7 @@ class _FakeChatRepository implements ChatRepository {
     required String message,
     String? threadId,
     bool confirm = false,
+    ChatConfirmationTool? confirmedTool,
   }) async* {
     yield const ChatStreamToken('Đã xử lý');
     yield ChatStreamDone(

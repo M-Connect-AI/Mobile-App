@@ -22,19 +22,31 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m0(name) => "Message ${name}...";
 
-  static String m1(fullName) => "Hello, ${fullName} 👋";
+  static String m1(count) => "${count} Jira tasks";
 
-  static String m2(appName) => "Sign in to continue with ${appName}";
+  static String m2(remaining, total, sick) =>
+      "Annual leave: ${remaining}/${total} days · Sick leave: ${sick} days";
 
-  static String m3(remaining, total) => "${remaining}/${total} days";
+  static String m3(count) => "${count} leave requests";
 
-  static String m4(days) => "${days} days";
+  static String m4(leaveCount, tripCount) =>
+      "Pending: ${leaveCount} leave requests · ${tripCount} business trips";
 
-  static String m5(title) => "${title} details";
+  static String m5(count) => "${count} business trip requests";
 
-  static String m6(preview, date) => "${preview} · ${date}";
+  static String m6(fullName) => "Hello, ${fullName} 👋";
 
-  static String m7(from, to) => "${from} – ${to}";
+  static String m7(appName) => "Sign in to continue with ${appName}";
+
+  static String m8(remaining, total) => "${remaining}/${total} days";
+
+  static String m9(days) => "${days} days";
+
+  static String m10(title) => "${title} details";
+
+  static String m11(preview, date) => "${preview} · ${date}";
+
+  static String m12(from, to) => "${from} – ${to}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -67,6 +79,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "Message AI Assistant...",
     ),
     "chatInputHintName": m0,
+    "chatJiraListResult": m1,
+    "chatLeaveBalanceResult": m2,
+    "chatLeaveListResult": m3,
+    "chatPendingResult": m4,
+    "chatTripListResult": m5,
     "closeAssistant": MessageLookupByLibrary.simpleMessage("Close assistant"),
     "confirmAction": MessageLookupByLibrary.simpleMessage("Confirm"),
     "confirmButton": MessageLookupByLibrary.simpleMessage("Confirm"),
@@ -125,7 +142,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "homeBannerTitle": MessageLookupByLibrary.simpleMessage("1 Click LÚC ÍCH"),
     "homeGreeting": MessageLookupByLibrary.simpleMessage("Hello, Minh 👋"),
-    "homeGreetingName": m1,
+    "homeGreetingName": m6,
     "homeInvalidResponse": MessageLookupByLibrary.simpleMessage(
       "The Home data is invalid. Please try again.",
     ),
@@ -199,7 +216,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "loginServerError": MessageLookupByLibrary.simpleMessage(
       "The server is unavailable. Please try again later.",
     ),
-    "loginSubtitle": m2,
+    "loginSubtitle": m7,
     "loginValidationError": MessageLookupByLibrary.simpleMessage(
       "The sign-in details are invalid.",
     ),
@@ -267,11 +284,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "Preparing response...",
     ),
     "processing": MessageLookupByLibrary.simpleMessage("Processing..."),
-    "profileAnnualDays": m3,
+    "profileAnnualDays": m8,
     "profileDepartment": MessageLookupByLibrary.simpleMessage("Department"),
     "profileManagerCode": MessageLookupByLibrary.simpleMessage("Manager code"),
     "profileManagerRole": MessageLookupByLibrary.simpleMessage("Manager"),
-    "profileSickDays": m4,
+    "profileSickDays": m9,
     "profileStaffRole": MessageLookupByLibrary.simpleMessage("Staff"),
     "quickAccess": MessageLookupByLibrary.simpleMessage("Quick access"),
     "recordVoice": MessageLookupByLibrary.simpleMessage("Record voice"),
@@ -280,7 +297,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "requestCode": MessageLookupByLibrary.simpleMessage("Request ID"),
     "requestCreatedAt": MessageLookupByLibrary.simpleMessage("Created on"),
-    "requestDetailTitle": m5,
+    "requestDetailTitle": m10,
     "requestFrom": MessageLookupByLibrary.simpleMessage("From"),
     "requestInvalidResponse": MessageLookupByLibrary.simpleMessage(
       "Invalid request data. Please try again.",
@@ -339,9 +356,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "taskThreeCount": MessageLookupByLibrary.simpleMessage("03"),
     "taskTwelveCount": MessageLookupByLibrary.simpleMessage("12"),
     "thinking": MessageLookupByLibrary.simpleMessage("Thinking..."),
-    "threadPreviewWithDate": m6,
+    "threadPreviewWithDate": m11,
     "timeManagement": MessageLookupByLibrary.simpleMessage("Time management"),
-    "tripDateRange": m7,
+    "tripDateRange": m12,
     "tripDestination": MessageLookupByLibrary.simpleMessage("Destination"),
     "tripListEmpty": MessageLookupByLibrary.simpleMessage(
       "You have no business trips.",

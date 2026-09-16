@@ -154,6 +154,27 @@
   "confirmButton": "Xác nhận",
   "unsupportedChatAction": "Phiên bản ứng dụng chưa hỗ trợ thao tác này.",
   "chatActionCompleted": "Thao tác đã được backend thực thi thành công.",
+  "chatLeaveBalanceResult": "Phép năm: {remaining}/{total} ngày · Phép ốm: {sick} ngày",
+  "chatLeaveListResult": "{count} đơn nghỉ phép",
+  "chatTripListResult": "{count} đơn công tác",
+  "chatPendingResult": "Đang chờ: {leaveCount} đơn nghỉ phép · {tripCount} đơn công tác",
+  "chatJiraListResult": "{count} Jira task",
+  "@chatLeaveBalanceResult": {
+    "placeholders": {
+      "remaining": {"type": "int"},
+      "total": {"type": "int"},
+      "sick": {"type": "int"}
+    }
+  },
+  "@chatLeaveListResult": {"placeholders": {"count": {"type": "int"}}},
+  "@chatTripListResult": {"placeholders": {"count": {"type": "int"}}},
+  "@chatPendingResult": {
+    "placeholders": {
+      "leaveCount": {"type": "int"},
+      "tripCount": {"type": "int"}
+    }
+  },
+  "@chatJiraListResult": {"placeholders": {"count": {"type": "int"}}},
   "threadPreviewWithDate": "{preview} · {date}",
   "chatHistoryTitle": "Lịch sử trò chuyện",
   "backToChatDashboard": "Quay lại trang trợ lý AI",

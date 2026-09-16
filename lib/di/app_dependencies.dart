@@ -21,6 +21,7 @@ import '../domain/repository/hr_request_repository.dart';
 import '../domain/repository/speech_to_text_repository.dart';
 import '../domain/model/server_config.dart';
 import '../domain/repository/server_config_repository.dart';
+import '../domain/service/data_refresh_coordinator.dart';
 
 class AppDependencies {
   const AppDependencies({
@@ -33,6 +34,7 @@ class AppDependencies {
     required this.speechToTextRepository,
     required this.serverConfigRepository,
     required this.serverConfig,
+    required this.dataRefreshCoordinator,
   });
 
   final AuthRepository authRepository;
@@ -44,6 +46,7 @@ class AppDependencies {
   final SpeechToTextRepository speechToTextRepository;
   final ServerConfigRepository serverConfigRepository;
   final ServerConfig serverConfig;
+  final DataRefreshCoordinator dataRefreshCoordinator;
 
   static Future<AppDependencies> fromEnvironment({
     ServerConfigRepository? serverConfigRepository,
@@ -70,6 +73,7 @@ class AppDependencies {
     final serverConfig = await configRepository.read();
 
     final credentialRepository = SecureCredentialRepository();
+    final dataRefreshCoordinator = DataRefreshCoordinator();
     final chatRepository = ApiChatRepository(
       AgentChatRemoteDataSource(
         baseUrl: serverConfig.agentApiBaseUrl,
@@ -104,6 +108,7 @@ class AppDependencies {
       speechToTextRepository: DeviceSpeechToTextRepository(),
       serverConfigRepository: configRepository,
       serverConfig: serverConfig,
+      dataRefreshCoordinator: dataRefreshCoordinator,
     );
   }
 }

@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../domain/model/home_data.dart';
 import '../../../../domain/repository/credential_repository.dart';
 import '../../../../domain/repository/home_repository.dart';
+import '../../../../domain/model/chat_result.dart';
+import '../../../../domain/service/data_refresh_coordinator.dart';
 
 enum HomeStatus { initial, loading, success, failure, loggingOut, loggedOut }
 
@@ -44,10 +48,21 @@ class HomeState extends Equatable {
 }
 
 class HomeCubit extends Cubit<HomeState> {
-  HomeCubit(this._repository, this._credentials) : super(const HomeState());
+  HomeCubit(
+    this._repository,
+    this._credentials, {
+    DataRefreshCoordinator? refreshCoordinator,
+  }) : super(const HomeState()) {
+    _refreshSubscription = refreshCoordinator?.changes.listen((scopes) {
+      if (scopes.contains(DataRefreshScope.home) && !isClosed) {
+        unawaited(load());
+      }
+    });
+  }
 
   final HomeRepository _repository;
   final CredentialRepository _credentials;
+  StreamSubscription<Set<DataRefreshScope>>? _refreshSubscription;
 
   void selectTab(HomeTab tab) => emit(state.copyWith(tab: tab));
 
@@ -78,5 +93,11 @@ class HomeCubit extends Cubit<HomeState> {
     emit(state.copyWith(status: HomeStatus.loggingOut, clearError: true));
     await _credentials.clear();
     emit(state.copyWith(status: HomeStatus.loggedOut));
+  }
+
+  @override
+  Future<void> close() async {
+    await _refreshSubscription?.cancel();
+    return super.close();
   }
 }

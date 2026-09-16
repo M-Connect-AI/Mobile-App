@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import 'chat_result.dart';
+
 enum ChatConfirmationTool {
   createLeave,
   createTrip,
@@ -56,10 +58,10 @@ class ChatStreamConfirmation extends ChatStreamEvent {
 }
 
 class ChatStreamResult extends ChatStreamEvent {
-  const ChatStreamResult(this.executed);
-  final Object? executed;
+  const ChatStreamResult(this.result);
+  final ChatResultEnvelope result;
   @override
-  List<Object?> get props => [executed];
+  List<Object?> get props => [result];
 }
 
 class ChatStreamDone extends ChatStreamEvent {

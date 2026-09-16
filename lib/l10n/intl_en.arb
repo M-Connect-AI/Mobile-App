@@ -154,6 +154,27 @@
   "confirmButton": "Confirm",
   "unsupportedChatAction": "This app version does not support this action.",
   "chatActionCompleted": "The backend completed this action successfully.",
+  "chatLeaveBalanceResult": "Annual leave: {remaining}/{total} days · Sick leave: {sick} days",
+  "chatLeaveListResult": "{count} leave requests",
+  "chatTripListResult": "{count} business trip requests",
+  "chatPendingResult": "Pending: {leaveCount} leave requests · {tripCount} business trips",
+  "chatJiraListResult": "{count} Jira tasks",
+  "@chatLeaveBalanceResult": {
+    "placeholders": {
+      "remaining": {"type": "int"},
+      "total": {"type": "int"},
+      "sick": {"type": "int"}
+    }
+  },
+  "@chatLeaveListResult": {"placeholders": {"count": {"type": "int"}}},
+  "@chatTripListResult": {"placeholders": {"count": {"type": "int"}}},
+  "@chatPendingResult": {
+    "placeholders": {
+      "leaveCount": {"type": "int"},
+      "tripCount": {"type": "int"}
+    }
+  },
+  "@chatJiraListResult": {"placeholders": {"count": {"type": "int"}}},
   "threadPreviewWithDate": "{preview} · {date}",
   "chatHistoryTitle": "Chat history",
   "backToChatDashboard": "Back to AI assistant",

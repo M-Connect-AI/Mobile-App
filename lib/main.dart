@@ -19,6 +19,7 @@ import 'domain/repository/home_repository.dart';
 import 'domain/repository/hr_request_repository.dart';
 import 'domain/repository/speech_to_text_repository.dart';
 import 'domain/repository/server_config_repository.dart';
+import 'domain/service/data_refresh_coordinator.dart';
 import 'generated/l10n.dart';
 import 'resources/app_constants.dart';
 import 'route/go_router.dart';
@@ -49,14 +50,17 @@ class _AiAssistantAppState extends State<AiAssistantApp> {
     final normalized = config.normalized();
     final defaults = configRepository.defaults.normalized();
     final usesDefaults =
-        normalized.hrApiBaseUrl == defaults.hrApiBaseUrl && normalized.agentApiBaseUrl == defaults.agentApiBaseUrl;
+        normalized.hrApiBaseUrl == defaults.hrApiBaseUrl &&
+        normalized.agentApiBaseUrl == defaults.agentApiBaseUrl;
     if (usesDefaults) {
       await configRepository.clear();
     } else {
       await configRepository.save(normalized);
     }
     await _dependencies.credentialRepository.clear();
-    final replacement = await AppDependencies.fromEnvironment(serverConfigRepository: configRepository);
+    final replacement = await AppDependencies.fromEnvironment(
+      serverConfigRepository: configRepository,
+    );
     if (!mounted) return;
     appRouter.go(const LoginRoute().location);
     setState(() {
@@ -73,20 +77,36 @@ class _AiAssistantAppState extends State<AiAssistantApp> {
       child: MultiRepositoryProvider(
         key: ValueKey(_configurationRevision),
         providers: [
-          RepositoryProvider<AuthRepository>(create: (_) => dependencies.authRepository),
-          RepositoryProvider<CredentialRepository>(create: (_) => dependencies.credentialRepository),
+          RepositoryProvider<AuthRepository>(
+            create: (_) => dependencies.authRepository,
+          ),
+          RepositoryProvider<CredentialRepository>(
+            create: (_) => dependencies.credentialRepository,
+          ),
           RepositoryProvider<ChatRepository>(
             create: (_) => dependencies.chatRepository,
             dispose: (repository) => repository.close(),
           ),
-          RepositoryProvider<ChatThreadRepository>(create: (_) => dependencies.chatThreadRepository),
-          RepositoryProvider<HomeRepository>(create: (_) => dependencies.homeRepository),
-          RepositoryProvider<HrRequestRepository>(create: (_) => dependencies.hrRequestRepository),
+          RepositoryProvider<ChatThreadRepository>(
+            create: (_) => dependencies.chatThreadRepository,
+          ),
+          RepositoryProvider<HomeRepository>(
+            create: (_) => dependencies.homeRepository,
+          ),
+          RepositoryProvider<HrRequestRepository>(
+            create: (_) => dependencies.hrRequestRepository,
+          ),
           RepositoryProvider<SpeechToTextRepository>(
             create: (_) => dependencies.speechToTextRepository,
             dispose: (repository) => unawaited(repository.close()),
           ),
-          RepositoryProvider<ServerConfigRepository>.value(value: dependencies.serverConfigRepository),
+          RepositoryProvider<ServerConfigRepository>.value(
+            value: dependencies.serverConfigRepository,
+          ),
+          RepositoryProvider<DataRefreshCoordinator>(
+            create: (_) => dependencies.dataRefreshCoordinator,
+            dispose: (coordinator) => unawaited(coordinator.close()),
+          ),
         ],
         child: ScreenUtilInit(
           designSize: const Size(390, 844),

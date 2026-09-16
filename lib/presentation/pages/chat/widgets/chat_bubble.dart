@@ -8,6 +8,7 @@ import '../../../../common/components/irh_button.dart';
 import '../../../../common/extensions/responsive_extension.dart';
 import '../../../../common/themes/theme_extensions/app_color_scheme.dart';
 import '../../../../domain/model/chat_message.dart';
+import '../../../../domain/model/chat_result.dart';
 import '../../../../generated/l10n.dart';
 import '../bloc/chat_bloc.dart';
 
@@ -99,14 +100,10 @@ class ChatBubble extends StatelessWidget {
                         8.height.heightBox,
                         _ConfirmationCard(message: message),
                       ],
-                      if (!isUser && message.executedResult != null) ...[
+                      if (!isUser &&
+                          (message.executedResult?.isKnown ?? false)) ...[
                         8.height.heightBox,
-                        Text(
-                          S.of(context).chatActionCompleted,
-                          style: AppTextStyle.sm12.copyWith(
-                            color: context.appColorScheme.textSuccess,
-                          ),
-                        ),
+                        _ChatResultView(result: message.executedResult!),
                       ],
                       if (!isUser && message.citations.isNotEmpty) ...[
                         8.height.heightBox,
@@ -218,6 +215,51 @@ class _ConfirmationCard extends StatelessWidget {
               style: AppTextStyle.r12.copyWith(color: colors.textError),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _ChatResultView extends StatelessWidget {
+  const _ChatResultView({required this.result});
+
+  final ChatResultEnvelope result;
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = S.of(context);
+    final label = switch (result) {
+      ChatLeaveBalanceResult(:final data) => strings.chatLeaveBalanceResult(
+        data.annualRemaining,
+        data.annualTotal,
+        data.sickRemaining,
+      ),
+      ChatLeaveListResult(:final data) => strings.chatLeaveListResult(
+        data.length,
+      ),
+      ChatTripListResult(:final data) => strings.chatTripListResult(
+        data.length,
+      ),
+      ChatPendingApprovalsResult(:final data) => strings.chatPendingResult(
+        data.leaves.length,
+        data.trips.length,
+      ),
+      ChatJiraIssuesResult(:final data) => strings.chatJiraListResult(
+        data.length,
+      ),
+      ChatLeaveMutationResult() ||
+      ChatTripMutationResult() ||
+      ChatLeaveBatchMutationResult() ||
+      ChatTripBatchMutationResult() ||
+      ChatJiraMutationResult() => strings.chatActionCompleted,
+      ChatUnknownResult() => '',
+    };
+    return Text(
+      label,
+      style: AppTextStyle.sm12.copyWith(
+        color: result.isMutation
+            ? context.appColorScheme.textSuccess
+            : context.appColorScheme.textSecondary,
       ),
     );
   }

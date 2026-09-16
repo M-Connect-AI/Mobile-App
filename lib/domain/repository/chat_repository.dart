@@ -6,6 +6,7 @@ abstract interface class ChatRepository {
     required String message,
     String? threadId,
     bool confirm = false,
+    ChatConfirmationTool? confirmedTool,
   });
 
   Future<ChatThreadDetail> getThread(String threadId);
