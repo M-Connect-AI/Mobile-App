@@ -58,8 +58,7 @@ class _HomeChatAiView extends StatelessWidget {
                 key: const Key('home-chat-input'),
                 onInputTap: () => const ChatRoute().push(context),
                 onMicrophoneTap: () async {
-                  if (!await confirmMicrophoneAccess(context) ||
-                      !context.mounted) {
+                  if (!await confirmMicrophoneAccess(context) || !context.mounted) {
                     return;
                   }
                   const ChatRoute(startRecording: true).push(context);
@@ -83,22 +82,20 @@ class _ChatDashboard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _DashboardHeader(),
+          16.height.heightBox,
+          const _DashboardHeader().paddingSymmetric(horizontal: 20.width),
           24.height.heightBox,
           Text(
             S.of(context).chatDashboardSlogan,
-            style: AppTextStyle.b28.copyWith(
-              color: context.appColorScheme.textPrimary,
-              height: 1.16,
-            ),
-          ),
+            style: AppTextStyle.b28.copyWith(color: context.appColorScheme.textPrimary, height: 1.16),
+          ).paddingSymmetric(horizontal: 20.width),
           24.height.heightBox,
           const _PromptSuggestions(),
           28.height.heightBox,
-          const _HistorySection(),
-          20.height.heightBox,
+          const _HistorySection().paddingSymmetric(horizontal: 20.width),
+          36.height.heightBox,
         ],
-      ).paddingSymmetric(horizontal: 20.width, vertical: 16.height),
+      ),
     );
   }
 }
@@ -109,22 +106,13 @@ class _DashboardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: [
-        HomeBackButton(
-          key: const Key('home-chat-back-button'),
-          semanticLabel: S.of(context).backToHome,
-        ),
-      ],
+      children: [HomeBackButton(key: const Key('home-chat-back-button'), semanticLabel: S.of(context).backToHome)],
     );
   }
 }
 
 class _PromptSuggestionData {
-  const _PromptSuggestionData({
-    required this.itemKey,
-    required this.label,
-    required this.backgroundColor,
-  });
+  const _PromptSuggestionData({required this.itemKey, required this.label, required this.backgroundColor});
 
   final Key itemKey;
   final String label;
@@ -135,32 +123,13 @@ class _PromptSuggestions extends StatelessWidget {
   const _PromptSuggestions();
 
   void _openChat(BuildContext context, String prompt) {
-    ChatRoute(
-      initialMessage: prompt,
-      autoSendInitialMessage: true,
-    ).push(context);
+    ChatRoute(initialMessage: prompt, autoSendInitialMessage: true).push(context);
   }
 
-  List<_PromptSuggestionData> _suggestionsForRole(
-    UserRole role,
-    S strings,
-    AppColorScheme colors,
-  ) {
-    final brandColor = Color.lerp(
-      colors.surfaceSecondary,
-      colors.iconBrand,
-      .18,
-    )!;
-    final successColor = Color.lerp(
-      colors.surfaceSecondary,
-      colors.textSuccess,
-      .16,
-    )!;
-    final accentColor = Color.lerp(
-      colors.surfaceTemary,
-      colors.textBrand,
-      .12,
-    )!;
+  List<_PromptSuggestionData> _suggestionsForRole(UserRole role, S strings, AppColorScheme colors) {
+    final brandColor = Color.lerp(colors.surfaceSecondary, colors.iconBrand, .18)!;
+    final successColor = Color.lerp(colors.surfaceSecondary, colors.textSuccess, .16)!;
+    final accentColor = Color.lerp(colors.surfaceTemary, colors.textBrand, .12)!;
 
     switch (role) {
       case UserRole.manager:
@@ -230,6 +199,7 @@ class _PromptSuggestions extends StatelessWidget {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 20.width),
             itemCount: suggestions.length,
             separatorBuilder: (_, _) => 12.width.widthBox,
             itemBuilder: (context, index) {
@@ -249,12 +219,7 @@ class _PromptSuggestions extends StatelessWidget {
 }
 
 class _SuggestionCard extends StatelessWidget {
-  const _SuggestionCard({
-    super.key,
-    required this.label,
-    required this.backgroundColor,
-    required this.onPressed,
-  });
+  const _SuggestionCard({super.key, required this.label, required this.backgroundColor, required this.onPressed});
 
   final String label;
   final Color backgroundColor;
@@ -283,18 +248,11 @@ class _SuggestionCard extends StatelessWidget {
                 label,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyle.sm16.copyWith(
-                  color: colors.textPrimary,
-                  height: 1.24,
-                ),
+                style: AppTextStyle.sm16.copyWith(color: colors.textPrimary, height: 1.24),
               ).expanded(),
               Align(
                 alignment: Alignment.bottomRight,
-                child: Icon(
-                  Icons.arrow_outward_sharp,
-                  size: 30,
-                  color: colors.textPrimary,
-                ),
+                child: Icon(Icons.arrow_outward_sharp, size: 30, color: colors.textPrimary),
               ),
             ],
           ).paddingSymmetric(horizontal: 16.width, vertical: 12.height),
@@ -328,10 +286,7 @@ class _HistorySection extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                strings.history,
-                style: AppTextStyle.b20.copyWith(color: colors.textPrimary),
-              ).expanded(),
+              Text(strings.history, style: AppTextStyle.b20.copyWith(color: colors.textPrimary)).expanded(),
               IrhTextButton(
                 key: const Key('chat-history-see-all'),
                 label: strings.seeAll,

@@ -6,14 +6,19 @@ import '../common/navigation/root_navigator_key.dart';
 import '../domain/repository/chat_repository.dart';
 import '../domain/repository/speech_to_text_repository.dart';
 import '../domain/service/data_refresh_coordinator.dart';
+import '../domain/service/device_calendar_service.dart';
+import '../domain/model/chat_result.dart';
 import '../presentation/pages/chat/bloc/chat_bloc.dart';
 import '../presentation/pages/chat/chat_page.dart';
 import '../presentation/pages/home/chat_history_page.dart';
 import '../presentation/pages/home/home_chat_ai_page.dart';
 import '../presentation/pages/home/home_page.dart';
 import '../presentation/pages/login/login_page.dart';
+import '../presentation/pages/login/register_page.dart';
 import '../presentation/pages/hr/bloc/hr_request_cubit.dart';
 import '../presentation/pages/hr/hr_request_pages.dart';
+import '../presentation/pages/jira/jira_pages.dart';
+import '../presentation/pages/outlook/outlook_pages.dart';
 
 part 'go_router.g.dart';
 
@@ -34,6 +39,21 @@ final List<RouteBase> appRoutes = [
     builder: (context, state) => const ChatHistoryPage(),
   ),
   GoRoute(
+    path: JiraTaskOverviewRoute.path,
+    redirect: (context, state) =>
+        state.extra is JiraIssueList ? null : const HomeRoute().location,
+    builder: (context, state) => JiraTaskOverviewRoute(
+      state.extra as JiraIssueList,
+    ).build(context, state),
+  ),
+  GoRoute(
+    path: JiraTaskDetailRoute.path,
+    redirect: (context, state) =>
+        state.extra is JiraIssue ? null : const HomeRoute().location,
+    builder: (context, state) =>
+        JiraTaskDetailRoute(state.extra as JiraIssue).build(context, state),
+  ),
+  GoRoute(
     path: ChatRoute.path,
     pageBuilder: (context, state) => ChatRoute(
       threadId: state.uri.queryParameters['threadId'],
@@ -52,6 +72,15 @@ class LoginRoute extends GoRouteData with $LoginRoute {
 
   @override
   Widget build(BuildContext context, GoRouterState state) => const LoginPage();
+}
+
+@TypedGoRoute<RegisterRoute>(path: '/register')
+class RegisterRoute extends GoRouteData with $RegisterRoute {
+  const RegisterRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const RegisterPage();
 }
 
 @TypedGoRoute<HomeRoute>(path: '/home')
@@ -102,6 +131,53 @@ class TripDetailRoute extends GoRouteData with $TripDetailRoute {
       HrRequestDetailPage(kind: HrRequestKind.trip, id: id);
 }
 
+@TypedGoRoute<OutlookConnectionRoute>(path: '/outlook')
+class OutlookConnectionRoute extends GoRouteData with $OutlookConnectionRoute {
+  const OutlookConnectionRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const OutlookConnectionPage();
+}
+
+@TypedGoRoute<OutlookCalendarRoute>(path: '/outlook/calendar')
+class OutlookCalendarRoute extends GoRouteData with $OutlookCalendarRoute {
+  const OutlookCalendarRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const OutlookCalendarPage();
+}
+
+@TypedGoRoute<OutlookConflictRoute>(path: '/outlook/conflicts')
+class OutlookConflictRoute extends GoRouteData with $OutlookConflictRoute {
+  const OutlookConflictRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const OutlookConflictPage();
+}
+
+@TypedGoRoute<OutlookMailListRoute>(path: '/outlook/mails')
+class OutlookMailListRoute extends GoRouteData with $OutlookMailListRoute {
+  const OutlookMailListRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const OutlookMailListPage();
+}
+
+@TypedGoRoute<OutlookMailDetailRoute>(path: '/outlook/mail')
+class OutlookMailDetailRoute extends GoRouteData with $OutlookMailDetailRoute {
+  const OutlookMailDetailRoute({required this.id});
+
+  final String id;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      OutlookMailDetailPage(id: id);
+}
+
 class HomeChatAiRoute extends GoRouteData {
   const HomeChatAiRoute();
 
@@ -124,6 +200,39 @@ class ChatHistoryRoute extends GoRouteData {
       const ChatHistoryPage();
 
   Future<T?> push<T>(BuildContext context) => context.push<T>(path);
+}
+
+class JiraTaskOverviewRoute extends GoRouteData {
+  const JiraTaskOverviewRoute(this.data);
+
+  static const path = '/jira/tasks';
+  final JiraIssueList data;
+
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(path, extra: data);
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      JiraTaskOverviewPage(
+        data: data,
+        calendarService: context.read<DeviceCalendarService>(),
+      );
+}
+
+class JiraTaskDetailRoute extends GoRouteData {
+  const JiraTaskDetailRoute(this.issue);
+
+  static const path = '/jira/task';
+  final JiraIssue issue;
+
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(path, extra: issue);
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => JiraTaskDetailPage(
+    issue: issue,
+    calendarService: context.read<DeviceCalendarService>(),
+  );
 }
 
 class ChatRoute extends GoRouteData {

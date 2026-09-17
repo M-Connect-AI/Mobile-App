@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCalendarsUsageDescription</key>
+	<string>MConnect Mate cần quyền thêm công việc Jira vào lịch của bạn.</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>MConnect Mate cần quyền thêm công việc Jira vào lịch của bạn.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Ứng dụng cần microphone để gửi tin nhắn thoại cho AI Assistant.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

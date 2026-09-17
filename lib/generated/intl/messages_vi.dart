@@ -38,32 +38,81 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m7(fullName) => "Chào, ${fullName}";
 
-  static String m8(issueType, assignee) => "${issueType} · Gán cho ${assignee}";
+  static String m8(key) => "Thêm ${key} vào lịch";
 
-  static String m9(key) => "Đã tạo ${key}";
+  static String m9(count) => "Thêm ${count} công việc vào lịch";
 
-  static String m10(date) => "Hạn: ${date}";
+  static String m10(issueType, assignee) =>
+      "${issueType} · Gán cho ${assignee}";
 
-  static String m11(status, priority) => "${status} · ${priority}";
+  static String m11(key) => "Đã tạo ${key}";
 
-  static String m12(count) => "Và ${count} task khác";
+  static String m12(date) => "Hạn: ${date}";
 
-  static String m13(total, toDo, inProgress, done) =>
+  static String m13(days) => "Còn ${days} ngày";
+
+  static String m14(count) => "Mình tìm thấy ${count} task phù hợp.";
+
+  static String m15(status, priority) => "${status} · ${priority}";
+
+  static String m16(count) => "Có ${count} công việc khớp bộ lọc";
+
+  static String m17(count) => "Và ${count} task khác";
+
+  static String m18(days) => "Quá hạn ${days} ngày";
+
+  static String m19(count) => "Chưa có thông tin độ ưu tiên · ${count} task";
+
+  static String m20(count) => "${count} quá hạn";
+
+  static String m21(count) => "${count} chưa có hạn";
+
+  static String m22(total, toDo, inProgress, done) =>
       "Tổng: ${total} · Cần làm: ${toDo} · Đang làm: ${inProgress} · Hoàn tất: ${done}";
 
-  static String m14(count) => "${count} ngày";
+  static String m23(toDo, inProgress, done) =>
+      "Cần làm: ${toDo}, đang làm: ${inProgress}, hoàn thành: ${done}.";
 
-  static String m15(appName) => "Đăng nhập để tiếp tục với ${appName}";
+  static String m24(key) => "Tóm tắt ${key}";
 
-  static String m16(remaining, total) => "${remaining}/${total} ngày";
+  static String m25(key) => "Chuyển trạng thái ${key}";
 
-  static String m17(days) => "${days} ngày";
+  static String m26(count) => "Xem tất cả ${count} công việc";
 
-  static String m18(title) => "Chi tiết ${title}";
+  static String m27(count) => "Xem chi tiết ${count} task";
 
-  static String m19(preview, date) => "${preview} · ${date}";
+  static String m28(toDo, inProgress, done) =>
+      "${toDo} cần làm · ${inProgress} đang làm · ${done} hoàn thành";
 
-  static String m20(from, to) => "${from} – ${to}";
+  static String m29(days) => "${days} ngày khả dụng";
+
+  static String m30(remaining, total) =>
+      "Hiện còn ${remaining} trên tổng số ${total} ngày phép.";
+
+  static String m31(days) => "${days} ngày";
+
+  static String m32(remaining, total) =>
+      "Còn ${remaining} trên tổng số ${total} ngày phép sau khi gửi đơn này.";
+
+  static String m33(days) => "Còn ${days} ngày";
+
+  static String m34(type, days) => "${type} · Tổng ${days} ngày";
+
+  static String m35(count) => "${count} ngày";
+
+  static String m36(appName) => "Đăng nhập để tiếp tục với ${appName}";
+
+  static String m37(email) => "Đã gửi trả lời từ ${email}";
+
+  static String m38(remaining, total) => "${remaining}/${total} ngày";
+
+  static String m39(days) => "${days} ngày";
+
+  static String m40(title) => "Chi tiết ${title}";
+
+  static String m41(preview, date) => "${preview} · ${date}";
+
+  static String m42(from, to) => "${from} – ${to}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -83,6 +132,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "attendanceSupplement": MessageLookupByLibrary.simpleMessage(
       "Bổ sung chấm công",
     ),
+    "autoLogin": MessageLookupByLibrary.simpleMessage("Tự động đăng nhập lại"),
     "backButton": MessageLookupByLibrary.simpleMessage("Quay lại"),
     "backToChatDashboard": MessageLookupByLibrary.simpleMessage(
       "Quay lại trang trợ lý AI",
@@ -129,6 +179,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "createLeaveSuccess": MessageLookupByLibrary.simpleMessage(
       "Tạo đơn nghỉ phép thành công",
     ),
+    "createOutlookEventSuccess": MessageLookupByLibrary.simpleMessage(
+      "Tạo lịch Outlook thành công",
+    ),
     "createTripSuccess": MessageLookupByLibrary.simpleMessage(
       "Tạo đơn công tác thành công",
     ),
@@ -143,16 +196,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "emailRequired": MessageLookupByLibrary.simpleMessage(
       "Vui lòng nhập email",
     ),
+    "emailValidation": MessageLookupByLibrary.simpleMessage(
+      "Vui lòng nhập email hợp lệ",
+    ),
     "employeeCode": MessageLookupByLibrary.simpleMessage("Mã nhân viên"),
-    "employeeLeVanC": MessageLookupByLibrary.simpleMessage(
-      "Nhân viên — Lê Văn C",
-    ),
-    "employeeNguyenVanA": MessageLookupByLibrary.simpleMessage(
-      "Nhân viên — Nguyễn Văn A",
-    ),
     "events": MessageLookupByLibrary.simpleMessage("Sự kiện"),
     "featuredNews": MessageLookupByLibrary.simpleMessage("TIN NỔI BẬT"),
     "forgotPassword": MessageLookupByLibrary.simpleMessage("Quên mật khẩu?"),
+    "fullNameHint": MessageLookupByLibrary.simpleMessage("Nhập họ và tên"),
+    "fullNameLabel": MessageLookupByLibrary.simpleMessage("Họ và tên"),
+    "fullNameValidation": MessageLookupByLibrary.simpleMessage(
+      "Họ và tên phải có ít nhất 2 ký tự",
+    ),
     "hidePassword": MessageLookupByLibrary.simpleMessage("Ẩn mật khẩu"),
     "history": MessageLookupByLibrary.simpleMessage("Lịch sử"),
     "historyAnnualLeave": MessageLookupByLibrary.simpleMessage(
@@ -221,34 +276,202 @@ class MessageLookup extends MessageLookupByLibrary {
       "Bạn chờ\nphê duyệt",
     ),
     "hrApiUrlLabel": MessageLookupByLibrary.simpleMessage("HR API URL"),
-    "jiraCreatedMeta": m8,
-    "jiraCreatedResult": m9,
-    "jiraDueDate": m10,
-    "jiraDueDateLabel": MessageLookupByLibrary.simpleMessage("Hạn hoàn thành"),
-    "jiraEmptyResult": MessageLookupByLibrary.simpleMessage(
-      "Không có Jira task nào khớp yêu cầu.",
+    "jiraAddAllToCalendar": MessageLookupByLibrary.simpleMessage(
+      "Thêm tất cả vào lịch",
     ),
-    "jiraIssueMeta": m11,
+    "jiraAddTaskToCalendar": m8,
+    "jiraAddTasksToCalendar": m9,
+    "jiraAddToCalendar": MessageLookupByLibrary.simpleMessage("Thêm vào lịch"),
+    "jiraAddedToCalendar": MessageLookupByLibrary.simpleMessage("Đã thêm"),
+    "jiraAllDay": MessageLookupByLibrary.simpleMessage("Cả ngày"),
+    "jiraAssigneeLabel": MessageLookupByLibrary.simpleMessage(
+      "Người phụ trách",
+    ),
+    "jiraCalendarAssigneePrefix": MessageLookupByLibrary.simpleMessage(
+      "Người phụ trách",
+    ),
+    "jiraCalendarFailed": MessageLookupByLibrary.simpleMessage(
+      "Không thể mở Lịch. Vui lòng thử lại.",
+    ),
+    "jiraCalendarLinkPrefix": MessageLookupByLibrary.simpleMessage("Jira"),
+    "jiraCalendarOpened": MessageLookupByLibrary.simpleMessage(
+      "Đã mở biểu mẫu Lịch.",
+    ),
+    "jiraCalendarPermissionDenied": MessageLookupByLibrary.simpleMessage(
+      "MConnect Mate cần quyền thêm công việc Jira vào lịch của bạn.",
+    ),
+    "jiraCalendarPriorityPrefix": MessageLookupByLibrary.simpleMessage(
+      "Ưu tiên",
+    ),
+    "jiraCalendarSaved": MessageLookupByLibrary.simpleMessage(
+      "Đã thêm task vào lịch.",
+    ),
+    "jiraCalendarStatusPrefix": MessageLookupByLibrary.simpleMessage(
+      "Trạng thái",
+    ),
+    "jiraCalendarUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Không tìm thấy ứng dụng lịch trên thiết bị.",
+    ),
+    "jiraChartBacklogRisk": MessageLookupByLibrary.simpleMessage(
+      "Rủi ro backlog",
+    ),
+    "jiraChartByPriority": MessageLookupByLibrary.simpleMessage(
+      "Theo độ ưu tiên",
+    ),
+    "jiraChartByStatus": MessageLookupByLibrary.simpleMessage(
+      "Theo trạng thái",
+    ),
+    "jiraChartComposition": MessageLookupByLibrary.simpleMessage(
+      "Cơ cấu công việc",
+    ),
+    "jiraChooseDate": MessageLookupByLibrary.simpleMessage("Chọn ngày"),
+    "jiraChooseDateDescription": MessageLookupByLibrary.simpleMessage(
+      "Chọn ngày để thêm task vào lịch.",
+    ),
+    "jiraCollapseAnalysis": MessageLookupByLibrary.simpleMessage("Thu gọn"),
+    "jiraCompletedCalendarUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Task đã hoàn thành nên không thể thêm vào lịch.",
+    ),
+    "jiraContinueToCalendar": MessageLookupByLibrary.simpleMessage(
+      "Tiếp tục tới Lịch",
+    ),
+    "jiraCreatedMeta": m10,
+    "jiraCreatedResult": m11,
+    "jiraDueDate": m12,
+    "jiraDueDateLabel": MessageLookupByLibrary.simpleMessage("Hạn hoàn thành"),
+    "jiraDueMissing": MessageLookupByLibrary.simpleMessage("Không có hạn"),
+    "jiraDueRemainingDays": m13,
+    "jiraDueToday": MessageLookupByLibrary.simpleMessage("Đến hạn hôm nay"),
+    "jiraEmptyResult": MessageLookupByLibrary.simpleMessage(
+      "Không tìm thấy task nào phù hợp.",
+    ),
+    "jiraFilterAll": MessageLookupByLibrary.simpleMessage("Tất cả"),
+    "jiraFilterOverdue": MessageLookupByLibrary.simpleMessage("Quá hạn"),
+    "jiraFilterWithoutDueDate": MessageLookupByLibrary.simpleMessage(
+      "Chưa có hạn",
+    ),
+    "jiraFoundMany": m14,
+    "jiraFoundOne": MessageLookupByLibrary.simpleMessage(
+      "Mình tìm thấy 1 task phù hợp với yêu cầu của bạn.",
+    ),
+    "jiraIssueKeyLabel": MessageLookupByLibrary.simpleMessage("Mã Jira"),
+    "jiraIssueMeta": m15,
     "jiraIssueTypeLabel": MessageLookupByLibrary.simpleMessage(
       "Loại công việc",
     ),
-    "jiraMoreIssues": m12,
-    "jiraOpenIssue": MessageLookupByLibrary.simpleMessage("Mở Jira task"),
-    "jiraPossiblyTruncated": MessageLookupByLibrary.simpleMessage(
-      "Kết quả có thể đã được giới hạn ở 50 task.",
+    "jiraLoadTasksFailed": MessageLookupByLibrary.simpleMessage(
+      "Không thể tải công việc Jira.",
     ),
+    "jiraLoadingTasks": MessageLookupByLibrary.simpleMessage(
+      "Đang tải công việc Jira...",
+    ),
+    "jiraMatchingWork": m16,
+    "jiraMoreIssues": m17,
+    "jiraNoReminder": MessageLookupByLibrary.simpleMessage("Không nhắc"),
+    "jiraOpenExternal": MessageLookupByLibrary.simpleMessage("Mở Jira"),
+    "jiraOpenIssue": MessageLookupByLibrary.simpleMessage("Mở Jira task"),
+    "jiraOverdueDays": m18,
+    "jiraOverviewTitle": MessageLookupByLibrary.simpleMessage("Công việc Jira"),
+    "jiraPossiblyTruncated": MessageLookupByLibrary.simpleMessage(
+      "Chỉ hiển thị tối đa 50 công việc từ Jira.",
+    ),
+    "jiraPriorityHigh": MessageLookupByLibrary.simpleMessage("Cao"),
+    "jiraPriorityHighest": MessageLookupByLibrary.simpleMessage("Cao nhất"),
+    "jiraPriorityLabel": MessageLookupByLibrary.simpleMessage("Ưu tiên"),
+    "jiraPriorityLow": MessageLookupByLibrary.simpleMessage("Thấp"),
+    "jiraPriorityMedium": MessageLookupByLibrary.simpleMessage("Trung bình"),
+    "jiraPriorityMissing": MessageLookupByLibrary.simpleMessage(
+      "Chưa đặt ưu tiên",
+    ),
+    "jiraPriorityTasks": MessageLookupByLibrary.simpleMessage("CẦN ƯU TIÊN"),
+    "jiraPriorityUnavailable": m19,
+    "jiraPriorityUnknown": MessageLookupByLibrary.simpleMessage("Không rõ"),
     "jiraProject": MessageLookupByLibrary.simpleMessage("Dự án"),
-    "jiraStatsResult": m13,
+    "jiraProjectLabel": MessageLookupByLibrary.simpleMessage("Dự án"),
+    "jiraReminderOneDay": MessageLookupByLibrary.simpleMessage(
+      "Nhắc trước 1 ngày",
+    ),
+    "jiraRiskOverdue": m20,
+    "jiraRiskStaleLabel": MessageLookupByLibrary.simpleMessage(
+      "Lâu chưa cập nhật",
+    ),
+    "jiraRiskWithoutDueDate": m21,
+    "jiraShowAnalysis": MessageLookupByLibrary.simpleMessage("Xem phân tích"),
+    "jiraStatsResult": m22,
+    "jiraStatusCompletedShort": MessageLookupByLibrary.simpleMessage("Đã làm"),
+    "jiraStatusDistribution": m23,
+    "jiraStatusDone": MessageLookupByLibrary.simpleMessage("Hoàn thành"),
+    "jiraStatusInProgress": MessageLookupByLibrary.simpleMessage("Đang làm"),
+    "jiraStatusTodo": MessageLookupByLibrary.simpleMessage("Cần làm"),
+    "jiraStatusUnknown": MessageLookupByLibrary.simpleMessage("Chưa xác định"),
+    "jiraSummarizeTask": m24,
+    "jiraSummaryLabel": MessageLookupByLibrary.simpleMessage("Nội dung"),
+    "jiraTaskDetails": MessageLookupByLibrary.simpleMessage(
+      "Chi tiết công việc",
+    ),
+    "jiraTaskListTitle": MessageLookupByLibrary.simpleMessage(
+      "Danh sách công việc Jira",
+    ),
     "jiraTaskSummary": MessageLookupByLibrary.simpleMessage("Nội dung"),
+    "jiraTaskWithoutDeadline": MessageLookupByLibrary.simpleMessage(
+      "Task này chưa có deadline.",
+    ),
+    "jiraTimedEvent": MessageLookupByLibrary.simpleMessage("Có thời gian"),
+    "jiraTransitionTask": m25,
+    "jiraViewAllWork": m26,
+    "jiraViewDetailsCount": m27,
+    "jiraWorkflowSummary": m28,
     "leaveAnnualType": MessageLookupByLibrary.simpleMessage("Phép năm"),
     "leaveBalance": MessageLookupByLibrary.simpleMessage("Số dư nghỉ phép"),
+    "leaveBalanceAfterSubmission": MessageLookupByLibrary.simpleMessage(
+      "sau khi gửi đơn này",
+    ),
+    "leaveBalanceChangeDates": MessageLookupByLibrary.simpleMessage(
+      "Thay đổi thời gian",
+    ),
+    "leaveBalanceChooseDatesAgain": MessageLookupByLibrary.simpleMessage(
+      "Chọn lại thời gian",
+    ),
+    "leaveBalanceContinue": MessageLookupByLibrary.simpleMessage(
+      "Tiếp tục tạo đơn",
+    ),
+    "leaveBalanceCurrentAvailable": m29,
+    "leaveBalanceCurrentLabel": MessageLookupByLibrary.simpleMessage(
+      "Số dư hiện tại",
+    ),
+    "leaveBalanceCurrentSemantics": m30,
+    "leaveBalanceCurrentTitle": MessageLookupByLibrary.simpleMessage(
+      "Số dư hiện tại",
+    ),
+    "leaveBalanceDays": m31,
+    "leaveBalanceDaysRemaining": MessageLookupByLibrary.simpleMessage(
+      "ngày còn",
+    ),
+    "leaveBalanceEnoughHelper": MessageLookupByLibrary.simpleMessage(
+      "Số dư của bạn đủ để tạo đơn nghỉ phép này.",
+    ),
+    "leaveBalanceInsufficientHelper": MessageLookupByLibrary.simpleMessage(
+      "Số ngày nghỉ vượt quá số dư hiện tại.",
+    ),
+    "leaveBalanceProjectedLabel": MessageLookupByLibrary.simpleMessage(
+      "Số dư sau khi nghỉ",
+    ),
+    "leaveBalanceProjectedSemantics": m32,
+    "leaveBalanceProjectedTitle": m33,
+    "leaveBalanceRequestedLabel": MessageLookupByLibrary.simpleMessage(
+      "Số ngày xin nghỉ",
+    ),
+    "leaveBalanceSelectDatesHelper": MessageLookupByLibrary.simpleMessage(
+      "Chọn thời gian nghỉ để xem số dư dự kiến.",
+    ),
     "leaveBalanceSuggestion": MessageLookupByLibrary.simpleMessage(
       "Tôi còn bao nhiêu ngày phép?",
     ),
+    "leaveBalanceTypeTotal": m34,
     "leaveCancelSuggestion": MessageLookupByLibrary.simpleMessage(
       "Hủy đơn nghỉ gần nhất",
     ),
-    "leaveDayCount": m14,
+    "leaveDayCount": m35,
     "leaveDays": MessageLookupByLibrary.simpleMessage("Số ngày"),
     "leaveListEmpty": MessageLookupByLibrary.simpleMessage(
       "Bạn chưa có đơn nghỉ phép.",
@@ -288,7 +511,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "loginServerError": MessageLookupByLibrary.simpleMessage(
       "Máy chủ đang gặp sự cố. Vui lòng thử lại sau.",
     ),
-    "loginSubtitle": m15,
+    "loginSubtitle": m36,
     "loginValidationError": MessageLookupByLibrary.simpleMessage(
       "Thông tin đăng nhập không hợp lệ.",
     ),
@@ -304,9 +527,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "managerTeamPendingSuggestion": MessageLookupByLibrary.simpleMessage(
       "Team đang có những đơn nào chờ duyệt?",
     ),
-    "managerTranThiB": MessageLookupByLibrary.simpleMessage(
-      "Quản lý — Trần Thị B",
-    ),
     "managerWhoOffTomorrowSuggestion": MessageLookupByLibrary.simpleMessage(
       "Ngày mai có ai nghỉ không?",
     ),
@@ -319,6 +539,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "microphonePermissionTitle": MessageLookupByLibrary.simpleMessage(
       "Cho phép sử dụng micro?",
+    ),
+    "mutationResultMismatch": MessageLookupByLibrary.simpleMessage(
+      "Máy chủ chưa xác nhận thao tác đã hoàn tất. Vui lòng tải lại dữ liệu trước khi thử lại.",
     ),
     "navigationAssistant": MessageLookupByLibrary.simpleMessage("Trợ lý"),
     "navigationChat": MessageLookupByLibrary.simpleMessage("Chat"),
@@ -338,6 +561,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "newsRetailTitle": MessageLookupByLibrary.simpleMessage(
       "Khảo sát toàn hàng: Giải mã văn hóa MSB",
     ),
+    "noAccount": MessageLookupByLibrary.simpleMessage("Chưa có tài khoản? "),
     "noUpcomingTrips": MessageLookupByLibrary.simpleMessage(
       "Bạn chưa có chuyến công tác sắp tới.",
     ),
@@ -345,28 +569,91 @@ class MessageLookup extends MessageLookupByLibrary {
     "online": MessageLookupByLibrary.simpleMessage("Trực tuyến"),
     "openChat": MessageLookupByLibrary.simpleMessage("Mở màn hình chat"),
     "options": MessageLookupByLibrary.simpleMessage("Tùy chọn"),
-    "otherEmail": MessageLookupByLibrary.simpleMessage("Sử dụng email khác"),
-    "otherEmailTitle": MessageLookupByLibrary.simpleMessage("Nhập email khác"),
     "otherUpcomingTrips": MessageLookupByLibrary.simpleMessage(
       "Các chuyến tiếp theo",
     ),
+    "outlookAttendees": MessageLookupByLibrary.simpleMessage("Người tham dự"),
+    "outlookCalendar": MessageLookupByLibrary.simpleMessage("Lịch Outlook"),
+    "outlookCalendarEmpty": MessageLookupByLibrary.simpleMessage(
+      "Không có sự kiện trong 14 ngày tới.",
+    ),
+    "outlookCheckConnection": MessageLookupByLibrary.simpleMessage(
+      "Kiểm tra trạng thái kết nối",
+    ),
+    "outlookConflicts": MessageLookupByLibrary.simpleMessage(
+      "Lịch bận và xung đột",
+    ),
+    "outlookConflictsEmpty": MessageLookupByLibrary.simpleMessage(
+      "Không có lịch bận trong 14 ngày tới.",
+    ),
+    "outlookConnect": MessageLookupByLibrary.simpleMessage("Kết nối Outlook"),
+    "outlookConnected": MessageLookupByLibrary.simpleMessage(
+      "Đã kết nối Outlook",
+    ),
+    "outlookDisconnect": MessageLookupByLibrary.simpleMessage("Ngắt kết nối"),
+    "outlookEnd": MessageLookupByLibrary.simpleMessage("Kết thúc"),
+    "outlookLocation": MessageLookupByLibrary.simpleMessage("Địa điểm"),
+    "outlookMail": MessageLookupByLibrary.simpleMessage("Hộp thư Outlook"),
+    "outlookMailDetail": MessageLookupByLibrary.simpleMessage("Chi tiết email"),
+    "outlookMailEmpty": MessageLookupByLibrary.simpleMessage(
+      "Không có email phù hợp.",
+    ),
+    "outlookMessageId": MessageLookupByLibrary.simpleMessage("Mã email"),
+    "outlookNotConfigured": MessageLookupByLibrary.simpleMessage(
+      "Máy chủ chưa cấu hình Microsoft Outlook.",
+    ),
+    "outlookNotConnected": MessageLookupByLibrary.simpleMessage(
+      "Chưa kết nối Outlook",
+    ),
+    "outlookOAuthReturnHint": MessageLookupByLibrary.simpleMessage(
+      "Sau khi cấp quyền trong trình duyệt, hãy quay lại ứng dụng để cập nhật trạng thái.",
+    ),
+    "outlookOpenEvent": MessageLookupByLibrary.simpleMessage(
+      "Mở sự kiện Outlook",
+    ),
+    "outlookReply": MessageLookupByLibrary.simpleMessage("Nội dung trả lời"),
+    "outlookReplySentTo": m37,
+    "outlookSearchMail": MessageLookupByLibrary.simpleMessage(
+      "Tìm theo tiêu đề hoặc người gửi",
+    ),
+    "outlookStart": MessageLookupByLibrary.simpleMessage("Bắt đầu"),
+    "outlookSubject": MessageLookupByLibrary.simpleMessage("Tiêu đề"),
+    "outlookTitle": MessageLookupByLibrary.simpleMessage("Microsoft Outlook"),
     "passwordHint": MessageLookupByLibrary.simpleMessage("Nhập mật khẩu"),
     "passwordLabel": MessageLookupByLibrary.simpleMessage("Mật khẩu"),
     "passwordRequired": MessageLookupByLibrary.simpleMessage(
       "Vui lòng nhập mật khẩu",
     ),
+    "passwordValidation": MessageLookupByLibrary.simpleMessage(
+      "Mật khẩu phải có ít nhất 4 ký tự",
+    ),
     "preparingResponse": MessageLookupByLibrary.simpleMessage(
       "Đang chuẩn bị phản hồi...",
     ),
     "processing": MessageLookupByLibrary.simpleMessage("Đang xử lý..."),
-    "profileAnnualDays": m16,
+    "profileAnnualDays": m38,
     "profileDepartment": MessageLookupByLibrary.simpleMessage("Phòng ban"),
     "profileManagerCode": MessageLookupByLibrary.simpleMessage("Mã quản lý"),
     "profileManagerRole": MessageLookupByLibrary.simpleMessage("Quản lý"),
-    "profileSickDays": m17,
+    "profileSickDays": m39,
     "profileStaffRole": MessageLookupByLibrary.simpleMessage("Nhân viên"),
     "quickAccess": MessageLookupByLibrary.simpleMessage("Truy cập nhanh"),
     "recordVoice": MessageLookupByLibrary.simpleMessage("Ghi âm"),
+    "registerButton": MessageLookupByLibrary.simpleMessage("Đăng ký"),
+    "registerEmailExists": MessageLookupByLibrary.simpleMessage(
+      "Email này đã được đăng ký",
+    ),
+    "registerFailed": MessageLookupByLibrary.simpleMessage(
+      "Không thể đăng ký tài khoản. Vui lòng thử lại.",
+    ),
+    "registerSubtitle": MessageLookupByLibrary.simpleMessage(
+      "Nhập thông tin và chọn vai trò của bạn",
+    ),
+    "registerTitle": MessageLookupByLibrary.simpleMessage("Tạo tài khoản"),
+    "registerValidationError": MessageLookupByLibrary.simpleMessage(
+      "Thông tin đăng ký không hợp lệ",
+    ),
+    "registering": MessageLookupByLibrary.simpleMessage("Đang đăng ký..."),
     "rejectLeavesSuccess": MessageLookupByLibrary.simpleMessage(
       "Từ chối đơn nghỉ phép thành công",
     ),
@@ -376,10 +663,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "rememberSession": MessageLookupByLibrary.simpleMessage(
       "Duy trì đăng nhập",
     ),
+    "replyOutlookMailSuccess": MessageLookupByLibrary.simpleMessage(
+      "Trả lời email Outlook thành công",
+    ),
     "requestCancelled": MessageLookupByLibrary.simpleMessage("Đã hủy thao tác"),
     "requestCode": MessageLookupByLibrary.simpleMessage("Mã yêu cầu"),
     "requestCreatedAt": MessageLookupByLibrary.simpleMessage("Ngày tạo"),
-    "requestDetailTitle": m18,
+    "requestDetailTitle": m40,
     "requestFailed": MessageLookupByLibrary.simpleMessage(
       "Không thể gửi yêu cầu. Vui lòng thử lại.",
     ),
@@ -406,9 +696,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "reviewRequestTitle": MessageLookupByLibrary.simpleMessage(
       "Kiểm tra thông tin",
     ),
+    "roleLabel": MessageLookupByLibrary.simpleMessage("Vai trò"),
+    "roleManager": MessageLookupByLibrary.simpleMessage("Quản lý"),
+    "roleStaff": MessageLookupByLibrary.simpleMessage("Nhân viên"),
     "saveButton": MessageLookupByLibrary.simpleMessage("Lưu"),
+    "search": MessageLookupByLibrary.simpleMessage("Tìm kiếm"),
     "seeAll": MessageLookupByLibrary.simpleMessage("Xem tất cả"),
-    "selectButton": MessageLookupByLibrary.simpleMessage("Chọn"),
     "sendMessage": MessageLookupByLibrary.simpleMessage("Gửi tin nhắn"),
     "serverConfigButton": MessageLookupByLibrary.simpleMessage(
       "Cấu hình máy chủ",
@@ -446,16 +739,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "submittingRequest": MessageLookupByLibrary.simpleMessage(
       "Đang gửi yêu cầu...",
     ),
-    "suggestedAccounts": MessageLookupByLibrary.simpleMessage(
-      "Tài khoản gợi ý",
-    ),
     "supplement": MessageLookupByLibrary.simpleMessage("Bổ sung"),
     "taskThreeCount": MessageLookupByLibrary.simpleMessage("03"),
     "taskTwelveCount": MessageLookupByLibrary.simpleMessage("12"),
     "thinking": MessageLookupByLibrary.simpleMessage("Đang suy nghĩ..."),
-    "threadPreviewWithDate": m19,
+    "threadPreviewWithDate": m41,
     "timeManagement": MessageLookupByLibrary.simpleMessage("Quản lý thời gian"),
-    "tripDateRange": m20,
+    "tripDateRange": m42,
     "tripDestination": MessageLookupByLibrary.simpleMessage("Địa điểm"),
     "tripListEmpty": MessageLookupByLibrary.simpleMessage(
       "Bạn chưa có chuyến công tác.",

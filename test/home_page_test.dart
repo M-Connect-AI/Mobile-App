@@ -5,6 +5,7 @@ import 'package:chatbot_project/domain/model/chat_thread.dart';
 import 'package:chatbot_project/domain/repository/chat_repository.dart';
 import 'package:chatbot_project/domain/repository/chat_thread_repository.dart';
 import 'package:chatbot_project/domain/repository/credential_repository.dart';
+import 'package:chatbot_project/domain/repository/auth_preference_repository.dart';
 import 'package:chatbot_project/domain/model/auth_session.dart';
 import 'package:chatbot_project/domain/model/home_data.dart';
 import 'package:chatbot_project/domain/repository/home_repository.dart';
@@ -44,6 +45,9 @@ void main() {
               ),
               RepositoryProvider<CredentialRepository>(
                 create: (_) => _FakeCredentialRepository(),
+              ),
+              RepositoryProvider<AuthPreferenceRepository>(
+                create: (_) => _FakeAuthPreferenceRepository(),
               ),
               RepositoryProvider<DataRefreshCoordinator>(
                 create: (_) => DataRefreshCoordinator(),
@@ -183,6 +187,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('logout-button')), findsOneWidget);
       expect(find.byKey(const Key('server-config-button')), findsOneWidget);
+      expect(find.byKey(const Key('auto-login-switch')), findsOneWidget);
       expect(find.text('Đăng xuất'), findsOneWidget);
       expect(find.byKey(const Key('task-summary-list')), findsNothing);
 
@@ -335,6 +340,9 @@ void main() {
           RepositoryProvider<CredentialRepository>(
             create: (_) => _FakeCredentialRepository(),
           ),
+          RepositoryProvider<AuthPreferenceRepository>(
+            create: (_) => _FakeAuthPreferenceRepository(),
+          ),
           RepositoryProvider<DataRefreshCoordinator>(
             create: (_) => DataRefreshCoordinator(),
           ),
@@ -372,6 +380,12 @@ void main() {
     await tester.tap(find.byKey(const Key('utilities-navigation-item')));
     await tester.pumpAndSettle();
     expect(find.text(S.current.profileManagerRole), findsOneWidget);
+    await tester.drag(
+      find.byKey(const Key('utilities-content')),
+      const Offset(0, -400),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('auto-login-switch')), findsOneWidget);
   });
 }
 
@@ -437,6 +451,22 @@ class _FakeCredentialRepository implements CredentialRepository {
 
   @override
   Future<void> save(AuthSession session, {required bool persist}) async {}
+}
+
+class _FakeAuthPreferenceRepository implements AuthPreferenceRepository {
+  bool enabled = false;
+
+  @override
+  Future<bool> readAutoLoginEnabled() async => enabled;
+
+  @override
+  Future<String?> readLastEmail() async => null;
+
+  @override
+  Future<void> saveLastEmail(String email) async {}
+
+  @override
+  Future<void> setAutoLoginEnabled(bool value) async => enabled = value;
 }
 
 final _homeData = HomeData(

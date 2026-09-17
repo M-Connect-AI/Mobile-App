@@ -1,6 +1,7 @@
 import 'package:chatbot_project/data/mapper/chat_result_mapper.dart';
 import 'package:chatbot_project/domain/model/chat_result.dart';
 import 'package:chatbot_project/domain/model/chat_stream_event.dart';
+import 'package:chatbot_project/domain/model/chat_rich_content.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -51,6 +52,77 @@ void main() {
     expect(data.issues, isEmpty);
     expect(data.stats.total, 0);
     expect(data.mayBeTruncated, isFalse);
+  });
+
+  test('reconstructs Jira preview data from runtime rich blocks', () {
+    final result = ChatResultMapper.mapJiraBlocks(const [
+      ChatRichBlock(
+        type: ChatBlockType.kpis,
+        items: [
+          ChatBlockItem(label: 'Cần làm', value: '2'),
+          ChatBlockItem(label: 'Đang làm', value: '1'),
+          ChatBlockItem(label: 'Đã làm', value: '2'),
+          ChatBlockItem(label: 'Quá hạn', value: '1'),
+        ],
+      ),
+      ChatRichBlock(
+        type: ChatBlockType.bars,
+        title: 'Rủi ro backlog',
+        items: [ChatBlockItem(label: 'Thiếu due date', value: 1)],
+      ),
+      ChatRichBlock(
+        type: ChatBlockType.bars,
+        title: 'Theo trạng thái',
+        items: [
+          ChatBlockItem(label: 'Cần làm', value: 2),
+          ChatBlockItem(label: 'Đang làm', value: 1),
+          ChatBlockItem(label: 'Đã làm', value: 2),
+        ],
+      ),
+      ChatRichBlock(
+        type: ChatBlockType.bars,
+        title: 'Theo độ ưu tiên',
+        items: [ChatBlockItem(label: 'Medium', value: 3)],
+      ),
+      ChatRichBlock(
+        type: ChatBlockType.donut,
+        title: 'Cơ cấu việc',
+        items: [ChatBlockItem(label: 'Task', value: 5)],
+      ),
+      ChatRichBlock(
+        type: ChatBlockType.list,
+        title: 'Cần ưu tiên',
+        items: [
+          ChatBlockItem(
+            title: 'SCRUM-6: EA ban hành tài liệu kiến trúc',
+            subtitle: 'In Progress · Medium · hạn 14/09/2026',
+            badge: 'In Progress',
+            url: 'https://jira.example/browse/SCRUM-6',
+          ),
+          ChatBlockItem(
+            title: 'SCRUM-8: Đưa solution tích hợp ePro',
+            subtitle: 'To Do ·  · chưa có hạn',
+            badge: 'To Do',
+          ),
+        ],
+      ),
+    ]);
+
+    expect(result, isA<ChatJiraIssuesResult>());
+    final data = (result as ChatJiraIssuesResult).data;
+    expect(data.stats.total, 5);
+    expect(data.stats.overdue, 1);
+    expect(data.stats.withoutDueDate, 1);
+    expect(data.stats.byPriority, {'Medium': 3});
+    expect(data.stats.byIssueType, {'Task': 5});
+    expect(data.stats.byStatus, {'Cần làm': 2, 'Đang làm': 1, 'Đã làm': 2});
+    expect(data.mayBeTruncated, isTrue);
+    expect(data.issues, hasLength(2));
+    expect(data.issues.first.key, 'SCRUM-6');
+    expect(data.issues.first.statusCategory, 'IN_PROGRESS');
+    expect(data.issues.first.dueDate, '2026-09-14');
+    expect(data.issues.last.priority, isEmpty);
+    expect(data.issues.last.dueDate, isNull);
   });
 
   test('accepts nullable Jira dates and URLs', () {
@@ -146,6 +218,18 @@ void main() {
             expected: ChatJiraMutationResult,
             scopes: const {DataRefreshScope.jira},
           ),
+          (
+            tool: ChatConfirmationTool.createOutlookEvent,
+            raw: _outlookEvent,
+            expected: ChatOutlookEventMutationResult,
+            scopes: const {DataRefreshScope.outlook},
+          ),
+          (
+            tool: ChatConfirmationTool.replyOutlookMail,
+            raw: _outlookReply,
+            expected: ChatOutlookReplyMutationResult,
+            scopes: const {DataRefreshScope.outlook},
+          ),
         ];
 
     for (final item in cases) {
@@ -223,4 +307,26 @@ const _jiraCreate = <String, dynamic>{
   'assigneeEmail': 'a@msb.vn',
   'url': 'https://jira.example/browse/SCRUM-2',
   'message': 'Đã tạo Jira SCRUM-2',
+};
+
+const _outlookEvent = <String, dynamic>{
+  'configured': true,
+  'connected': true,
+  'microsoftEmail': 'a@msb.vn',
+  'event': {
+    'id': 'event-1',
+    'subject': 'Họp dự án',
+    'start': '2026-09-20T09:00:00',
+    'end': '2026-09-20T10:00:00',
+    'isAllDay': false,
+    'webLink': 'https://outlook.office.com/calendar/item/event-1',
+  },
+};
+
+const _outlookReply = <String, dynamic>{
+  'configured': true,
+  'connected': true,
+  'microsoftEmail': 'a@msb.vn',
+  'replied': true,
+  'messageId': 'mail-1',
 };

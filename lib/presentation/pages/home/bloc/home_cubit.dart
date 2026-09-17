@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../domain/model/home_data.dart';
+import '../../../../domain/repository/auth_preference_repository.dart';
 import '../../../../domain/repository/credential_repository.dart';
 import '../../../../domain/repository/home_repository.dart';
 import '../../../../domain/model/chat_result.dart';
@@ -20,6 +21,9 @@ class HomeState extends Equatable {
     this.failureType,
     this.errorMessage,
     this.tab = HomeTab.home,
+    this.autoLoginEnabled = false,
+    this.autoLoginPreferenceLoaded = false,
+    this.isUpdatingAutoLogin = false,
   });
 
   final HomeStatus status;
@@ -27,6 +31,9 @@ class HomeState extends Equatable {
   final HomeFailureType? failureType;
   final String? errorMessage;
   final HomeTab tab;
+  final bool autoLoginEnabled;
+  final bool autoLoginPreferenceLoaded;
+  final bool isUpdatingAutoLogin;
 
   HomeState copyWith({
     HomeStatus? status,
@@ -35,24 +42,43 @@ class HomeState extends Equatable {
     String? errorMessage,
     bool clearError = false,
     HomeTab? tab,
+    bool? autoLoginEnabled,
+    bool? autoLoginPreferenceLoaded,
+    bool? isUpdatingAutoLogin,
   }) => HomeState(
     status: status ?? this.status,
     data: data ?? this.data,
     failureType: clearError ? null : failureType ?? this.failureType,
     errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     tab: tab ?? this.tab,
+    autoLoginEnabled: autoLoginEnabled ?? this.autoLoginEnabled,
+    autoLoginPreferenceLoaded:
+        autoLoginPreferenceLoaded ?? this.autoLoginPreferenceLoaded,
+    isUpdatingAutoLogin: isUpdatingAutoLogin ?? this.isUpdatingAutoLogin,
   );
 
   @override
-  List<Object?> get props => [status, data, failureType, errorMessage, tab];
+  List<Object?> get props => [
+    status,
+    data,
+    failureType,
+    errorMessage,
+    tab,
+    autoLoginEnabled,
+    autoLoginPreferenceLoaded,
+    isUpdatingAutoLogin,
+  ];
 }
 
 class HomeCubit extends Cubit<HomeState> {
   HomeCubit(
     this._repository,
     this._credentials, {
+    required AuthPreferenceRepository authPreferences,
     DataRefreshCoordinator? refreshCoordinator,
-  }) : super(const HomeState()) {
+  }) : _authPreferences = authPreferences,
+       super(const HomeState()) {
+    unawaited(_loadAutoLoginPreference());
     _refreshSubscription = refreshCoordinator?.changes.listen((scopes) {
       if (scopes.contains(DataRefreshScope.home) && !isClosed) {
         unawaited(load());
@@ -62,7 +88,47 @@ class HomeCubit extends Cubit<HomeState> {
 
   final HomeRepository _repository;
   final CredentialRepository _credentials;
+  final AuthPreferenceRepository _authPreferences;
   StreamSubscription<Set<DataRefreshScope>>? _refreshSubscription;
+
+  Future<void> _loadAutoLoginPreference() async {
+    try {
+      final enabled = await _authPreferences.readAutoLoginEnabled();
+      if (!isClosed) {
+        emit(
+          state.copyWith(
+            autoLoginEnabled: enabled,
+            autoLoginPreferenceLoaded: true,
+          ),
+        );
+      }
+    } on Object {
+      if (!isClosed) {
+        emit(state.copyWith(autoLoginPreferenceLoaded: true));
+      }
+    }
+  }
+
+  Future<void> setAutoLoginEnabled(bool enabled) async {
+    if (state.isUpdatingAutoLogin) return;
+    final previousValue = state.autoLoginEnabled;
+    emit(state.copyWith(autoLoginEnabled: enabled, isUpdatingAutoLogin: true));
+    try {
+      final session = await _credentials.read();
+      if (session != null) {
+        await _credentials.save(session, persist: enabled);
+      }
+      await _authPreferences.setAutoLoginEnabled(enabled);
+      emit(state.copyWith(isUpdatingAutoLogin: false));
+    } on Object {
+      emit(
+        state.copyWith(
+          autoLoginEnabled: previousValue,
+          isUpdatingAutoLogin: false,
+        ),
+      );
+    }
+  }
 
   void selectTab(HomeTab tab) => emit(state.copyWith(tab: tab));
 

@@ -39,6 +39,15 @@ final class SendTextMessage extends ChatEvent {
   const SendTextMessage();
 }
 
+final class SuggestionSelected extends ChatEvent {
+  const SuggestionSelected(this.text);
+
+  final String text;
+
+  @override
+  List<Object?> get props => [text];
+}
+
 final class StartRecording extends ChatEvent {
   const StartRecording();
 }

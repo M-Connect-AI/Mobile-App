@@ -15,6 +15,19 @@ abstract class LoginRequestDto with _$LoginRequestDto {
 }
 
 @freezed
+abstract class RegisterRequestDto with _$RegisterRequestDto {
+  const factory RegisterRequestDto({
+    required String email,
+    required String password,
+    required String fullName,
+    required String role,
+  }) = _RegisterRequestDto;
+
+  factory RegisterRequestDto.fromJson(Map<String, dynamic> json) =>
+      _$RegisterRequestDtoFromJson(json);
+}
+
+@freezed
 abstract class LoginResponseDto with _$LoginResponseDto {
   const factory LoginResponseDto({
     required String accessToken,

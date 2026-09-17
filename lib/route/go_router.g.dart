@@ -8,11 +8,17 @@ part of 'go_router.dart';
 
 List<RouteBase> get $appRoutes => [
   $loginRoute,
+  $registerRoute,
   $homeRoute,
   $leaveListRoute,
   $leaveDetailRoute,
   $tripListRoute,
   $tripDetailRoute,
+  $outlookConnectionRoute,
+  $outlookCalendarRoute,
+  $outlookConflictRoute,
+  $outlookMailListRoute,
+  $outlookMailDetailRoute,
 ];
 
 RouteBase get $loginRoute =>
@@ -23,6 +29,29 @@ mixin $LoginRoute on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/login');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $registerRoute =>
+    GoRouteData.$route(path: '/register', factory: $RegisterRoute._fromState);
+
+mixin $RegisterRoute on GoRouteData {
+  static RegisterRoute _fromState(GoRouterState state) => const RegisterRoute();
+
+  @override
+  String get location => GoRouteData.$location('/register');
 
   @override
   void go(BuildContext context) => context.go(location);
@@ -151,6 +180,139 @@ mixin $TripDetailRoute on GoRouteData {
   @override
   String get location =>
       GoRouteData.$location('/trips/${Uri.encodeComponent(_self.id)}');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $outlookConnectionRoute => GoRouteData.$route(
+  path: '/outlook',
+  factory: $OutlookConnectionRoute._fromState,
+);
+
+mixin $OutlookConnectionRoute on GoRouteData {
+  static OutlookConnectionRoute _fromState(GoRouterState state) =>
+      const OutlookConnectionRoute();
+
+  @override
+  String get location => GoRouteData.$location('/outlook');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $outlookCalendarRoute => GoRouteData.$route(
+  path: '/outlook/calendar',
+  factory: $OutlookCalendarRoute._fromState,
+);
+
+mixin $OutlookCalendarRoute on GoRouteData {
+  static OutlookCalendarRoute _fromState(GoRouterState state) =>
+      const OutlookCalendarRoute();
+
+  @override
+  String get location => GoRouteData.$location('/outlook/calendar');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $outlookConflictRoute => GoRouteData.$route(
+  path: '/outlook/conflicts',
+  factory: $OutlookConflictRoute._fromState,
+);
+
+mixin $OutlookConflictRoute on GoRouteData {
+  static OutlookConflictRoute _fromState(GoRouterState state) =>
+      const OutlookConflictRoute();
+
+  @override
+  String get location => GoRouteData.$location('/outlook/conflicts');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $outlookMailListRoute => GoRouteData.$route(
+  path: '/outlook/mails',
+  factory: $OutlookMailListRoute._fromState,
+);
+
+mixin $OutlookMailListRoute on GoRouteData {
+  static OutlookMailListRoute _fromState(GoRouterState state) =>
+      const OutlookMailListRoute();
+
+  @override
+  String get location => GoRouteData.$location('/outlook/mails');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $outlookMailDetailRoute => GoRouteData.$route(
+  path: '/outlook/mail',
+  factory: $OutlookMailDetailRoute._fromState,
+);
+
+mixin $OutlookMailDetailRoute on GoRouteData {
+  static OutlookMailDetailRoute _fromState(GoRouterState state) =>
+      OutlookMailDetailRoute(id: state.uri.queryParameters['id']!);
+
+  OutlookMailDetailRoute get _self => this as OutlookMailDetailRoute;
+
+  @override
+  String get location =>
+      GoRouteData.$location('/outlook/mail', queryParams: {'id': _self.id});
 
   @override
   void go(BuildContext context) => context.go(location);

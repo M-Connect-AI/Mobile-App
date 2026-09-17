@@ -14,12 +14,15 @@ import 'domain/model/server_config.dart';
 import 'domain/repository/chat_repository.dart';
 import 'domain/repository/chat_thread_repository.dart';
 import 'domain/repository/auth_repository.dart';
+import 'domain/repository/auth_preference_repository.dart';
 import 'domain/repository/credential_repository.dart';
 import 'domain/repository/home_repository.dart';
 import 'domain/repository/hr_request_repository.dart';
+import 'domain/repository/outlook_repository.dart';
 import 'domain/repository/speech_to_text_repository.dart';
 import 'domain/repository/server_config_repository.dart';
 import 'domain/service/data_refresh_coordinator.dart';
+import 'domain/service/device_calendar_service.dart';
 import 'generated/l10n.dart';
 import 'resources/app_constants.dart';
 import 'route/go_router.dart';
@@ -80,6 +83,9 @@ class _AiAssistantAppState extends State<AiAssistantApp> {
           RepositoryProvider<AuthRepository>(
             create: (_) => dependencies.authRepository,
           ),
+          RepositoryProvider<AuthPreferenceRepository>(
+            create: (_) => dependencies.authPreferenceRepository,
+          ),
           RepositoryProvider<CredentialRepository>(
             create: (_) => dependencies.credentialRepository,
           ),
@@ -96,6 +102,9 @@ class _AiAssistantAppState extends State<AiAssistantApp> {
           RepositoryProvider<HrRequestRepository>(
             create: (_) => dependencies.hrRequestRepository,
           ),
+          RepositoryProvider<OutlookRepository>(
+            create: (_) => dependencies.outlookRepository,
+          ),
           RepositoryProvider<SpeechToTextRepository>(
             create: (_) => dependencies.speechToTextRepository,
             dispose: (repository) => unawaited(repository.close()),
@@ -106,6 +115,9 @@ class _AiAssistantAppState extends State<AiAssistantApp> {
           RepositoryProvider<DataRefreshCoordinator>(
             create: (_) => dependencies.dataRefreshCoordinator,
             dispose: (coordinator) => unawaited(coordinator.close()),
+          ),
+          RepositoryProvider<DeviceCalendarService>.value(
+            value: dependencies.deviceCalendarService,
           ),
         ],
         child: ScreenUtilInit(

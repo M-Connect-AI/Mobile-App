@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import 'chat_result.dart';
+import 'chat_rich_content.dart';
 
 enum ChatConfirmationTool {
   createLeave,
@@ -12,6 +13,8 @@ enum ChatConfirmationTool {
   approveTrips,
   rejectTrips,
   createJiraTask,
+  createOutlookEvent,
+  replyOutlookMail,
   unknown,
 }
 
@@ -65,11 +68,41 @@ class ChatStreamResult extends ChatStreamEvent {
 }
 
 class ChatStreamDone extends ChatStreamEvent {
-  const ChatStreamDone({required this.threadId, required this.citations});
+  const ChatStreamDone({
+    required this.threadId,
+    this.reply = '',
+    this.confirmation,
+    this.uiAction,
+    this.blocks = const [],
+    this.highlights = const [],
+    this.suggestions = const [],
+    this.previewResult,
+    this.didMutate = false,
+    this.citations = const [],
+  });
   final String threadId;
+  final String reply;
+  final ChatConfirmAction? confirmation;
+  final ChatUiAction? uiAction;
+  final List<ChatRichBlock> blocks;
+  final List<ChatHighlight> highlights;
+  final List<ChatSuggestion> suggestions;
+  final ChatResultEnvelope? previewResult;
+  final bool didMutate;
   final List<String> citations;
   @override
-  List<Object> get props => [threadId, citations];
+  List<Object?> get props => [
+    threadId,
+    reply,
+    confirmation,
+    uiAction,
+    blocks,
+    highlights,
+    suggestions,
+    previewResult,
+    didMutate,
+    citations,
+  ];
 }
 
 class ChatStreamFailure extends ChatStreamEvent {

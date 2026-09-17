@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'home_data.dart';
 import 'hr_request.dart';
+import 'outlook.dart';
 
 part 'chat_result.freezed.dart';
 
@@ -15,9 +16,11 @@ enum ChatMutationType {
   approveTrips,
   rejectTrips,
   createJiraTask,
+  createOutlookEvent,
+  replyOutlookMail,
 }
 
-enum DataRefreshScope { leaves, trips, home, jira, chatHistory }
+enum DataRefreshScope { leaves, trips, home, jira, outlook, chatHistory }
 
 @freezed
 abstract class PendingApprovals with _$PendingApprovals {
@@ -134,6 +137,14 @@ sealed class ChatResultEnvelope with _$ChatResultEnvelope {
     required ChatMutationType mutation,
     required JiraCreateResult data,
   }) = ChatJiraMutationResult;
+  const factory ChatResultEnvelope.outlookEventMutation({
+    required ChatMutationType mutation,
+    required OutlookEventMutation data,
+  }) = ChatOutlookEventMutationResult;
+  const factory ChatResultEnvelope.outlookReplyMutation({
+    required ChatMutationType mutation,
+    required OutlookReplyMutation data,
+  }) = ChatOutlookReplyMutationResult;
   const factory ChatResultEnvelope.unknown(Object? raw) = ChatUnknownResult;
 
   bool get isMutation => switch (this) {
@@ -141,7 +152,9 @@ sealed class ChatResultEnvelope with _$ChatResultEnvelope {
     ChatTripMutationResult() ||
     ChatLeaveBatchMutationResult() ||
     ChatTripBatchMutationResult() ||
-    ChatJiraMutationResult() => true,
+    ChatJiraMutationResult() ||
+    ChatOutlookEventMutationResult() ||
+    ChatOutlookReplyMutationResult() => true,
     _ => false,
   };
 
@@ -157,6 +170,8 @@ sealed class ChatResultEnvelope with _$ChatResultEnvelope {
       DataRefreshScope.home,
     },
     ChatJiraMutationResult() => const {DataRefreshScope.jira},
+    ChatOutlookEventMutationResult() ||
+    ChatOutlookReplyMutationResult() => const {DataRefreshScope.outlook},
     _ => const {},
   };
 }

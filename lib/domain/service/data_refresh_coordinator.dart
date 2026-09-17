@@ -8,11 +8,27 @@ class DataRefreshCoordinator {
 
   Stream<Set<DataRefreshScope>> get changes => _controller.stream;
 
+  final Set<DataRefreshScope> _pendingScopes = {};
+  Timer? _flushTimer;
+
   void notify(Set<DataRefreshScope> scopes) {
-    if (scopes.isNotEmpty && !_controller.isClosed) {
-      _controller.add(Set.unmodifiable(scopes));
-    }
+    if (scopes.isEmpty || _controller.isClosed) return;
+    _pendingScopes.addAll(scopes);
+    _flushTimer ??= Timer(Duration.zero, _flush);
   }
 
-  Future<void> close() => _controller.close();
+  void _flush() {
+    _flushTimer = null;
+    if (_pendingScopes.isEmpty || _controller.isClosed) return;
+    final scopes = Set<DataRefreshScope>.unmodifiable(_pendingScopes);
+    _pendingScopes.clear();
+    _controller.add(scopes);
+  }
+
+  Future<void> close() async {
+    _flushTimer?.cancel();
+    _flushTimer = null;
+    _pendingScopes.clear();
+    await _controller.close();
+  }
 }

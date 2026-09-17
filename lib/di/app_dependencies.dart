@@ -7,46 +7,58 @@ import '../data/repository/secure_server_config_repository.dart';
 import '../data/repository/device_speech_to_text_repository.dart';
 import '../data/repository/home/api_home_repository.dart';
 import '../data/repository/hr/api_hr_request_repository.dart';
+import '../data/repository/outlook/api_outlook_repository.dart';
+import '../data/service/method_channel_device_calendar_service.dart';
 import '../data/source/remote/agent_chat_remote_data_source.dart';
 import '../data/source/remote/client/dio_client_factory.dart';
 import '../data/source/remote/auth_remote_data_source.dart';
 import '../data/source/remote/home_remote_data_source.dart';
 import '../data/source/remote/hr_request_remote_data_source.dart';
+import '../data/source/remote/outlook_remote_data_source.dart';
 import '../domain/repository/chat_repository.dart';
 import '../domain/repository/chat_thread_repository.dart';
 import '../domain/repository/auth_repository.dart';
+import '../domain/repository/auth_preference_repository.dart';
 import '../domain/repository/credential_repository.dart';
 import '../domain/repository/home_repository.dart';
 import '../domain/repository/hr_request_repository.dart';
+import '../domain/repository/outlook_repository.dart';
 import '../domain/repository/speech_to_text_repository.dart';
 import '../domain/model/server_config.dart';
 import '../domain/repository/server_config_repository.dart';
 import '../domain/service/data_refresh_coordinator.dart';
+import '../domain/service/device_calendar_service.dart';
 
 class AppDependencies {
   const AppDependencies({
     required this.authRepository,
+    required this.authPreferenceRepository,
     required this.credentialRepository,
     required this.chatRepository,
     required this.chatThreadRepository,
     required this.homeRepository,
     required this.hrRequestRepository,
+    required this.outlookRepository,
     required this.speechToTextRepository,
     required this.serverConfigRepository,
     required this.serverConfig,
     required this.dataRefreshCoordinator,
+    required this.deviceCalendarService,
   });
 
   final AuthRepository authRepository;
+  final AuthPreferenceRepository authPreferenceRepository;
   final CredentialRepository credentialRepository;
   final ChatRepository chatRepository;
   final ChatThreadRepository chatThreadRepository;
   final HomeRepository homeRepository;
   final HrRequestRepository hrRequestRepository;
+  final OutlookRepository outlookRepository;
   final SpeechToTextRepository speechToTextRepository;
   final ServerConfigRepository serverConfigRepository;
   final ServerConfig serverConfig;
   final DataRefreshCoordinator dataRefreshCoordinator;
+  final DeviceCalendarService deviceCalendarService;
 
   static Future<AppDependencies> fromEnvironment({
     ServerConfigRepository? serverConfigRepository,
@@ -88,6 +100,7 @@ class AppDependencies {
           dio: DioClientFactory.create(),
         ),
       ),
+      authPreferenceRepository: credentialRepository,
       credentialRepository: credentialRepository,
       chatRepository: chatRepository,
       chatThreadRepository: chatRepository,
@@ -105,10 +118,18 @@ class AppDependencies {
         ),
         credentialRepository,
       ),
+      outlookRepository: ApiOutlookRepository(
+        OutlookRemoteDataSource(
+          baseUrl: serverConfig.hrApiBaseUrl,
+          dio: DioClientFactory.create(),
+        ),
+        credentialRepository,
+      ),
       speechToTextRepository: DeviceSpeechToTextRepository(),
       serverConfigRepository: configRepository,
       serverConfig: serverConfig,
       dataRefreshCoordinator: dataRefreshCoordinator,
+      deviceCalendarService: const MethodChannelDeviceCalendarService(),
     );
   }
 }

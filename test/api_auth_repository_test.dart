@@ -53,6 +53,23 @@ void main() {
       ),
     );
   });
+
+  test('normalizes registration data and maps selected role', () async {
+    final source = _FakeAuthRemoteDataSource(response: _response);
+    final repository = ApiAuthRepository(source);
+
+    final session = await repository.register(
+      email: ' NEW.USER@MSB.VN ',
+      password: 'pass123',
+      fullName: ' New User ',
+      role: UserRole.manager,
+    );
+
+    expect(source.registerRequest?.email, 'new.user@msb.vn');
+    expect(source.registerRequest?.fullName, 'New User');
+    expect(source.registerRequest?.role, 'MANAGER');
+    expect(session.accessToken, 'jwt-token');
+  });
 }
 
 class _FakeAuthRemoteDataSource extends AuthRemoteDataSource {
@@ -63,6 +80,7 @@ class _FakeAuthRemoteDataSource extends AuthRemoteDataSource {
   final AuthUserDto? profile;
   final AuthRemoteException? error;
   LoginRequestDto? request;
+  RegisterRequestDto? registerRequest;
   String? accessToken;
 
   @override
@@ -76,6 +94,14 @@ class _FakeAuthRemoteDataSource extends AuthRemoteDataSource {
   @override
   Future<LoginResponseDto> login(LoginRequestDto request) async {
     this.request = request;
+    final failure = error;
+    if (failure != null) throw failure;
+    return response!;
+  }
+
+  @override
+  Future<LoginResponseDto> register(RegisterRequestDto request) async {
+    registerRequest = request;
     final failure = error;
     if (failure != null) throw failure;
     return response!;

@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import 'chat_stream_event.dart';
 import 'chat_result.dart';
+import 'chat_rich_content.dart';
 
 enum MessageSender { user, assistant, system }
 
@@ -27,6 +28,11 @@ class ChatMessage extends Equatable {
     this.confirmedTool,
     this.citations = const [],
     this.executedResult,
+    this.uiAction,
+    this.blocks = const [],
+    this.highlights = const [],
+    this.suggestions = const [],
+    this.didMutate = false,
   });
 
   final String id;
@@ -41,6 +47,11 @@ class ChatMessage extends Equatable {
   final ChatConfirmationTool? confirmedTool;
   final List<String> citations;
   final ChatResultEnvelope? executedResult;
+  final ChatUiAction? uiAction;
+  final List<ChatRichBlock> blocks;
+  final List<ChatHighlight> highlights;
+  final List<ChatSuggestion> suggestions;
+  final bool didMutate;
   final DateTime createdAt;
   final MessageStatus status;
 
@@ -55,6 +66,11 @@ class ChatMessage extends Equatable {
     ChatConfirmationTool? confirmedTool,
     List<String>? citations,
     ChatResultEnvelope? executedResult,
+    ChatUiAction? uiAction,
+    List<ChatRichBlock>? blocks,
+    List<ChatHighlight>? highlights,
+    List<ChatSuggestion>? suggestions,
+    bool? didMutate,
     bool clearConfirmation = false,
     bool clearConfirmationError = false,
   }) {
@@ -77,6 +93,11 @@ class ChatMessage extends Equatable {
       confirmedTool: confirmedTool ?? this.confirmedTool,
       citations: citations ?? this.citations,
       executedResult: executedResult ?? this.executedResult,
+      uiAction: uiAction ?? this.uiAction,
+      blocks: blocks ?? this.blocks,
+      highlights: highlights ?? this.highlights,
+      suggestions: suggestions ?? this.suggestions,
+      didMutate: didMutate ?? this.didMutate,
     );
   }
 
@@ -96,5 +117,10 @@ class ChatMessage extends Equatable {
     confirmedTool,
     citations,
     executedResult,
+    uiAction,
+    blocks,
+    highlights,
+    suggestions,
+    didMutate,
   ];
 }

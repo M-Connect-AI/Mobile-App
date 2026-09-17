@@ -6,6 +6,7 @@ import 'hr_api_url.dart';
 enum AuthRemoteErrorType {
   unauthorized,
   validation,
+  conflict,
   network,
   server,
   malformed,
@@ -101,10 +102,21 @@ class AuthRemoteDataSource {
   }
 
   Future<LoginResponseDto> login(LoginRequestDto request) async {
+    return _authenticate(path: '/auth/login', requestBody: request.toJson());
+  }
+
+  Future<LoginResponseDto> register(RegisterRequestDto request) async {
+    return _authenticate(path: '/auth/register', requestBody: request.toJson());
+  }
+
+  Future<LoginResponseDto> _authenticate({
+    required String path,
+    required Map<String, dynamic> requestBody,
+  }) async {
     try {
       final response = await _dio.post<Object?>(
-        '$_baseUrl/auth/login',
-        data: request.toJson(),
+        '$_baseUrl$path',
+        data: requestBody,
         options: Options(
           headers: const {
             'Accept': 'application/json',
@@ -123,6 +135,7 @@ class AuthRemoteDataSource {
           type: switch (statusCode) {
             400 => AuthRemoteErrorType.validation,
             401 => AuthRemoteErrorType.unauthorized,
+            409 => AuthRemoteErrorType.conflict,
             _ => AuthRemoteErrorType.server,
           },
           message: _errorMessage(body),

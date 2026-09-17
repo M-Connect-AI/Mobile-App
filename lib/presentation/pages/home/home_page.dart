@@ -9,6 +9,7 @@ import '../../../common/extensions/responsive_extension.dart';
 import '../../../common/themes/theme_extensions/app_color_scheme.dart';
 import '../../../domain/model/auth_session.dart';
 import '../../../domain/model/home_data.dart';
+import '../../../domain/repository/auth_preference_repository.dart';
 import '../../../domain/repository/credential_repository.dart';
 import '../../../domain/repository/home_repository.dart';
 import '../../../domain/service/data_refresh_coordinator.dart';
@@ -27,6 +28,7 @@ class HomePage extends StatelessWidget {
       create: (context) => HomeCubit(
         context.read<HomeRepository>(),
         context.read<CredentialRepository>(),
+        authPreferences: context.read<AuthPreferenceRepository>(),
         refreshCoordinator: context.read<DataRefreshCoordinator?>(),
       )..load(),
       child: const _HomeView(),
@@ -296,7 +298,14 @@ class _UtilitiesContent extends StatelessWidget {
                   onPressed: () => const TripListRoute().push(context),
                 ),
                 12.height.heightBox,
+                _HrUtilityItem(
+                  label: strings.outlookTitle,
+                  onPressed: () => const OutlookConnectionRoute().push(context),
+                ),
+                12.height.heightBox,
                 const _ServerConfigUtilityItem(),
+                12.height.heightBox,
+                const _AutoLoginUtilityItem(),
                 12.height.heightBox,
                 const _LogoutUtilityItem(),
               ],
@@ -465,6 +474,48 @@ class _ServerConfigUtilityItem extends StatelessWidget {
           const ServerConfigButton(),
         ],
       ).paddingOnly(left: 16.width, right: 8.width),
+    );
+  }
+}
+
+class _AutoLoginUtilityItem extends StatelessWidget {
+  const _AutoLoginUtilityItem();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColorScheme;
+    final strings = S.of(context);
+    return Container(
+      key: const Key('auto-login-utility-item'),
+      height: 64.height,
+      decoration: BoxDecoration(
+        color: colors.surfaceSecondary,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: BlocBuilder<HomeCubit, HomeState>(
+        buildWhen: (previous, current) =>
+            previous.autoLoginEnabled != current.autoLoginEnabled ||
+            previous.autoLoginPreferenceLoaded !=
+                current.autoLoginPreferenceLoaded ||
+            previous.isUpdatingAutoLogin != current.isUpdatingAutoLogin,
+        builder: (context, state) => Row(
+          children: [
+            IrhText.regular(
+              strings.autoLogin,
+              color: colors.textPrimary,
+            ).expanded(),
+            CupertinoSwitch(
+              key: const Key('auto-login-switch'),
+              value: state.autoLoginEnabled,
+              activeTrackColor: colors.iconBrand,
+              onChanged:
+                  !state.autoLoginPreferenceLoaded || state.isUpdatingAutoLogin
+                  ? null
+                  : context.read<HomeCubit>().setAutoLoginEnabled,
+            ),
+          ],
+        ).paddingSymmetric(horizontal: 16.width),
+      ),
     );
   }
 }

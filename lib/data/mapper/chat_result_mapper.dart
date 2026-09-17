@@ -1,6 +1,10 @@
 import '../../domain/model/chat_result.dart';
+import '../../domain/model/chat_rich_content.dart';
 import '../../domain/model/chat_stream_event.dart';
 import '../../domain/model/hr_request.dart';
+import '../../domain/model/outlook.dart';
+import '../model/outlook/outlook_dto.dart';
+import 'outlook_mapper.dart';
 import '../model/home/home_models.dart';
 import '../model/hr/hr_request_dto.dart';
 import 'hr_request_mapper.dart';
@@ -23,6 +27,107 @@ class ChatResultMapper {
     } on Object {
       return ChatResultEnvelope.unknown(raw);
     }
+  }
+
+  static ChatResultEnvelope? mapJiraBlocks(List<ChatRichBlock> blocks) {
+    final statusBlock = blocks.where(
+      (block) =>
+          (block.type == ChatBlockType.bars ||
+              block.type == ChatBlockType.donut) &&
+          block.title == 'Theo trạng thái',
+    );
+    final priorityBlock = blocks.where(
+      (block) =>
+          block.type == ChatBlockType.bars && block.title == 'Theo độ ưu tiên',
+    );
+    final issueTypeBlock = blocks.where(
+      (block) =>
+          (block.type == ChatBlockType.donut ||
+              block.type == ChatBlockType.bars) &&
+          block.title == 'Cơ cấu việc',
+    );
+    final kpiBlock = blocks.where((block) => block.type == ChatBlockType.kpis);
+    final listBlocks = blocks.where(
+      (block) =>
+          block.type == ChatBlockType.list &&
+          block.items.any((item) => _jiraTitle(item.title) != null),
+    );
+    final hasJiraSignature =
+        statusBlock.isNotEmpty ||
+        kpiBlock.any((block) {
+          const labels = {'Cần làm', 'Đang làm', 'Đã làm', 'Hoàn thành'};
+          return block.items
+                  .where((item) => labels.contains(item.label))
+                  .length >=
+              2;
+        });
+    if (!hasJiraSignature && listBlocks.isEmpty) return null;
+
+    final issues = listBlocks
+        .expand((block) => block.items)
+        .map(_jiraIssueFromBlock)
+        .whereType<JiraIssue>()
+        .toList(growable: false);
+    final metrics = <String, int>{};
+    for (final block in [...kpiBlock, ...statusBlock]) {
+      for (final item in block.items) {
+        final label = item.label;
+        final value = _intValue(item.value);
+        if (label != null && value != null) metrics[label] = value;
+      }
+    }
+    for (final block in blocks.where(
+      (block) => block.type == ChatBlockType.bars,
+    )) {
+      for (final item in block.items) {
+        final label = item.label;
+        final value = _intValue(item.value);
+        if (label != null && value != null) {
+          metrics.putIfAbsent(label, () => value);
+        }
+      }
+    }
+    final toDo = metrics['Cần làm'] ?? 0;
+    final inProgress = metrics['Đang làm'] ?? 0;
+    final done = metrics['Hoàn thành'] ?? metrics['Đã làm'] ?? 0;
+    final categorizedTotal = toDo + inProgress + done;
+    final total = categorizedTotal > issues.length
+        ? categorizedTotal
+        : issues.length;
+    return ChatResultEnvelope.jiraIssues(
+      JiraIssueList(
+        issues: issues,
+        stats: JiraStats(
+          total: total,
+          toDo: toDo,
+          inProgress: inProgress,
+          done: done,
+          unknown: total - categorizedTotal,
+          overdue: metrics['Quá hạn'] ?? 0,
+          stale: metrics['Lâu chưa cập nhật'] ?? 0,
+          withoutDueDate: metrics['Thiếu due date'] ?? 0,
+          byStatus: _blockMetrics(statusBlock),
+          byPriority: _blockMetrics(priorityBlock),
+          byIssueType: _blockMetrics(issueTypeBlock),
+          byProject: const {},
+        ),
+        mayBeTruncated: total > issues.length,
+      ),
+    );
+  }
+
+  static Map<String, int> _blockMetrics(Iterable<ChatRichBlock> blocks) {
+    final result = <String, int>{};
+    for (final block in blocks) {
+      for (final item in block.items) {
+        final label = item.label?.trim();
+        final value = _intValue(item.value);
+        if (label != null && label.isNotEmpty && value != null) {
+          result[label] = value;
+        }
+      }
+    }
+    return result;
   }
 
   static ChatResultEnvelope _mapMutation(
@@ -69,6 +174,16 @@ class ChatResultMapper {
         mutation: ChatMutationType.createJiraTask,
         data: _jiraCreate(json),
       ),
+      ChatConfirmationTool.createOutlookEvent =>
+        ChatResultEnvelope.outlookEventMutation(
+          mutation: ChatMutationType.createOutlookEvent,
+          data: _outlookEvent(json),
+        ),
+      ChatConfirmationTool.replyOutlookMail =>
+        ChatResultEnvelope.outlookReplyMutation(
+          mutation: ChatMutationType.replyOutlookMail,
+          data: _outlookReply(json),
+        ),
       ChatConfirmationTool.unknown => ChatResultEnvelope.unknown(raw),
     };
   }
@@ -204,6 +319,29 @@ class ChatResultMapper {
         message: _string(json, 'message'),
       );
 
+  static OutlookEventMutation _outlookEvent(Map<String, dynamic> json) {
+    if (json['connected'] != true || json['configured'] != true) {
+      throw const FormatException('Invalid Outlook event connection');
+    }
+    final event = _map(json['event']);
+    return OutlookEventMutation(
+      microsoftEmail: _string(json, 'microsoftEmail'),
+      event: OutlookMapper.mapEvent(OutlookEventDto.fromJson(event)),
+    );
+  }
+
+  static OutlookReplyMutation _outlookReply(Map<String, dynamic> json) {
+    if (json['connected'] != true ||
+        json['configured'] != true ||
+        json['replied'] != true) {
+      throw const FormatException('Invalid Outlook reply result');
+    }
+    return OutlookReplyMutation(
+      microsoftEmail: _string(json, 'microsoftEmail'),
+      messageId: _string(json, 'messageId'),
+    );
+  }
+
   static JiraStats _jiraStats(List<JiraIssue> issues) {
     final now = DateTime.now().toUtc();
     final today = DateTime.utc(now.year, now.month, now.day);
@@ -256,6 +394,83 @@ class ChatResultMapper {
       byProject: byProject,
     );
   }
+
+  static JiraIssue? _jiraIssueFromBlock(ChatBlockItem item) {
+    final title = _jiraTitle(item.title);
+    if (title == null) return null;
+    final parts = (item.subtitle ?? '').split(' · ');
+    final status = (item.badge?.trim().isNotEmpty ?? false)
+        ? item.badge!.trim()
+        : parts.firstOrNull?.trim() ?? '';
+    final priority = parts.length > 1 ? parts[1].trim() : '';
+    final dueDate = parts.length > 2 ? _jiraDueDate(parts[2]) : null;
+    return JiraIssue(
+      key: title.$1,
+      summary: title.$2,
+      status: status,
+      statusCategory: _jiraStatusCategory(status),
+      priority: priority,
+      issueType: '',
+      projectKey: title.$1.split('-').first,
+      assignee: '',
+      dueDate: dueDate,
+      url: item.url,
+    );
+  }
+
+  static (String, String)? _jiraTitle(String? value) {
+    final match = RegExp(
+      r'^([A-Z][A-Z0-9]{1,10}-\d+):\s*(.+)$',
+    ).firstMatch(value?.trim() ?? '');
+    if (match == null) return null;
+    return (match.group(1)!, match.group(2)!.trim());
+  }
+
+  static String _jiraStatusCategory(String status) {
+    final normalized = status.trim().toLowerCase();
+    if (normalized.contains('done') ||
+        normalized.contains('complete') ||
+        normalized.contains('closed') ||
+        normalized.contains('hoàn thành') ||
+        normalized.contains('đã làm')) {
+      return 'DONE';
+    }
+    if (normalized.contains('progress') ||
+        normalized.contains('review') ||
+        normalized.contains('đang làm')) {
+      return 'IN_PROGRESS';
+    }
+    if (normalized.contains('to do') ||
+        normalized.contains('open') ||
+        normalized.contains('backlog') ||
+        normalized.contains('cần làm')) {
+      return 'TO_DO';
+    }
+    return 'UNKNOWN';
+  }
+
+  static String? _jiraDueDate(String value) {
+    final normalized = value.trim().toLowerCase();
+    if (normalized.contains('chưa có hạn')) return null;
+    final match = RegExp(r'(\d{1,2})/(\d{1,2})/(\d{4})').firstMatch(value);
+    if (match == null) return null;
+    final day = int.tryParse(match.group(1)!);
+    final month = int.tryParse(match.group(2)!);
+    final year = int.tryParse(match.group(3)!);
+    if (day == null || month == null || year == null) return null;
+    final date = DateTime(year, month, day);
+    if (date.day != day || date.month != month || date.year != year) {
+      return null;
+    }
+    return '${year.toString().padLeft(4, '0')}-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
+  }
+
+  static int? _intValue(Object? value) => switch (value) {
+    int number => number,
+    num number => number.toInt(),
+    String text => int.tryParse(text.trim()),
+    _ => null,
+  };
 
   static void _increment(Map<String, int> values, String key) {
     values[key] = (values[key] ?? 0) + 1;

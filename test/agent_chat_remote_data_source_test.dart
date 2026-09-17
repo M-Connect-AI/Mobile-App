@@ -17,7 +17,7 @@ void main() {
         'event: token\r\ndata: {"text":\r\ndata: "Xin chào"}\r\n\r\n',
         'event: confirm\ndata: {"tool":"create_leave","args":{"type":"ANNUAL"},"summary":"Gửi đơn"}\n\n',
         'event: result\ndata: {"executed":{"_id":"leave-id"}}\n\n',
-        'event: done\ndata: {"threadId":"thread-1","citations":["Quy định nghỉ phép"]}\n\n',
+        'event: done\ndata: {"threadId":"thread-1","reply":"Bạn còn 9 ngày phép","confirm":null,"uiAction":{"key":"LEAVE_RESULTS","label":"Xem đơn","path":"/leaves"},"blocks":[{"type":"kpis","items":[{"label":"Phép","value":9}]}],"highlights":[{"start":9,"end":10,"kind":"metric"}],"suggestions":[{"label":"Chi tiết","text":"Liệt kê đơn"}],"didMutate":false,"citations":["Quy định nghỉ phép"]}\n\n',
       ].join();
       final dio = Dio()
         ..httpClientAdapter = _MockAdapter((request) {
@@ -60,7 +60,14 @@ void main() {
       expect(events[2], isA<AgentConfirmationEvent>());
       expect(events[3], isA<AgentResultEvent>());
       expect(events[4], isA<AgentDoneEvent>());
-      expect((events[4] as AgentDoneEvent).citations, ['Quy định nghỉ phép']);
+      final done = (events[4] as AgentDoneEvent).done;
+      expect(done.citations, ['Quy định nghỉ phép']);
+      expect(done.reply, 'Bạn còn 9 ngày phép');
+      expect(done.uiAction?['key'], 'LEAVE_RESULTS');
+      expect(done.blocks, hasLength(1));
+      expect(done.highlights, hasLength(1));
+      expect(done.suggestions, hasLength(1));
+      expect(done.didMutate, isFalse);
     },
   );
 

@@ -4,6 +4,7 @@ import 'package:chatbot_project/domain/model/auth_session.dart';
 import 'package:chatbot_project/domain/model/home_data.dart';
 import 'package:chatbot_project/domain/model/server_config.dart';
 import 'package:chatbot_project/domain/repository/auth_repository.dart';
+import 'package:chatbot_project/domain/repository/auth_preference_repository.dart';
 import 'package:chatbot_project/domain/repository/credential_repository.dart';
 import 'package:chatbot_project/domain/repository/home_repository.dart';
 import 'package:chatbot_project/domain/repository/server_config_repository.dart';
@@ -17,12 +18,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
-  testWidgets('server config opens and login flow reaches home', (tester) async {
+  testWidgets('server config opens and login flow reaches home', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final auth = _SuccessfulAuthRepository();
+    final authPreferences = _MemoryAuthPreferenceRepository(
+      lastEmail: 'previous@msb.vn',
+    );
     final serverConfig = _MemoryServerConfigRepository();
     final router = GoRouter(
       initialLocation: const LoginRoute().location,
@@ -37,6 +43,9 @@ void main() {
             RepositoryProvider<AuthRepository>(create: (_) => auth),
             RepositoryProvider<CredentialRepository>(
               create: (_) => _MemoryCredentialRepository(),
+            ),
+            RepositoryProvider<AuthPreferenceRepository>(
+              create: (_) => authPreferences,
             ),
             RepositoryProvider<HomeRepository>(
               create: (_) => const _LoginHomeRepository(),
@@ -65,8 +74,16 @@ void main() {
         ),
       ),
     );
+    await tester.pump();
 
     expect(find.text('Đăng nhập'), findsNWidgets(2));
+    final emailInput = tester.widget<EditableText>(
+      find.descendant(
+        of: find.byKey(const Key('login-email-field')),
+        matching: find.byType(EditableText),
+      ),
+    );
+    expect(emailInput.controller.text, 'previous@msb.vn');
     expect(find.byKey(const Key('login-logo')), findsOneWidget);
     expect(tester.getTopLeft(find.byKey(const Key('login-logo'))).dx, 55);
     expect(
@@ -87,15 +104,11 @@ void main() {
       findsNothing,
     );
 
-    await tester.tap(find.byKey(const Key('login-email-field')));
-    await tester.pumpAndSettle();
-    expect(find.text('Tài khoản gợi ý'), findsOneWidget);
-    expect(find.text('Sử dụng email khác'), findsOneWidget);
-    final suggestedAccount = find.byKey(
-      const ValueKey('account-a.nguyen@msb.vn'),
+    expect(find.text('Tài khoản gợi ý'), findsNothing);
+    await tester.enterText(
+      find.byKey(const Key('login-email-field')),
+      'a.nguyen@msb.vn',
     );
-    await tester.ensureVisible(suggestedAccount);
-    await tester.tap(suggestedAccount);
     await tester.enterText(
       find.byKey(const Key('login-password-field')),
       'password123',
@@ -108,6 +121,24 @@ void main() {
     expect(auth.email, 'a.nguyen@msb.vn');
     expect(find.text(S.current.homeGreetingName('Minh')), findsOneWidget);
   });
+}
+
+class _MemoryAuthPreferenceRepository implements AuthPreferenceRepository {
+  _MemoryAuthPreferenceRepository({this.lastEmail});
+
+  final String? lastEmail;
+
+  @override
+  Future<bool> readAutoLoginEnabled() async => false;
+
+  @override
+  Future<String?> readLastEmail() async => lastEmail;
+
+  @override
+  Future<void> saveLastEmail(String email) async {}
+
+  @override
+  Future<void> setAutoLoginEnabled(bool enabled) async {}
 }
 
 class _SuccessfulAuthRepository implements AuthRepository {
@@ -124,6 +155,14 @@ class _SuccessfulAuthRepository implements AuthRepository {
     this.email = email;
     return _session;
   }
+
+  @override
+  Future<AuthSession> register({
+    required String email,
+    required String password,
+    required String fullName,
+    required UserRole role,
+  }) async => _session;
 }
 
 class _MemoryCredentialRepository implements CredentialRepository {

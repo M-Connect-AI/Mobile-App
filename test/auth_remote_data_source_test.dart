@@ -80,6 +80,63 @@ void main() {
     );
   });
 
+  test('POST /auth/register sends role and decodes session', () async {
+    RequestOptions? capturedRequest;
+    final source = AuthRemoteDataSource(
+      baseUrl: 'http://hr.test',
+      dio: _mockDio((request) {
+        capturedRequest = request;
+        return _jsonResponse(201, _successBody);
+      }),
+    );
+
+    final response = await source.register(
+      const RegisterRequestDto(
+        email: 'manager@msb.vn',
+        password: 'pass123',
+        fullName: 'Manager A',
+        role: 'MANAGER',
+      ),
+    );
+
+    expect(
+      capturedRequest?.uri.toString(),
+      'http://hr.test/api/hr/auth/register',
+    );
+    expect(capturedRequest?.data, {
+      'email': 'manager@msb.vn',
+      'password': 'pass123',
+      'fullName': 'Manager A',
+      'role': 'MANAGER',
+    });
+    expect(response.accessToken, 'jwt-token');
+  });
+
+  test('maps duplicate registration email from 409', () async {
+    final source = AuthRemoteDataSource(
+      baseUrl: 'http://hr.test',
+      dio: _mockDio((_) => _jsonResponse(409, {'message': 'Email đã tồn tại'})),
+    );
+
+    await expectLater(
+      source.register(
+        const RegisterRequestDto(
+          email: 'a@msb.vn',
+          password: 'pass123',
+          fullName: 'User A',
+          role: 'STAFF',
+        ),
+      ),
+      throwsA(
+        isA<AuthRemoteException>().having(
+          (error) => error.type,
+          'type',
+          AuthRemoteErrorType.conflict,
+        ),
+      ),
+    );
+  });
+
   test('maps 401 backend error separately', () async {
     final source = AuthRemoteDataSource(
       baseUrl: 'http://hr.test',

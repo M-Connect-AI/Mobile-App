@@ -59,6 +59,28 @@ void main() {
       );
     },
   );
+
+  test('giữ email gần nhất sau khi đăng xuất', () async {
+    FlutterSecureStorage.setMockInitialValues({});
+    final repository = SecureCredentialRepository();
+
+    await repository.saveLastEmail(' A.NGUYEN@MSB.VN ');
+    await repository.save(_session, persist: true);
+    await repository.clear();
+
+    expect(await repository.read(), isNull);
+    expect(await repository.readLastEmail(), 'a.nguyen@msb.vn');
+  });
+
+  test('lưu tùy chọn tự động đăng nhập độc lập với phiên', () async {
+    FlutterSecureStorage.setMockInitialValues({});
+    final repository = SecureCredentialRepository();
+
+    await repository.setAutoLoginEnabled(true);
+    await repository.clear();
+
+    expect(await repository.readAutoLoginEnabled(), isTrue);
+  });
 }
 
 const _session = AuthSession(

@@ -1,10 +1,14 @@
+import 'package:chatbot_project/common/components/irh_button.dart';
+import 'package:chatbot_project/domain/model/auth_session.dart';
 import 'package:chatbot_project/domain/model/chat_stream_event.dart';
 import 'package:chatbot_project/domain/model/chat_result.dart';
+import 'package:chatbot_project/domain/model/chat_rich_content.dart';
 import 'package:chatbot_project/domain/model/home_data.dart';
 import 'package:chatbot_project/domain/model/hr_request.dart';
 import 'package:chatbot_project/domain/model/chat_message.dart';
 import 'package:chatbot_project/domain/model/chat_thread.dart';
 import 'package:chatbot_project/domain/repository/chat_repository.dart';
+import 'package:chatbot_project/domain/repository/credential_repository.dart';
 import 'package:chatbot_project/domain/repository/speech_to_text_repository.dart';
 import 'package:chatbot_project/domain/service/data_refresh_coordinator.dart';
 import 'package:chatbot_project/presentation/pages/chat/bloc/chat_bloc.dart';
@@ -88,6 +92,28 @@ void main() {
     expect(find.text('Đang tra cứu task Jira…'), findsNothing);
   });
 
+  testWidgets('reconciles done reply and sends exact suggestion text', (
+    tester,
+  ) async {
+    final repository = _FakeChatRepository();
+    await tester.pumpWidget(_ChatTestApp(repository: repository));
+    await tester.pump();
+    await tester.enterText(find.byKey(const Key('chat-text-field')), '#rich');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('chat-action-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Phản hồi đầy đủ từ máy chủ'), findsOneWidget);
+    expect(find.text('Phản hồi dở'), findsNothing);
+    expect(find.byKey(const Key('rich-block-kpis')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('chat-suggestion-0')));
+    await tester.pump();
+    expect(find.byKey(const Key('chat-suggestion-0')), findsNothing);
+    await tester.pumpAndSettle();
+    expect(repository.requests.last.message, 'Liệt kê đơn nghỉ của tôi');
+  });
+
   testWidgets('renders backend confirmation and sends confirm flag', (
     tester,
   ) async {
@@ -105,12 +131,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Gửi đơn nghỉ phép'), findsNothing);
-    expect(find.text(S.current.reviewRequestTitle), findsOneWidget);
-    expect(find.text(S.current.leaveAnnualType), findsOneWidget);
-    expect(find.text('17/09/2026'), findsOneWidget);
-    expect(find.text('1 ngày'), findsOneWidget);
-    expect(find.text('Đi concert'), findsOneWidget);
-    expect(find.text(S.current.confirmSubmitButton), findsOneWidget);
+    expect(
+      find.text(S.current.leaveBalanceProjectedTitle('6')),
+      findsOneWidget,
+    );
+    expect(find.textContaining(S.current.leaveAnnualType), findsOneWidget);
+    expect(find.text('8 ngày'), findsOneWidget);
+    expect(find.text('2 ngày'), findsOneWidget);
+    expect(find.text('6 ngày'), findsOneWidget);
+    expect(find.text(S.current.leaveBalanceContinue), findsOneWidget);
 
     final confirmButton = find.byKey(const Key('confirm-action'));
     await tester.ensureVisible(confirmButton);
@@ -128,6 +157,109 @@ void main() {
     expect(repository.requests.last.threadId, 'thread-new');
     expect(find.text(S.current.createLeaveSuccess), findsOneWidget);
     expect(find.textContaining('leave-id'), findsOneWidget);
+  });
+
+  testWidgets('supports half-day leave and blocks an insufficient balance', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final message = ChatMessage(
+      id: 'leave-balance',
+      type: MessageType.text,
+      sender: MessageSender.assistant,
+      createdAt: DateTime(2026, 9, 17),
+      status: MessageStatus.success,
+      confirmation: const ChatConfirmAction(
+        tool: ChatConfirmationTool.createLeave,
+        args: {
+          'type': 'ANNUAL',
+          'from': '2026-09-20',
+          'to': '2026-09-20',
+          'reason': 'Việc cá nhân',
+          'requestedDays': 8.5,
+        },
+        summary: 'Gửi đơn nghỉ phép',
+      ),
+    );
+
+    await tester.pumpWidget(_BubbleTestApp(message: message));
+    await tester.pumpAndSettle();
+
+    expect(find.text('8.5 ngày'), findsOneWidget);
+    expect(find.text('0 ngày'), findsOneWidget);
+    expect(find.text(S.current.leaveBalanceInsufficientHelper), findsOneWidget);
+    expect(find.text(S.current.leaveBalanceChooseDatesAgain), findsOneWidget);
+    expect(
+      tester
+          .widget<IrhButton>(find.byKey(const Key('confirm-action')))
+          .onPressed,
+      isNull,
+    );
+  });
+
+  testWidgets('recalculates a valid half-day request consistently', (
+    tester,
+  ) async {
+    final message = ChatMessage(
+      id: 'half-day-balance',
+      type: MessageType.text,
+      sender: MessageSender.assistant,
+      createdAt: DateTime(2026, 9, 17),
+      status: MessageStatus.success,
+      confirmation: const ChatConfirmAction(
+        tool: ChatConfirmationTool.createLeave,
+        args: {
+          'type': 'ANNUAL',
+          'reason': 'Việc cá nhân',
+          'requestedDays': 1.5,
+        },
+        summary: 'Gửi đơn nghỉ phép',
+      ),
+    );
+
+    await tester.pumpWidget(_BubbleTestApp(message: message));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1.5 ngày'), findsOneWidget);
+    expect(find.text('6.5 ngày'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('6[.,]5.*12')), findsOneWidget);
+    expect(
+      tester
+          .widget<IrhButton>(find.byKey(const Key('confirm-action')))
+          .onPressed,
+      isNotNull,
+    );
+  });
+
+  testWidgets('shows only the current balance before dates are selected', (
+    tester,
+  ) async {
+    final message = ChatMessage(
+      id: 'current-leave-balance',
+      type: MessageType.text,
+      sender: MessageSender.assistant,
+      createdAt: DateTime(2026, 9, 17),
+      status: MessageStatus.success,
+      confirmation: const ChatConfirmAction(
+        tool: ChatConfirmationTool.createLeave,
+        args: {'type': 'ANNUAL', 'reason': 'Việc cá nhân'},
+        summary: 'Gửi đơn nghỉ phép',
+      ),
+    );
+
+    await tester.pumpWidget(_BubbleTestApp(message: message));
+    await tester.pumpAndSettle();
+
+    expect(find.text(S.current.leaveBalanceCurrentTitle), findsNWidgets(2));
+    expect(find.text(S.current.leaveBalanceRequestedLabel), findsNothing);
+    expect(find.text(S.current.leaveBalanceProjectedLabel), findsNothing);
+    expect(
+      tester
+          .widget<IrhButton>(find.byKey(const Key('confirm-action')))
+          .onPressed,
+      isNull,
+    );
   });
 
   testWidgets('renders read preview without a completed-action label', (
@@ -183,6 +315,26 @@ void main() {
 
     expect(find.text(S.current.createLeaveSuccess), findsOneWidget);
     expect(card, findsOneWidget);
+  });
+
+  testWidgets('does not accept a mutation result when done disagrees', (
+    tester,
+  ) async {
+    final repository = _FakeChatRepository(didMutateOnConfirm: false);
+    await tester.pumpWidget(_ChatTestApp(repository: repository));
+    await tester.pump();
+    await tester.enterText(
+      find.byKey(const Key('chat-text-field')),
+      '#confirm',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('chat-action-button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('confirm-action')));
+    await tester.pumpAndSettle();
+
+    expect(find.text(S.current.mutationResultMismatch), findsOneWidget);
+    expect(find.text(S.current.createLeaveSuccess), findsNothing);
   });
 
   testWidgets('prefills the composer when editing a confirmation card', (
@@ -246,7 +398,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(changes.where((scopes) => scopes.contains(DataRefreshScope.home)), [
-      {DataRefreshScope.leaves, DataRefreshScope.home},
+      {
+        DataRefreshScope.leaves,
+        DataRefreshScope.home,
+        DataRefreshScope.chatHistory,
+      },
     ]);
     expect(
       changes
@@ -288,15 +444,105 @@ void main() {
       ),
     );
 
-    expect(find.text('SCRUM-1'), findsNWidgets(5));
-    expect(find.text('Hoàn thiện SSE'), findsNWidgets(5));
-    expect(find.text('To Do · High'), findsNWidgets(5));
-    expect(find.text('Hạn: 2026-09-30'), findsNWidgets(5));
-    expect(find.text('Và 45 task khác'), findsOneWidget);
-    expect(
-      find.text('Kết quả có thể đã được giới hạn ở 50 task.'),
-      findsOneWidget,
+    expect(find.text(S.current.jiraMatchingWork(50)), findsOneWidget);
+    expect(find.byKey(const Key('jira-overview-section')), findsOneWidget);
+    expect(find.byKey(const Key('jira-status-chart')), findsOneWidget);
+    expect(find.byKey(const Key('jira-segmented-progress')), findsNothing);
+    expect(find.text('SCRUM-1'), findsNWidgets(3));
+    expect(find.text('Hoàn thiện SSE'), findsNWidgets(3));
+    expect(find.text('Hạn: 30/09/2026'), findsNWidgets(3));
+    expect(find.text(S.current.jiraViewAllWork(50)), findsOneWidget);
+    expect(find.text(S.current.jiraPossiblyTruncated), findsNothing);
+  });
+
+  testWidgets('renders a single Jira task as a tappable detail card', (
+    tester,
+  ) async {
+    Uri? openedUri;
+    await tester.pumpWidget(
+      _BubbleTestApp(
+        message: _assistantMessage(
+          result: ChatResultEnvelope.jiraIssues(
+            JiraIssueList(
+              issues: const [_jiraIssue],
+              stats: _jiraStats(total: 1, toDo: 1),
+            ),
+          ),
+        ),
+        openExternalUrl: (uri) async {
+          openedUri = uri;
+          return true;
+        },
+      ),
     );
+    await tester.pumpAndSettle();
+
+    expect(find.text(S.current.jiraMatchingWork(1)), findsOneWidget);
+    expect(find.byKey(const Key('jira-overview-section')), findsOneWidget);
+    expect(find.byKey(const Key('jira-status-chart')), findsOneWidget);
+    expect(find.byKey(const Key('jira-segmented-progress')), findsNothing);
+    expect(find.text(S.current.jiraStatusTodo), findsWidgets);
+    expect(find.text('Hạn: 30/09/2026'), findsOneWidget);
+    expect(find.text('Cao'), findsOneWidget);
+    final openButton = find.byKey(const Key('jira-issue-SCRUM-1'));
+    await tester.ensureVisible(openButton);
+    await tester.tap(openButton);
+    await tester.pump();
+    expect(openedUri, Uri.parse('https://jira.example/browse/SCRUM-1'));
+  });
+
+  testWidgets('renders compact Jira metadata and overdue states', (
+    tester,
+  ) async {
+    final longTitle = List.filled(20, 'Tiêu đề Jira rất dài').join(' ');
+    final issues = [
+      _jiraIssue.copyWith(
+        key: 'SCRUM-OVERDUE',
+        summary: 'Task quá hạn',
+        dueDate: '2020-01-01',
+      ),
+      _jiraIssue.copyWith(
+        key: 'SCRUM-DONE',
+        summary: 'Task đã hoàn thành',
+        status: 'Closed',
+        statusCategory: 'DONE',
+        dueDate: '2020-01-01',
+        priority: 'Medium',
+      ),
+      _jiraIssue.copyWith(
+        key: 'SCRUM-LONG',
+        summary: longTitle,
+        status: 'In Review',
+        statusCategory: 'IN_PROGRESS',
+        dueDate: null,
+        priority: '',
+      ),
+    ];
+    await tester.pumpWidget(
+      _BubbleTestApp(
+        message: _assistantMessage(
+          result: ChatResultEnvelope.jiraIssues(
+            JiraIssueList(
+              issues: issues,
+              stats: _jiraStats(total: 3, toDo: 1, inProgress: 1, done: 1),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('jira-overview-section')), findsOneWidget);
+    expect(find.byKey(const Key('jira-status-chart')), findsOneWidget);
+    expect(find.byKey(const Key('jira-segmented-progress')), findsNothing);
+    expect(find.textContaining('Quá hạn '), findsOneWidget);
+    expect(find.text('Hạn: 01/01/2020'), findsOneWidget);
+    expect(find.text(S.current.jiraDueMissing), findsOneWidget);
+    expect(find.text(S.current.jiraPriorityMissing), findsOneWidget);
+    expect(find.text(S.current.jiraStatusDone), findsWidgets);
+    expect(find.text(S.current.jiraStatusInProgress), findsWidgets);
+    expect(find.textContaining(longTitle), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('renders Jira empty and capability-unavailable states', (
@@ -327,7 +573,7 @@ void main() {
         ),
       ),
     );
-    expect(find.text('Không có Jira task nào khớp yêu cầu.'), findsOneWidget);
+    expect(find.text(S.current.jiraEmptyResult), findsOneWidget);
 
     await tester.pumpWidget(const _ChatTestApp());
     await tester.pump();
@@ -368,6 +614,188 @@ void main() {
     await tester.tap(find.byKey(const Key('citation-link-0')));
     await tester.pump();
     expect(opened.single.toString(), 'https://jira.example/browse/SCRUM-1');
+  });
+
+  testWidgets('renders rich blocks, action and suggestions', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      _BubbleTestApp(
+        message: ChatMessage(
+          id: 'rich-message',
+          type: MessageType.text,
+          sender: MessageSender.assistant,
+          content: 'Bạn còn 9 ngày phép',
+          createdAt: DateTime(2026, 9, 17),
+          status: MessageStatus.success,
+          highlights: const [
+            ChatHighlight(
+              start: 9,
+              end: 10,
+              kind: ChatHighlightKind.metric,
+              tone: ChatTone.ok,
+            ),
+          ],
+          blocks: const [
+            ChatRichBlock(
+              type: ChatBlockType.kpis,
+              items: [
+                ChatBlockItem(
+                  label: 'Phép còn lại',
+                  value: 9,
+                  tone: ChatTone.ok,
+                ),
+              ],
+            ),
+          ],
+          uiAction: const ChatUiAction(
+            key: ChatUiActionKey.leaveResults,
+            label: 'Xem đơn nghỉ phép',
+            path: '/leaves',
+          ),
+          suggestions: const [
+            ChatSuggestion(label: 'Xem chi tiết', text: 'Liệt kê đơn nghỉ'),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('rich-block-kpis')), findsOneWidget);
+    expect(find.text('Phép còn lại'), findsOneWidget);
+    expect(find.text('9'), findsOneWidget);
+    expect(find.text('Xem đơn nghỉ phép'), findsOneWidget);
+    expect(
+      tester
+          .getSize(find.byKey(const Key('chat-ui-action-leaveResults')))
+          .width,
+      greaterThan(200),
+    );
+    expect(find.text('Xem chi tiết'), findsNothing);
+    expect(find.byType(IrhOptionChip), findsNothing);
+  });
+
+  testWidgets('shows suggestion chips only for the latest message', (
+    tester,
+  ) async {
+    final messages = [
+      ChatMessage(
+        id: 'older-suggestions',
+        type: MessageType.text,
+        sender: MessageSender.assistant,
+        content: 'Phản hồi cũ',
+        createdAt: DateTime(2026, 9, 17, 8),
+        status: MessageStatus.success,
+        suggestions: const [
+          ChatSuggestion(label: 'Lựa chọn cũ', text: 'Nội dung cũ'),
+        ],
+      ),
+      ChatMessage(
+        id: 'latest-suggestions',
+        type: MessageType.text,
+        sender: MessageSender.assistant,
+        content: 'Phản hồi mới',
+        createdAt: DateTime(2026, 9, 17, 9),
+        status: MessageStatus.success,
+        suggestions: const [
+          ChatSuggestion(label: 'Lựa chọn mới', text: 'Nội dung mới'),
+          ChatSuggestion(label: 'Lựa chọn khác', text: 'Nội dung khác'),
+        ],
+      ),
+    ];
+
+    await tester.pumpWidget(
+      _ChatTestApp(
+        repository: _FakeChatRepository(detailMessages: messages),
+        threadId: 'thread-suggestions',
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lựa chọn cũ'), findsNothing);
+    expect(find.text('Lựa chọn mới'), findsOneWidget);
+    expect(find.text('Lựa chọn khác'), findsOneWidget);
+    expect(find.byType(IrhOptionChip), findsNWidgets(2));
+    expect(
+      tester.getTopLeft(find.text('Lựa chọn mới')).dy,
+      tester.getTopLeft(find.text('Lựa chọn khác')).dy,
+    );
+    expect(
+      tester.getTopLeft(find.text('Lựa chọn mới')).dx,
+      lessThan(tester.getTopLeft(find.text('Lựa chọn khác')).dx),
+    );
+    expect(find.byKey(const Key('chat-quick-actions')), findsOneWidget);
+    expect(
+      tester.getBottomLeft(find.byKey(const Key('chat-quick-actions'))).dy,
+      lessThanOrEqualTo(
+        tester.getTopLeft(find.byKey(const Key('chat-text-field'))).dy,
+      ),
+    );
+  });
+
+  testWidgets('makes Jira quick actions entity-specific', (tester) async {
+    final message = ChatMessage(
+      id: 'jira-suggestions',
+      type: MessageType.text,
+      sender: MessageSender.assistant,
+      createdAt: DateTime(2026, 9, 17),
+      status: MessageStatus.success,
+      executedResult: ChatResultEnvelope.jiraIssues(
+        JiraIssueList(
+          issues: const [_jiraIssue],
+          stats: _jiraStats(total: 1, toDo: 1),
+        ),
+      ),
+      suggestions: const [
+        ChatSuggestion(label: 'Tóm tắt task thứ nhất', text: 'Tóm tắt task'),
+        ChatSuggestion(
+          label: 'Chuyển trạng thái task này',
+          text: 'Chuyển trạng thái task',
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      _ChatTestApp(
+        repository: _FakeChatRepository(detailMessages: [message]),
+        threadId: 'thread-jira-suggestions',
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tóm tắt SCRUM-1'), findsOneWidget);
+    expect(find.text('Chuyển trạng thái SCRUM-1'), findsOneWidget);
+    expect(find.text('Tóm tắt task thứ nhất'), findsNothing);
+  });
+
+  testWidgets('opens validated Jira rich action externally', (tester) async {
+    Uri? opened;
+    await tester.pumpWidget(
+      _BubbleTestApp(
+        message: ChatMessage(
+          id: 'jira-action',
+          type: MessageType.text,
+          sender: MessageSender.assistant,
+          content: 'Đã tìm thấy Jira task',
+          createdAt: DateTime(2026, 9, 17),
+          status: MessageStatus.success,
+          uiAction: const ChatUiAction(
+            key: ChatUiActionKey.jiraIssue,
+            label: 'Mở SCRUM-1',
+            url: 'https://jira.example/browse/SCRUM-1',
+          ),
+        ),
+        openExternalUrl: (uri) async {
+          opened = uri;
+          return true;
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('chat-ui-action-jiraIssue')));
+    await tester.pumpAndSettle();
+
+    expect(opened?.toString(), 'https://jira.example/browse/SCRUM-1');
   });
 
   testWidgets('renders created Jira result with validated task link', (
@@ -551,6 +979,45 @@ void main() {
     expect(position.pixels, closeTo(position.maxScrollExtent, .1));
     expect(find.byKey(const Key('assistant-subtitle')), findsNothing);
   });
+
+  testWidgets('settles at the bottom while restored lazy items are laid out', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final messages = List.generate(
+      80,
+      (index) => ChatMessage(
+        id: 'lazy-restored-$index',
+        type: MessageType.text,
+        sender: index.isEven ? MessageSender.user : MessageSender.assistant,
+        content: List.filled(
+          index % 5 + 1,
+          'Nội dung dài của tin nhắn lịch sử số $index',
+        ).join('\n'),
+        createdAt: DateTime.utc(2026, 9, 6, 8).add(Duration(minutes: index)),
+        status: MessageStatus.success,
+      ),
+    );
+
+    await tester.pumpWidget(
+      _ChatTestApp(
+        repository: _FakeChatRepository(detailMessages: messages),
+        threadId: 'thread-lazy-long',
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final listView = tester.widget<ListView>(
+      find.byKey(const Key('chat-list')),
+    );
+    final position = listView.controller!.position;
+    expect(position.maxScrollExtent, greaterThan(0));
+    expect(position.pixels, closeTo(position.maxScrollExtent, .1));
+    expect(find.byKey(const Key('ai-bubble-lazy-restored-79')), findsOneWidget);
+  });
 }
 
 class _ChatTestApp extends StatelessWidget {
@@ -570,24 +1037,28 @@ class _ChatTestApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(390, 844),
-      builder: (context, child) => MaterialApp(
-        locale: const Locale('vi'),
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
-        home: BlocProvider(
-          create: (_) => ChatBloc(
-            repository ?? _FakeChatRepository(),
-            FakeSpeechToTextRepository(),
-            refreshCoordinator: refreshCoordinator,
-          )..add(ChatStarted(threadId: threadId)),
-          child: ChatPage(title: title),
-        ),
-      ),
+      builder: (context, child) =>
+          RepositoryProvider<CredentialRepository>.value(
+            value: const _FakeCredentialRepository(),
+            child: MaterialApp(
+              locale: const Locale('vi'),
+              localizationsDelegates: const [
+                S.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: S.delegate.supportedLocales,
+              home: BlocProvider(
+                create: (_) => ChatBloc(
+                  repository ?? _FakeChatRepository(),
+                  FakeSpeechToTextRepository(),
+                  refreshCoordinator: refreshCoordinator,
+                )..add(ChatStarted(threadId: threadId)),
+                child: ChatPage(title: title),
+              ),
+            ),
+          ),
     );
   }
 }
@@ -602,22 +1073,28 @@ class _BubbleTestApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(390, 844),
-      builder: (context, child) => MaterialApp(
-        locale: const Locale('vi'),
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
-        home: Scaffold(
-          body: ChatBubble(
-            message: message,
-            openExternalUrl: openExternalUrl ?? (_) async => true,
+      builder: (context, child) =>
+          RepositoryProvider<CredentialRepository>.value(
+            value: const _FakeCredentialRepository(),
+            child: MaterialApp(
+              locale: const Locale('vi'),
+              localizationsDelegates: const [
+                S.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: S.delegate.supportedLocales,
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: ChatBubble(
+                    message: message,
+                    openExternalUrl: openExternalUrl ?? (_) async => true,
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
     );
   }
 }
@@ -626,10 +1103,12 @@ class _FakeChatRepository implements ChatRepository {
   _FakeChatRepository({
     this.detailMessages = const [],
     this.failConfirmationOnce = false,
+    this.didMutateOnConfirm = true,
   });
 
   final List<ChatMessage> detailMessages;
   final bool failConfirmationOnce;
+  final bool didMutateOnConfirm;
   final Set<String> _failedOnce = {};
   bool _confirmationFailed = false;
   final List<
@@ -684,6 +1163,26 @@ class _FakeChatRepository implements ChatRepository {
       yield const ChatStreamDone(threadId: 'thread-new', citations: []);
       return;
     }
+    if (message == '#rich') {
+      yield const ChatStreamToken('Phản hồi dở');
+      yield const ChatStreamDone(
+        threadId: 'thread-new',
+        reply: 'Phản hồi đầy đủ từ máy chủ',
+        blocks: [
+          ChatRichBlock(
+            type: ChatBlockType.kpis,
+            items: [ChatBlockItem(label: 'Phép còn lại', value: 9)],
+          ),
+        ],
+        suggestions: [
+          ChatSuggestion(
+            label: 'Xem chi tiết',
+            text: 'Liệt kê đơn nghỉ của tôi',
+          ),
+        ],
+      );
+      return;
+    }
     if (message == '#capability') {
       yield const ChatStreamFailure(
         'Jira MCP chưa được cấu hình credential trên máy chủ.',
@@ -698,7 +1197,7 @@ class _FakeChatRepository implements ChatRepository {
           args: {
             'type': 'ANNUAL',
             'from': '2026-09-17',
-            'to': '2026-09-17',
+            'to': '2026-09-18',
             'reason': 'Đi concert',
           },
           summary: 'Gửi đơn nghỉ phép',
@@ -730,6 +1229,7 @@ class _FakeChatRepository implements ChatRepository {
       );
       yield ChatStreamDone(
         threadId: threadId ?? 'thread-new',
+        didMutate: didMutateOnConfirm,
         citations: const [],
       );
       return;
@@ -746,6 +1246,34 @@ class _FakeChatRepository implements ChatRepository {
   @override
   void close() {}
 }
+
+class _FakeCredentialRepository implements CredentialRepository {
+  const _FakeCredentialRepository();
+
+  @override
+  Future<AuthSession?> read() async => _chatSession;
+
+  @override
+  Future<void> save(AuthSession session, {required bool persist}) async {}
+
+  @override
+  Future<void> clear() async {}
+}
+
+const _chatSession = AuthSession(
+  accessToken: 'jwt',
+  user: AuthUser(
+    id: 'user-id',
+    employeeCode: 'EMP001',
+    email: 'a@msb.vn',
+    fullName: 'Nguyễn Văn A',
+    role: UserRole.staff,
+    department: 'D',
+    annualRemaining: 8,
+    annualTotal: 12,
+    sickRemaining: 30,
+  ),
+);
 
 ChatMessage _assistantMessage({
   ChatResultEnvelope? result,
@@ -772,6 +1300,26 @@ const _jiraIssue = JiraIssue(
   assignee: 'a@msb.vn',
   dueDate: '2026-09-30',
   url: 'https://jira.example/browse/SCRUM-1',
+);
+
+JiraStats _jiraStats({
+  required int total,
+  int toDo = 0,
+  int inProgress = 0,
+  int done = 0,
+}) => JiraStats(
+  total: total,
+  toDo: toDo,
+  inProgress: inProgress,
+  done: done,
+  unknown: total - toDo - inProgress - done,
+  overdue: 0,
+  stale: 0,
+  withoutDueDate: 0,
+  byStatus: const {},
+  byPriority: const {},
+  byIssueType: const {},
+  byProject: const {},
 );
 
 class FakeSpeechToTextRepository implements SpeechToTextRepository {

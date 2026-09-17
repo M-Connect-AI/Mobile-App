@@ -29,8 +29,17 @@ class $AssetsImageGen {
   /// File path: assets/image/bg_card_purple.svg
   SvgGenImage get bgCardPurple => const SvgGenImage('assets/image/bg_card_purple.svg');
 
+  /// File path: assets/image/ic_calendar.svg
+  SvgGenImage get icCalendar => const SvgGenImage('assets/image/ic_calendar.svg');
+
+  /// File path: assets/image/ic_check.svg
+  SvgGenImage get icCheck => const SvgGenImage('assets/image/ic_check.svg');
+
   /// File path: assets/image/ic_eis_msb.svg
   SvgGenImage get icEisMsb => const SvgGenImage('assets/image/ic_eis_msb.svg');
+
+  /// File path: assets/image/ic_external_link.svg
+  SvgGenImage get icExternalLink => const SvgGenImage('assets/image/ic_external_link.svg');
 
   /// File path: assets/image/ic_late_and_soon_absent.svg
   SvgGenImage get icLateAndSoonAbsent => const SvgGenImage('assets/image/ic_late_and_soon_absent.svg');
@@ -47,7 +56,10 @@ class $AssetsImageGen {
     bgCardEis,
     bgCardPink,
     bgCardPurple,
+    icCalendar,
+    icCheck,
     icEisMsb,
+    icExternalLink,
     icLateAndSoonAbsent,
     icOtherFile,
     logo,

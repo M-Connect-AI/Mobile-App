@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../domain/model/auth_session.dart';
+import '../../../../domain/repository/auth_preference_repository.dart';
 import '../../../../domain/repository/auth_repository.dart';
 import '../../../../domain/repository/credential_repository.dart';
 import '../../../../domain/usecase/login/login_use_case.dart';
@@ -65,22 +66,40 @@ class LoginState extends Equatable {
 }
 
 class LoginCubit extends Cubit<LoginState> {
-  LoginCubit(this._login, this._restoreSession, this._credentials)
-    : super(const LoginState()) {
+  LoginCubit(
+    this._login,
+    this._restoreSession,
+    this._credentials,
+    this._preferences,
+  ) : super(const LoginState()) {
     _restoreSavedSession();
   }
 
   final LoginUseCase _login;
   final RestoreSessionUseCase _restoreSession;
   final CredentialRepository _credentials;
+  final AuthPreferenceRepository _preferences;
 
   Future<void> _restoreSavedSession() async {
+    String? savedEmail;
     try {
+      savedEmail = await _preferences.readLastEmail();
+      final autoLoginEnabled = await _preferences.readAutoLoginEnabled();
+      if (!autoLoginEnabled) {
+        emit(
+          state.copyWith(
+            savedEmail: savedEmail,
+            credentialsLoaded: true,
+            status: LoginStatus.idle,
+          ),
+        );
+        return;
+      }
       final session = await _restoreSession();
       emit(
         state.copyWith(
-          savedEmail: session?.user.email,
-          rememberSession: session != null,
+          savedEmail: savedEmail ?? session?.user.email,
+          rememberSession: autoLoginEnabled,
           credentialsLoaded: true,
           status: session == null ? LoginStatus.idle : LoginStatus.success,
           session: session,
@@ -90,6 +109,7 @@ class LoginCubit extends Cubit<LoginState> {
       emit(
         state.copyWith(
           credentialsLoaded: true,
+          savedEmail: savedEmail,
           failureType: error.type,
           failureMessage: error.message,
         ),
@@ -107,19 +127,33 @@ class LoginCubit extends Cubit<LoginState> {
   void togglePasswordVisibility() =>
       emit(state.copyWith(obscurePassword: !state.obscurePassword));
 
-  void toggleRememberSession() =>
-      emit(state.copyWith(rememberSession: !state.rememberSession));
-
   Future<void> submit({required String email, required String password}) async {
     emit(state.copyWith(status: LoginStatus.loading, clearFailure: true));
     try {
       final session = await _login(email: email, password: password);
+      var autoLoginEnabled = state.rememberSession;
       try {
-        await _credentials.save(session, persist: state.rememberSession);
+        autoLoginEnabled = await _preferences.readAutoLoginEnabled();
+      } on Object {
+        // Use the preference already loaded into state when storage is unavailable.
+      }
+      try {
+        await _credentials.save(session, persist: autoLoginEnabled);
       } on Object {
         // Credential persistence must not block a successful authentication.
       }
-      emit(state.copyWith(status: LoginStatus.success, session: session));
+      try {
+        await _preferences.saveLastEmail(session.user.email);
+      } on Object {
+        // Remembering the email must not block a successful authentication.
+      }
+      emit(
+        state.copyWith(
+          status: LoginStatus.success,
+          session: session,
+          rememberSession: autoLoginEnabled,
+        ),
+      );
     } on AuthException catch (error) {
       emit(
         state.copyWith(

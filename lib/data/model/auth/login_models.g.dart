@@ -15,6 +15,22 @@ _LoginRequestDto _$LoginRequestDtoFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$LoginRequestDtoToJson(_LoginRequestDto instance) =>
     <String, dynamic>{'email': instance.email, 'password': instance.password};
 
+_RegisterRequestDto _$RegisterRequestDtoFromJson(Map<String, dynamic> json) =>
+    _RegisterRequestDto(
+      email: json['email'] as String,
+      password: json['password'] as String,
+      fullName: json['fullName'] as String,
+      role: json['role'] as String,
+    );
+
+Map<String, dynamic> _$RegisterRequestDtoToJson(_RegisterRequestDto instance) =>
+    <String, dynamic>{
+      'email': instance.email,
+      'password': instance.password,
+      'fullName': instance.fullName,
+      'role': instance.role,
+    };
+
 _LoginResponseDto _$LoginResponseDtoFromJson(Map<String, dynamic> json) =>
     _LoginResponseDto(
       accessToken: json['accessToken'] as String,

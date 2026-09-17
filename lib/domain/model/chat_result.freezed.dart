@@ -2022,7 +2022,7 @@ extension ChatResultEnvelopePatterns on ChatResultEnvelope {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( ChatLeaveBalanceResult value)?  leaveBalance,TResult Function( ChatLeaveListResult value)?  leaveList,TResult Function( ChatTripListResult value)?  tripList,TResult Function( ChatPendingApprovalsResult value)?  pendingApprovals,TResult Function( ChatJiraIssuesResult value)?  jiraIssues,TResult Function( ChatLeaveMutationResult value)?  leaveMutation,TResult Function( ChatTripMutationResult value)?  tripMutation,TResult Function( ChatLeaveBatchMutationResult value)?  leaveBatchMutation,TResult Function( ChatTripBatchMutationResult value)?  tripBatchMutation,TResult Function( ChatJiraMutationResult value)?  jiraMutation,TResult Function( ChatUnknownResult value)?  unknown,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( ChatLeaveBalanceResult value)?  leaveBalance,TResult Function( ChatLeaveListResult value)?  leaveList,TResult Function( ChatTripListResult value)?  tripList,TResult Function( ChatPendingApprovalsResult value)?  pendingApprovals,TResult Function( ChatJiraIssuesResult value)?  jiraIssues,TResult Function( ChatLeaveMutationResult value)?  leaveMutation,TResult Function( ChatTripMutationResult value)?  tripMutation,TResult Function( ChatLeaveBatchMutationResult value)?  leaveBatchMutation,TResult Function( ChatTripBatchMutationResult value)?  tripBatchMutation,TResult Function( ChatJiraMutationResult value)?  jiraMutation,TResult Function( ChatOutlookEventMutationResult value)?  outlookEventMutation,TResult Function( ChatOutlookReplyMutationResult value)?  outlookReplyMutation,TResult Function( ChatUnknownResult value)?  unknown,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case ChatLeaveBalanceResult() when leaveBalance != null:
@@ -2035,7 +2035,9 @@ return leaveMutation(_that);case ChatTripMutationResult() when tripMutation != n
 return tripMutation(_that);case ChatLeaveBatchMutationResult() when leaveBatchMutation != null:
 return leaveBatchMutation(_that);case ChatTripBatchMutationResult() when tripBatchMutation != null:
 return tripBatchMutation(_that);case ChatJiraMutationResult() when jiraMutation != null:
-return jiraMutation(_that);case ChatUnknownResult() when unknown != null:
+return jiraMutation(_that);case ChatOutlookEventMutationResult() when outlookEventMutation != null:
+return outlookEventMutation(_that);case ChatOutlookReplyMutationResult() when outlookReplyMutation != null:
+return outlookReplyMutation(_that);case ChatUnknownResult() when unknown != null:
 return unknown(_that);case _:
   return orElse();
 
@@ -2054,7 +2056,7 @@ return unknown(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( ChatLeaveBalanceResult value)  leaveBalance,required TResult Function( ChatLeaveListResult value)  leaveList,required TResult Function( ChatTripListResult value)  tripList,required TResult Function( ChatPendingApprovalsResult value)  pendingApprovals,required TResult Function( ChatJiraIssuesResult value)  jiraIssues,required TResult Function( ChatLeaveMutationResult value)  leaveMutation,required TResult Function( ChatTripMutationResult value)  tripMutation,required TResult Function( ChatLeaveBatchMutationResult value)  leaveBatchMutation,required TResult Function( ChatTripBatchMutationResult value)  tripBatchMutation,required TResult Function( ChatJiraMutationResult value)  jiraMutation,required TResult Function( ChatUnknownResult value)  unknown,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( ChatLeaveBalanceResult value)  leaveBalance,required TResult Function( ChatLeaveListResult value)  leaveList,required TResult Function( ChatTripListResult value)  tripList,required TResult Function( ChatPendingApprovalsResult value)  pendingApprovals,required TResult Function( ChatJiraIssuesResult value)  jiraIssues,required TResult Function( ChatLeaveMutationResult value)  leaveMutation,required TResult Function( ChatTripMutationResult value)  tripMutation,required TResult Function( ChatLeaveBatchMutationResult value)  leaveBatchMutation,required TResult Function( ChatTripBatchMutationResult value)  tripBatchMutation,required TResult Function( ChatJiraMutationResult value)  jiraMutation,required TResult Function( ChatOutlookEventMutationResult value)  outlookEventMutation,required TResult Function( ChatOutlookReplyMutationResult value)  outlookReplyMutation,required TResult Function( ChatUnknownResult value)  unknown,}){
 final _that = this;
 switch (_that) {
 case ChatLeaveBalanceResult():
@@ -2067,7 +2069,9 @@ return leaveMutation(_that);case ChatTripMutationResult():
 return tripMutation(_that);case ChatLeaveBatchMutationResult():
 return leaveBatchMutation(_that);case ChatTripBatchMutationResult():
 return tripBatchMutation(_that);case ChatJiraMutationResult():
-return jiraMutation(_that);case ChatUnknownResult():
+return jiraMutation(_that);case ChatOutlookEventMutationResult():
+return outlookEventMutation(_that);case ChatOutlookReplyMutationResult():
+return outlookReplyMutation(_that);case ChatUnknownResult():
 return unknown(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -2082,7 +2086,7 @@ return unknown(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( ChatLeaveBalanceResult value)?  leaveBalance,TResult? Function( ChatLeaveListResult value)?  leaveList,TResult? Function( ChatTripListResult value)?  tripList,TResult? Function( ChatPendingApprovalsResult value)?  pendingApprovals,TResult? Function( ChatJiraIssuesResult value)?  jiraIssues,TResult? Function( ChatLeaveMutationResult value)?  leaveMutation,TResult? Function( ChatTripMutationResult value)?  tripMutation,TResult? Function( ChatLeaveBatchMutationResult value)?  leaveBatchMutation,TResult? Function( ChatTripBatchMutationResult value)?  tripBatchMutation,TResult? Function( ChatJiraMutationResult value)?  jiraMutation,TResult? Function( ChatUnknownResult value)?  unknown,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( ChatLeaveBalanceResult value)?  leaveBalance,TResult? Function( ChatLeaveListResult value)?  leaveList,TResult? Function( ChatTripListResult value)?  tripList,TResult? Function( ChatPendingApprovalsResult value)?  pendingApprovals,TResult? Function( ChatJiraIssuesResult value)?  jiraIssues,TResult? Function( ChatLeaveMutationResult value)?  leaveMutation,TResult? Function( ChatTripMutationResult value)?  tripMutation,TResult? Function( ChatLeaveBatchMutationResult value)?  leaveBatchMutation,TResult? Function( ChatTripBatchMutationResult value)?  tripBatchMutation,TResult? Function( ChatJiraMutationResult value)?  jiraMutation,TResult? Function( ChatOutlookEventMutationResult value)?  outlookEventMutation,TResult? Function( ChatOutlookReplyMutationResult value)?  outlookReplyMutation,TResult? Function( ChatUnknownResult value)?  unknown,}){
 final _that = this;
 switch (_that) {
 case ChatLeaveBalanceResult() when leaveBalance != null:
@@ -2095,7 +2099,9 @@ return leaveMutation(_that);case ChatTripMutationResult() when tripMutation != n
 return tripMutation(_that);case ChatLeaveBatchMutationResult() when leaveBatchMutation != null:
 return leaveBatchMutation(_that);case ChatTripBatchMutationResult() when tripBatchMutation != null:
 return tripBatchMutation(_that);case ChatJiraMutationResult() when jiraMutation != null:
-return jiraMutation(_that);case ChatUnknownResult() when unknown != null:
+return jiraMutation(_that);case ChatOutlookEventMutationResult() when outlookEventMutation != null:
+return outlookEventMutation(_that);case ChatOutlookReplyMutationResult() when outlookReplyMutation != null:
+return outlookReplyMutation(_that);case ChatUnknownResult() when unknown != null:
 return unknown(_that);case _:
   return null;
 
@@ -2113,7 +2119,7 @@ return unknown(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( LeaveBalance data)?  leaveBalance,TResult Function( List<LeaveRequest> data)?  leaveList,TResult Function( List<TripRequest> data)?  tripList,TResult Function( PendingApprovals data)?  pendingApprovals,TResult Function( JiraIssueList data)?  jiraIssues,TResult Function( ChatMutationType mutation,  LeaveRequest data)?  leaveMutation,TResult Function( ChatMutationType mutation,  TripRequest data)?  tripMutation,TResult Function( ChatMutationType mutation,  LeaveBatchMutation data)?  leaveBatchMutation,TResult Function( ChatMutationType mutation,  TripBatchMutation data)?  tripBatchMutation,TResult Function( ChatMutationType mutation,  JiraCreateResult data)?  jiraMutation,TResult Function( Object? raw)?  unknown,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( LeaveBalance data)?  leaveBalance,TResult Function( List<LeaveRequest> data)?  leaveList,TResult Function( List<TripRequest> data)?  tripList,TResult Function( PendingApprovals data)?  pendingApprovals,TResult Function( JiraIssueList data)?  jiraIssues,TResult Function( ChatMutationType mutation,  LeaveRequest data)?  leaveMutation,TResult Function( ChatMutationType mutation,  TripRequest data)?  tripMutation,TResult Function( ChatMutationType mutation,  LeaveBatchMutation data)?  leaveBatchMutation,TResult Function( ChatMutationType mutation,  TripBatchMutation data)?  tripBatchMutation,TResult Function( ChatMutationType mutation,  JiraCreateResult data)?  jiraMutation,TResult Function( ChatMutationType mutation,  OutlookEventMutation data)?  outlookEventMutation,TResult Function( ChatMutationType mutation,  OutlookReplyMutation data)?  outlookReplyMutation,TResult Function( Object? raw)?  unknown,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case ChatLeaveBalanceResult() when leaveBalance != null:
 return leaveBalance(_that.data);case ChatLeaveListResult() when leaveList != null:
@@ -2125,7 +2131,9 @@ return leaveMutation(_that.mutation,_that.data);case ChatTripMutationResult() wh
 return tripMutation(_that.mutation,_that.data);case ChatLeaveBatchMutationResult() when leaveBatchMutation != null:
 return leaveBatchMutation(_that.mutation,_that.data);case ChatTripBatchMutationResult() when tripBatchMutation != null:
 return tripBatchMutation(_that.mutation,_that.data);case ChatJiraMutationResult() when jiraMutation != null:
-return jiraMutation(_that.mutation,_that.data);case ChatUnknownResult() when unknown != null:
+return jiraMutation(_that.mutation,_that.data);case ChatOutlookEventMutationResult() when outlookEventMutation != null:
+return outlookEventMutation(_that.mutation,_that.data);case ChatOutlookReplyMutationResult() when outlookReplyMutation != null:
+return outlookReplyMutation(_that.mutation,_that.data);case ChatUnknownResult() when unknown != null:
 return unknown(_that.raw);case _:
   return orElse();
 
@@ -2144,7 +2152,7 @@ return unknown(_that.raw);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( LeaveBalance data)  leaveBalance,required TResult Function( List<LeaveRequest> data)  leaveList,required TResult Function( List<TripRequest> data)  tripList,required TResult Function( PendingApprovals data)  pendingApprovals,required TResult Function( JiraIssueList data)  jiraIssues,required TResult Function( ChatMutationType mutation,  LeaveRequest data)  leaveMutation,required TResult Function( ChatMutationType mutation,  TripRequest data)  tripMutation,required TResult Function( ChatMutationType mutation,  LeaveBatchMutation data)  leaveBatchMutation,required TResult Function( ChatMutationType mutation,  TripBatchMutation data)  tripBatchMutation,required TResult Function( ChatMutationType mutation,  JiraCreateResult data)  jiraMutation,required TResult Function( Object? raw)  unknown,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( LeaveBalance data)  leaveBalance,required TResult Function( List<LeaveRequest> data)  leaveList,required TResult Function( List<TripRequest> data)  tripList,required TResult Function( PendingApprovals data)  pendingApprovals,required TResult Function( JiraIssueList data)  jiraIssues,required TResult Function( ChatMutationType mutation,  LeaveRequest data)  leaveMutation,required TResult Function( ChatMutationType mutation,  TripRequest data)  tripMutation,required TResult Function( ChatMutationType mutation,  LeaveBatchMutation data)  leaveBatchMutation,required TResult Function( ChatMutationType mutation,  TripBatchMutation data)  tripBatchMutation,required TResult Function( ChatMutationType mutation,  JiraCreateResult data)  jiraMutation,required TResult Function( ChatMutationType mutation,  OutlookEventMutation data)  outlookEventMutation,required TResult Function( ChatMutationType mutation,  OutlookReplyMutation data)  outlookReplyMutation,required TResult Function( Object? raw)  unknown,}) {final _that = this;
 switch (_that) {
 case ChatLeaveBalanceResult():
 return leaveBalance(_that.data);case ChatLeaveListResult():
@@ -2156,7 +2164,9 @@ return leaveMutation(_that.mutation,_that.data);case ChatTripMutationResult():
 return tripMutation(_that.mutation,_that.data);case ChatLeaveBatchMutationResult():
 return leaveBatchMutation(_that.mutation,_that.data);case ChatTripBatchMutationResult():
 return tripBatchMutation(_that.mutation,_that.data);case ChatJiraMutationResult():
-return jiraMutation(_that.mutation,_that.data);case ChatUnknownResult():
+return jiraMutation(_that.mutation,_that.data);case ChatOutlookEventMutationResult():
+return outlookEventMutation(_that.mutation,_that.data);case ChatOutlookReplyMutationResult():
+return outlookReplyMutation(_that.mutation,_that.data);case ChatUnknownResult():
 return unknown(_that.raw);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -2171,7 +2181,7 @@ return unknown(_that.raw);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( LeaveBalance data)?  leaveBalance,TResult? Function( List<LeaveRequest> data)?  leaveList,TResult? Function( List<TripRequest> data)?  tripList,TResult? Function( PendingApprovals data)?  pendingApprovals,TResult? Function( JiraIssueList data)?  jiraIssues,TResult? Function( ChatMutationType mutation,  LeaveRequest data)?  leaveMutation,TResult? Function( ChatMutationType mutation,  TripRequest data)?  tripMutation,TResult? Function( ChatMutationType mutation,  LeaveBatchMutation data)?  leaveBatchMutation,TResult? Function( ChatMutationType mutation,  TripBatchMutation data)?  tripBatchMutation,TResult? Function( ChatMutationType mutation,  JiraCreateResult data)?  jiraMutation,TResult? Function( Object? raw)?  unknown,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( LeaveBalance data)?  leaveBalance,TResult? Function( List<LeaveRequest> data)?  leaveList,TResult? Function( List<TripRequest> data)?  tripList,TResult? Function( PendingApprovals data)?  pendingApprovals,TResult? Function( JiraIssueList data)?  jiraIssues,TResult? Function( ChatMutationType mutation,  LeaveRequest data)?  leaveMutation,TResult? Function( ChatMutationType mutation,  TripRequest data)?  tripMutation,TResult? Function( ChatMutationType mutation,  LeaveBatchMutation data)?  leaveBatchMutation,TResult? Function( ChatMutationType mutation,  TripBatchMutation data)?  tripBatchMutation,TResult? Function( ChatMutationType mutation,  JiraCreateResult data)?  jiraMutation,TResult? Function( ChatMutationType mutation,  OutlookEventMutation data)?  outlookEventMutation,TResult? Function( ChatMutationType mutation,  OutlookReplyMutation data)?  outlookReplyMutation,TResult? Function( Object? raw)?  unknown,}) {final _that = this;
 switch (_that) {
 case ChatLeaveBalanceResult() when leaveBalance != null:
 return leaveBalance(_that.data);case ChatLeaveListResult() when leaveList != null:
@@ -2183,7 +2193,9 @@ return leaveMutation(_that.mutation,_that.data);case ChatTripMutationResult() wh
 return tripMutation(_that.mutation,_that.data);case ChatLeaveBatchMutationResult() when leaveBatchMutation != null:
 return leaveBatchMutation(_that.mutation,_that.data);case ChatTripBatchMutationResult() when tripBatchMutation != null:
 return tripBatchMutation(_that.mutation,_that.data);case ChatJiraMutationResult() when jiraMutation != null:
-return jiraMutation(_that.mutation,_that.data);case ChatUnknownResult() when unknown != null:
+return jiraMutation(_that.mutation,_that.data);case ChatOutlookEventMutationResult() when outlookEventMutation != null:
+return outlookEventMutation(_that.mutation,_that.data);case ChatOutlookReplyMutationResult() when outlookReplyMutation != null:
+return outlookReplyMutation(_that.mutation,_that.data);case ChatUnknownResult() when unknown != null:
 return unknown(_that.raw);case _:
   return null;
 
@@ -2941,6 +2953,160 @@ as JiraCreateResult,
 $JiraCreateResultCopyWith<$Res> get data {
   
   return $JiraCreateResultCopyWith<$Res>(_self.data, (value) {
+    return _then(_self.copyWith(data: value));
+  });
+}
+}
+
+/// @nodoc
+
+
+class ChatOutlookEventMutationResult extends ChatResultEnvelope {
+  const ChatOutlookEventMutationResult({required this.mutation, required this.data}): super._();
+  
+
+ final  ChatMutationType mutation;
+ final  OutlookEventMutation data;
+
+/// Create a copy of ChatResultEnvelope
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ChatOutlookEventMutationResultCopyWith<ChatOutlookEventMutationResult> get copyWith => _$ChatOutlookEventMutationResultCopyWithImpl<ChatOutlookEventMutationResult>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatOutlookEventMutationResult&&(identical(other.mutation, mutation) || other.mutation == mutation)&&(identical(other.data, data) || other.data == data));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,mutation,data);
+
+@override
+String toString() {
+  return 'ChatResultEnvelope.outlookEventMutation(mutation: $mutation, data: $data)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ChatOutlookEventMutationResultCopyWith<$Res> implements $ChatResultEnvelopeCopyWith<$Res> {
+  factory $ChatOutlookEventMutationResultCopyWith(ChatOutlookEventMutationResult value, $Res Function(ChatOutlookEventMutationResult) _then) = _$ChatOutlookEventMutationResultCopyWithImpl;
+@useResult
+$Res call({
+ ChatMutationType mutation, OutlookEventMutation data
+});
+
+
+$OutlookEventMutationCopyWith<$Res> get data;
+
+}
+/// @nodoc
+class _$ChatOutlookEventMutationResultCopyWithImpl<$Res>
+    implements $ChatOutlookEventMutationResultCopyWith<$Res> {
+  _$ChatOutlookEventMutationResultCopyWithImpl(this._self, this._then);
+
+  final ChatOutlookEventMutationResult _self;
+  final $Res Function(ChatOutlookEventMutationResult) _then;
+
+/// Create a copy of ChatResultEnvelope
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? mutation = null,Object? data = null,}) {
+  return _then(ChatOutlookEventMutationResult(
+mutation: null == mutation ? _self.mutation : mutation // ignore: cast_nullable_to_non_nullable
+as ChatMutationType,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as OutlookEventMutation,
+  ));
+}
+
+/// Create a copy of ChatResultEnvelope
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$OutlookEventMutationCopyWith<$Res> get data {
+  
+  return $OutlookEventMutationCopyWith<$Res>(_self.data, (value) {
+    return _then(_self.copyWith(data: value));
+  });
+}
+}
+
+/// @nodoc
+
+
+class ChatOutlookReplyMutationResult extends ChatResultEnvelope {
+  const ChatOutlookReplyMutationResult({required this.mutation, required this.data}): super._();
+  
+
+ final  ChatMutationType mutation;
+ final  OutlookReplyMutation data;
+
+/// Create a copy of ChatResultEnvelope
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ChatOutlookReplyMutationResultCopyWith<ChatOutlookReplyMutationResult> get copyWith => _$ChatOutlookReplyMutationResultCopyWithImpl<ChatOutlookReplyMutationResult>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatOutlookReplyMutationResult&&(identical(other.mutation, mutation) || other.mutation == mutation)&&(identical(other.data, data) || other.data == data));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,mutation,data);
+
+@override
+String toString() {
+  return 'ChatResultEnvelope.outlookReplyMutation(mutation: $mutation, data: $data)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ChatOutlookReplyMutationResultCopyWith<$Res> implements $ChatResultEnvelopeCopyWith<$Res> {
+  factory $ChatOutlookReplyMutationResultCopyWith(ChatOutlookReplyMutationResult value, $Res Function(ChatOutlookReplyMutationResult) _then) = _$ChatOutlookReplyMutationResultCopyWithImpl;
+@useResult
+$Res call({
+ ChatMutationType mutation, OutlookReplyMutation data
+});
+
+
+$OutlookReplyMutationCopyWith<$Res> get data;
+
+}
+/// @nodoc
+class _$ChatOutlookReplyMutationResultCopyWithImpl<$Res>
+    implements $ChatOutlookReplyMutationResultCopyWith<$Res> {
+  _$ChatOutlookReplyMutationResultCopyWithImpl(this._self, this._then);
+
+  final ChatOutlookReplyMutationResult _self;
+  final $Res Function(ChatOutlookReplyMutationResult) _then;
+
+/// Create a copy of ChatResultEnvelope
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? mutation = null,Object? data = null,}) {
+  return _then(ChatOutlookReplyMutationResult(
+mutation: null == mutation ? _self.mutation : mutation // ignore: cast_nullable_to_non_nullable
+as ChatMutationType,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as OutlookReplyMutation,
+  ));
+}
+
+/// Create a copy of ChatResultEnvelope
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$OutlookReplyMutationCopyWith<$Res> get data {
+  
+  return $OutlookReplyMutationCopyWith<$Res>(_self.data, (value) {
     return _then(_self.copyWith(data: value));
   });
 }

@@ -3,6 +3,7 @@ import 'package:chatbot_project/data/repository/api_chat_repository.dart';
 import 'package:chatbot_project/data/source/remote/agent_chat_remote_data_source.dart';
 import 'package:chatbot_project/domain/model/auth_session.dart';
 import 'package:chatbot_project/domain/model/chat_result.dart';
+import 'package:chatbot_project/domain/model/chat_rich_content.dart';
 import 'package:chatbot_project/domain/model/chat_stream_event.dart';
 import 'package:chatbot_project/domain/repository/chat_repository.dart';
 import 'package:chatbot_project/domain/repository/credential_repository.dart';
@@ -116,6 +117,27 @@ void main() {
               },
               summary: 'Tạo Jira task',
             ),
+            (
+              wireName: 'create_outlook_event',
+              tool: ChatConfirmationTool.createOutlookEvent,
+              args: {
+                'subject': 'Họp dự án',
+                'start': '2026-09-20T09:00:00',
+                'end': '2026-09-20T10:00:00',
+                'timeZone': 'Asia/Ho_Chi_Minh',
+                'isAllDay': false,
+                'location': 'Phòng A',
+                'body': 'Cập nhật tiến độ',
+                'attendees': ['a@msb.vn'],
+              },
+              summary: 'Tạo lịch Outlook',
+            ),
+            (
+              wireName: 'reply_outlook_mail',
+              tool: ChatConfirmationTool.replyOutlookMail,
+              args: {'messageId': 'mail-1', 'comment': 'Đã nhận thông tin'},
+              summary: 'Trả lời email',
+            ),
           ];
 
       for (final item in cases) {
@@ -226,6 +248,142 @@ void main() {
     expect((result as ChatJiraIssuesResult).data.issues, isEmpty);
   });
 
+  test('maps rich done payload and restores the same metadata', () async {
+    const done = ChatDoneDto(
+      threadId: 'thread-rich',
+      reply: 'Bạn còn 9 ngày phép',
+      uiAction: {
+        'key': 'LEAVE_RESULTS',
+        'label': 'Xem đơn nghỉ phép',
+        'path': '/leaves',
+      },
+      blocks: [
+        {
+          'type': 'kpis',
+          'items': [
+            {'label': 'Phép còn lại', 'value': 9, 'tone': 'ok'},
+          ],
+        },
+      ],
+      highlights: [
+        {'start': 9, 'end': 10, 'kind': 'metric', 'tone': 'ok'},
+      ],
+      suggestions: [
+        {'label': 'Xem chi tiết', 'text': 'Liệt kê đơn nghỉ của tôi'},
+      ],
+    );
+    final repository = ApiChatRepository(
+      _FakeAgentRemote(
+        done: done,
+        messages: const [
+          PersistedChatMessageDto(
+            role: 'assistant',
+            content: 'Bạn còn 9 ngày phép',
+            uiAction: {
+              'key': 'LEAVE_RESULTS',
+              'label': 'Xem đơn nghỉ phép',
+              'path': '/leaves',
+            },
+            blocks: [
+              {
+                'type': 'kpis',
+                'items': [
+                  {'label': 'Phép còn lại', 'value': 9, 'tone': 'ok'},
+                ],
+              },
+            ],
+            highlights: [
+              {'start': 9, 'end': 10, 'kind': 'metric', 'tone': 'ok'},
+            ],
+            suggestions: [
+              {'label': 'Xem chi tiết', 'text': 'Liệt kê đơn nghỉ của tôi'},
+            ],
+          ),
+        ],
+      ),
+      _SessionStore(),
+    );
+
+    final events = await repository
+        .sendMessage(message: 'Số ngày phép')
+        .toList();
+    final richDone = events.whereType<ChatStreamDone>().single;
+    final restored = (await repository.getThread(
+      'thread-rich',
+    )).messages.single;
+
+    expect(richDone.reply, done.reply);
+    expect(richDone.uiAction?.key, ChatUiActionKey.leaveResults);
+    expect(richDone.blocks.single.type, ChatBlockType.kpis);
+    expect(richDone.highlights.single.start, 9);
+    expect(richDone.suggestions.single.text, 'Liệt kê đơn nghỉ của tôi');
+    expect(restored.uiAction, richDone.uiAction);
+    expect(restored.blocks, richDone.blocks);
+    expect(restored.highlights, richDone.highlights);
+    expect(restored.suggestions, richDone.suggestions);
+  });
+
+  test('maps live and restored Jira blocks into a typed preview', () async {
+    const jiraBlocks = <Map<String, dynamic>>[
+      {
+        'type': 'kpis',
+        'items': [
+          {'label': 'Cần làm', 'value': '1', 'tone': 'warn'},
+          {'label': 'Đang làm', 'value': '0', 'tone': 'neutral'},
+          {'label': 'Đã làm', 'value': '0', 'tone': 'neutral'},
+        ],
+      },
+      {
+        'type': 'bars',
+        'title': 'Theo trạng thái',
+        'items': [
+          {'label': 'Cần làm', 'value': 1},
+          {'label': 'Đang làm', 'value': 0},
+          {'label': 'Đã làm', 'value': 0},
+        ],
+      },
+      {
+        'type': 'list',
+        'title': 'Cần ưu tiên',
+        'items': [
+          {
+            'title': 'SCRUM-8: Đưa solution tích hợp ePro',
+            'subtitle': 'To Do · Medium · chưa có hạn',
+            'badge': 'To Do',
+            'url': 'https://jira.example/browse/SCRUM-8',
+          },
+        ],
+      },
+    ];
+    final repository = ApiChatRepository(
+      _FakeAgentRemote(
+        done: const ChatDoneDto(
+          threadId: 'jira-thread',
+          reply: 'Hiện có 1 task khớp bộ lọc.',
+          blocks: jiraBlocks,
+        ),
+        messages: const [
+          PersistedChatMessageDto(
+            role: 'assistant',
+            content: 'Hiện có 1 task khớp bộ lọc.',
+            blocks: jiraBlocks,
+          ),
+        ],
+      ),
+      _SessionStore(),
+    );
+
+    final liveDone = (await repository.sendMessage(message: 'Jira').toList())
+        .whereType<ChatStreamDone>()
+        .single;
+    final restored = (await repository.getThread(
+      'jira-thread',
+    )).messages.single;
+
+    expect(liveDone.previewResult, isA<ChatJiraIssuesResult>());
+    expect(restored.executedResult, isA<ChatJiraIssuesResult>());
+  });
+
   test('clears session when Agent returns 401', () async {
     final sessions = _SessionStore();
     final repository = ApiChatRepository(
@@ -258,12 +416,16 @@ class _FakeAgentRemote extends AgentChatRemoteDataSource {
     this.pendingAction,
     this.executed,
     this.statusLabel = 'Đang xử lý…',
+    this.done,
+    this.messages,
   }) : super(baseUrl: 'http://unused');
 
   final AgentRemoteException? error;
   final ChatConfirmationDto? pendingAction;
   final Object? executed;
   final String statusLabel;
+  final ChatDoneDto? done;
+  final List<PersistedChatMessageDto>? messages;
 
   void _throwIfNeeded() {
     final failure = error;
@@ -291,10 +453,12 @@ class _FakeAgentRemote extends AgentChatRemoteDataSource {
     _throwIfNeeded();
     return ChatThreadDetailDto(
       threadId: 'thread-1',
-      messages: [
-        PersistedChatMessageDto(role: 'user', content: 'Tạo đơn'),
-        PersistedChatMessageDto(role: 'assistant', content: 'Xác nhận?'),
-      ],
+      messages:
+          messages ??
+          const [
+            PersistedChatMessageDto(role: 'user', content: 'Tạo đơn'),
+            PersistedChatMessageDto(role: 'assistant', content: 'Xác nhận?'),
+          ],
       pendingAction:
           pendingAction ??
           const ChatConfirmationDto(
@@ -331,9 +495,12 @@ class _FakeAgentRemote extends AgentChatRemoteDataSource {
       ),
     );
     yield AgentResultEvent(executed ?? const {'_id': 'leave-id'});
-    yield const AgentDoneEvent(
-      threadId: 'server-thread',
-      citations: ['Quy định nghỉ phép'],
+    yield AgentDoneEvent(
+      done ??
+          const ChatDoneDto(
+            threadId: 'server-thread',
+            citations: ['Quy định nghỉ phép'],
+          ),
     );
   }
 }

@@ -3,14 +3,18 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../../domain/model/auth_session.dart';
+import '../../../domain/repository/auth_preference_repository.dart';
 import '../../../domain/repository/credential_repository.dart';
 
-class SecureCredentialRepository implements CredentialRepository {
+class SecureCredentialRepository
+    implements CredentialRepository, AuthPreferenceRepository {
   SecureCredentialRepository({
     FlutterSecureStorage storage = const FlutterSecureStorage(),
   }) : _storage = storage;
 
   static const _sessionKey = 'auth_session';
+  static const _lastEmailKey = 'last_login_email';
+  static const _autoLoginEnabledKey = 'auto_login_enabled';
   static const _legacyEmailKey = 'login_email';
   static const _legacyPasswordKey = 'login_password';
 
@@ -55,6 +59,27 @@ class SecureCredentialRepository implements CredentialRepository {
     await _storage.delete(key: _sessionKey);
     await _clearLegacyCredentials();
   }
+
+  @override
+  Future<String?> readLastEmail() async {
+    final email = (await _storage.read(key: _lastEmailKey))?.trim();
+    return email == null || email.isEmpty ? null : email;
+  }
+
+  @override
+  Future<void> saveLastEmail(String email) async {
+    final normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail.isEmpty) return;
+    await _storage.write(key: _lastEmailKey, value: normalizedEmail);
+  }
+
+  @override
+  Future<bool> readAutoLoginEnabled() async =>
+      await _storage.read(key: _autoLoginEnabledKey) == 'true';
+
+  @override
+  Future<void> setAutoLoginEnabled(bool enabled) =>
+      _storage.write(key: _autoLoginEnabledKey, value: enabled.toString());
 
   Future<void> _clearLegacyCredentials() async {
     await _storage.delete(key: _legacyEmailKey);

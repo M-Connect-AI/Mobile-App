@@ -556,7 +556,7 @@ as String,
 /// @nodoc
 mixin _$PersistedChatMessageDto {
 
- String get role; String get content;
+ String get role; String get content; List<Map<String, dynamic>> get blocks; List<Map<String, dynamic>> get highlights; Map<String, dynamic>? get uiAction; List<Map<String, dynamic>> get suggestions;
 /// Create a copy of PersistedChatMessageDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -569,16 +569,16 @@ $PersistedChatMessageDtoCopyWith<PersistedChatMessageDto> get copyWith => _$Pers
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PersistedChatMessageDto&&(identical(other.role, role) || other.role == role)&&(identical(other.content, content) || other.content == content));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PersistedChatMessageDto&&(identical(other.role, role) || other.role == role)&&(identical(other.content, content) || other.content == content)&&const DeepCollectionEquality().equals(other.blocks, blocks)&&const DeepCollectionEquality().equals(other.highlights, highlights)&&const DeepCollectionEquality().equals(other.uiAction, uiAction)&&const DeepCollectionEquality().equals(other.suggestions, suggestions));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,role,content);
+int get hashCode => Object.hash(runtimeType,role,content,const DeepCollectionEquality().hash(blocks),const DeepCollectionEquality().hash(highlights),const DeepCollectionEquality().hash(uiAction),const DeepCollectionEquality().hash(suggestions));
 
 @override
 String toString() {
-  return 'PersistedChatMessageDto(role: $role, content: $content)';
+  return 'PersistedChatMessageDto(role: $role, content: $content, blocks: $blocks, highlights: $highlights, uiAction: $uiAction, suggestions: $suggestions)';
 }
 
 
@@ -589,7 +589,7 @@ abstract mixin class $PersistedChatMessageDtoCopyWith<$Res>  {
   factory $PersistedChatMessageDtoCopyWith(PersistedChatMessageDto value, $Res Function(PersistedChatMessageDto) _then) = _$PersistedChatMessageDtoCopyWithImpl;
 @useResult
 $Res call({
- String role, String content
+ String role, String content, List<Map<String, dynamic>> blocks, List<Map<String, dynamic>> highlights, Map<String, dynamic>? uiAction, List<Map<String, dynamic>> suggestions
 });
 
 
@@ -606,11 +606,15 @@ class _$PersistedChatMessageDtoCopyWithImpl<$Res>
 
 /// Create a copy of PersistedChatMessageDto
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? role = null,Object? content = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? role = null,Object? content = null,Object? blocks = null,Object? highlights = null,Object? uiAction = freezed,Object? suggestions = null,}) {
   return _then(_self.copyWith(
 role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String,content: null == content ? _self.content : content // ignore: cast_nullable_to_non_nullable
-as String,
+as String,blocks: null == blocks ? _self.blocks : blocks // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,highlights: null == highlights ? _self.highlights : highlights // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,uiAction: freezed == uiAction ? _self.uiAction : uiAction // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,suggestions: null == suggestions ? _self.suggestions : suggestions // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,
   ));
 }
 
@@ -695,10 +699,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String role,  String content)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String role,  String content,  List<Map<String, dynamic>> blocks,  List<Map<String, dynamic>> highlights,  Map<String, dynamic>? uiAction,  List<Map<String, dynamic>> suggestions)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PersistedChatMessageDto() when $default != null:
-return $default(_that.role,_that.content);case _:
+return $default(_that.role,_that.content,_that.blocks,_that.highlights,_that.uiAction,_that.suggestions);case _:
   return orElse();
 
 }
@@ -716,10 +720,10 @@ return $default(_that.role,_that.content);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String role,  String content)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String role,  String content,  List<Map<String, dynamic>> blocks,  List<Map<String, dynamic>> highlights,  Map<String, dynamic>? uiAction,  List<Map<String, dynamic>> suggestions)  $default,) {final _that = this;
 switch (_that) {
 case _PersistedChatMessageDto():
-return $default(_that.role,_that.content);case _:
+return $default(_that.role,_that.content,_that.blocks,_that.highlights,_that.uiAction,_that.suggestions);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -736,10 +740,10 @@ return $default(_that.role,_that.content);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String role,  String content)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String role,  String content,  List<Map<String, dynamic>> blocks,  List<Map<String, dynamic>> highlights,  Map<String, dynamic>? uiAction,  List<Map<String, dynamic>> suggestions)?  $default,) {final _that = this;
 switch (_that) {
 case _PersistedChatMessageDto() when $default != null:
-return $default(_that.role,_that.content);case _:
+return $default(_that.role,_that.content,_that.blocks,_that.highlights,_that.uiAction,_that.suggestions);case _:
   return null;
 
 }
@@ -751,11 +755,41 @@ return $default(_that.role,_that.content);case _:
 @JsonSerializable()
 
 class _PersistedChatMessageDto implements PersistedChatMessageDto {
-  const _PersistedChatMessageDto({required this.role, this.content = ''});
+  const _PersistedChatMessageDto({required this.role, this.content = '', final  List<Map<String, dynamic>> blocks = const <Map<String, dynamic>>[], final  List<Map<String, dynamic>> highlights = const <Map<String, dynamic>>[], final  Map<String, dynamic>? uiAction, final  List<Map<String, dynamic>> suggestions = const <Map<String, dynamic>>[]}): _blocks = blocks,_highlights = highlights,_uiAction = uiAction,_suggestions = suggestions;
   factory _PersistedChatMessageDto.fromJson(Map<String, dynamic> json) => _$PersistedChatMessageDtoFromJson(json);
 
 @override final  String role;
 @override@JsonKey() final  String content;
+ final  List<Map<String, dynamic>> _blocks;
+@override@JsonKey() List<Map<String, dynamic>> get blocks {
+  if (_blocks is EqualUnmodifiableListView) return _blocks;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_blocks);
+}
+
+ final  List<Map<String, dynamic>> _highlights;
+@override@JsonKey() List<Map<String, dynamic>> get highlights {
+  if (_highlights is EqualUnmodifiableListView) return _highlights;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_highlights);
+}
+
+ final  Map<String, dynamic>? _uiAction;
+@override Map<String, dynamic>? get uiAction {
+  final value = _uiAction;
+  if (value == null) return null;
+  if (_uiAction is EqualUnmodifiableMapView) return _uiAction;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(value);
+}
+
+ final  List<Map<String, dynamic>> _suggestions;
+@override@JsonKey() List<Map<String, dynamic>> get suggestions {
+  if (_suggestions is EqualUnmodifiableListView) return _suggestions;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_suggestions);
+}
+
 
 /// Create a copy of PersistedChatMessageDto
 /// with the given fields replaced by the non-null parameter values.
@@ -770,16 +804,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PersistedChatMessageDto&&(identical(other.role, role) || other.role == role)&&(identical(other.content, content) || other.content == content));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PersistedChatMessageDto&&(identical(other.role, role) || other.role == role)&&(identical(other.content, content) || other.content == content)&&const DeepCollectionEquality().equals(other._blocks, _blocks)&&const DeepCollectionEquality().equals(other._highlights, _highlights)&&const DeepCollectionEquality().equals(other._uiAction, _uiAction)&&const DeepCollectionEquality().equals(other._suggestions, _suggestions));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,role,content);
+int get hashCode => Object.hash(runtimeType,role,content,const DeepCollectionEquality().hash(_blocks),const DeepCollectionEquality().hash(_highlights),const DeepCollectionEquality().hash(_uiAction),const DeepCollectionEquality().hash(_suggestions));
 
 @override
 String toString() {
-  return 'PersistedChatMessageDto(role: $role, content: $content)';
+  return 'PersistedChatMessageDto(role: $role, content: $content, blocks: $blocks, highlights: $highlights, uiAction: $uiAction, suggestions: $suggestions)';
 }
 
 
@@ -790,7 +824,7 @@ abstract mixin class _$PersistedChatMessageDtoCopyWith<$Res> implements $Persist
   factory _$PersistedChatMessageDtoCopyWith(_PersistedChatMessageDto value, $Res Function(_PersistedChatMessageDto) _then) = __$PersistedChatMessageDtoCopyWithImpl;
 @override @useResult
 $Res call({
- String role, String content
+ String role, String content, List<Map<String, dynamic>> blocks, List<Map<String, dynamic>> highlights, Map<String, dynamic>? uiAction, List<Map<String, dynamic>> suggestions
 });
 
 
@@ -807,15 +841,362 @@ class __$PersistedChatMessageDtoCopyWithImpl<$Res>
 
 /// Create a copy of PersistedChatMessageDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? role = null,Object? content = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? role = null,Object? content = null,Object? blocks = null,Object? highlights = null,Object? uiAction = freezed,Object? suggestions = null,}) {
   return _then(_PersistedChatMessageDto(
 role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String,content: null == content ? _self.content : content // ignore: cast_nullable_to_non_nullable
-as String,
+as String,blocks: null == blocks ? _self._blocks : blocks // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,highlights: null == highlights ? _self._highlights : highlights // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,uiAction: freezed == uiAction ? _self._uiAction : uiAction // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,suggestions: null == suggestions ? _self._suggestions : suggestions // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,
   ));
 }
 
 
+}
+
+
+/// @nodoc
+mixin _$ChatDoneDto {
+
+ String get threadId; String get reply; ChatConfirmationDto? get confirm; Map<String, dynamic>? get uiAction; List<Map<String, dynamic>> get blocks; List<Map<String, dynamic>> get highlights; List<Map<String, dynamic>> get suggestions; bool get didMutate; List<String> get citations;
+/// Create a copy of ChatDoneDto
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ChatDoneDtoCopyWith<ChatDoneDto> get copyWith => _$ChatDoneDtoCopyWithImpl<ChatDoneDto>(this as ChatDoneDto, _$identity);
+
+  /// Serializes this ChatDoneDto to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatDoneDto&&(identical(other.threadId, threadId) || other.threadId == threadId)&&(identical(other.reply, reply) || other.reply == reply)&&(identical(other.confirm, confirm) || other.confirm == confirm)&&const DeepCollectionEquality().equals(other.uiAction, uiAction)&&const DeepCollectionEquality().equals(other.blocks, blocks)&&const DeepCollectionEquality().equals(other.highlights, highlights)&&const DeepCollectionEquality().equals(other.suggestions, suggestions)&&(identical(other.didMutate, didMutate) || other.didMutate == didMutate)&&const DeepCollectionEquality().equals(other.citations, citations));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,threadId,reply,confirm,const DeepCollectionEquality().hash(uiAction),const DeepCollectionEquality().hash(blocks),const DeepCollectionEquality().hash(highlights),const DeepCollectionEquality().hash(suggestions),didMutate,const DeepCollectionEquality().hash(citations));
+
+@override
+String toString() {
+  return 'ChatDoneDto(threadId: $threadId, reply: $reply, confirm: $confirm, uiAction: $uiAction, blocks: $blocks, highlights: $highlights, suggestions: $suggestions, didMutate: $didMutate, citations: $citations)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ChatDoneDtoCopyWith<$Res>  {
+  factory $ChatDoneDtoCopyWith(ChatDoneDto value, $Res Function(ChatDoneDto) _then) = _$ChatDoneDtoCopyWithImpl;
+@useResult
+$Res call({
+ String threadId, String reply, ChatConfirmationDto? confirm, Map<String, dynamic>? uiAction, List<Map<String, dynamic>> blocks, List<Map<String, dynamic>> highlights, List<Map<String, dynamic>> suggestions, bool didMutate, List<String> citations
+});
+
+
+$ChatConfirmationDtoCopyWith<$Res>? get confirm;
+
+}
+/// @nodoc
+class _$ChatDoneDtoCopyWithImpl<$Res>
+    implements $ChatDoneDtoCopyWith<$Res> {
+  _$ChatDoneDtoCopyWithImpl(this._self, this._then);
+
+  final ChatDoneDto _self;
+  final $Res Function(ChatDoneDto) _then;
+
+/// Create a copy of ChatDoneDto
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? threadId = null,Object? reply = null,Object? confirm = freezed,Object? uiAction = freezed,Object? blocks = null,Object? highlights = null,Object? suggestions = null,Object? didMutate = null,Object? citations = null,}) {
+  return _then(_self.copyWith(
+threadId: null == threadId ? _self.threadId : threadId // ignore: cast_nullable_to_non_nullable
+as String,reply: null == reply ? _self.reply : reply // ignore: cast_nullable_to_non_nullable
+as String,confirm: freezed == confirm ? _self.confirm : confirm // ignore: cast_nullable_to_non_nullable
+as ChatConfirmationDto?,uiAction: freezed == uiAction ? _self.uiAction : uiAction // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,blocks: null == blocks ? _self.blocks : blocks // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,highlights: null == highlights ? _self.highlights : highlights // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,suggestions: null == suggestions ? _self.suggestions : suggestions // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,didMutate: null == didMutate ? _self.didMutate : didMutate // ignore: cast_nullable_to_non_nullable
+as bool,citations: null == citations ? _self.citations : citations // ignore: cast_nullable_to_non_nullable
+as List<String>,
+  ));
+}
+/// Create a copy of ChatDoneDto
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ChatConfirmationDtoCopyWith<$Res>? get confirm {
+    if (_self.confirm == null) {
+    return null;
+  }
+
+  return $ChatConfirmationDtoCopyWith<$Res>(_self.confirm!, (value) {
+    return _then(_self.copyWith(confirm: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [ChatDoneDto].
+extension ChatDoneDtoPatterns on ChatDoneDto {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ChatDoneDto value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ChatDoneDto() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ChatDoneDto value)  $default,){
+final _that = this;
+switch (_that) {
+case _ChatDoneDto():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ChatDoneDto value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ChatDoneDto() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String threadId,  String reply,  ChatConfirmationDto? confirm,  Map<String, dynamic>? uiAction,  List<Map<String, dynamic>> blocks,  List<Map<String, dynamic>> highlights,  List<Map<String, dynamic>> suggestions,  bool didMutate,  List<String> citations)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ChatDoneDto() when $default != null:
+return $default(_that.threadId,_that.reply,_that.confirm,_that.uiAction,_that.blocks,_that.highlights,_that.suggestions,_that.didMutate,_that.citations);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String threadId,  String reply,  ChatConfirmationDto? confirm,  Map<String, dynamic>? uiAction,  List<Map<String, dynamic>> blocks,  List<Map<String, dynamic>> highlights,  List<Map<String, dynamic>> suggestions,  bool didMutate,  List<String> citations)  $default,) {final _that = this;
+switch (_that) {
+case _ChatDoneDto():
+return $default(_that.threadId,_that.reply,_that.confirm,_that.uiAction,_that.blocks,_that.highlights,_that.suggestions,_that.didMutate,_that.citations);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String threadId,  String reply,  ChatConfirmationDto? confirm,  Map<String, dynamic>? uiAction,  List<Map<String, dynamic>> blocks,  List<Map<String, dynamic>> highlights,  List<Map<String, dynamic>> suggestions,  bool didMutate,  List<String> citations)?  $default,) {final _that = this;
+switch (_that) {
+case _ChatDoneDto() when $default != null:
+return $default(_that.threadId,_that.reply,_that.confirm,_that.uiAction,_that.blocks,_that.highlights,_that.suggestions,_that.didMutate,_that.citations);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _ChatDoneDto implements ChatDoneDto {
+  const _ChatDoneDto({required this.threadId, this.reply = '', this.confirm, final  Map<String, dynamic>? uiAction, final  List<Map<String, dynamic>> blocks = const <Map<String, dynamic>>[], final  List<Map<String, dynamic>> highlights = const <Map<String, dynamic>>[], final  List<Map<String, dynamic>> suggestions = const <Map<String, dynamic>>[], this.didMutate = false, final  List<String> citations = const <String>[]}): _uiAction = uiAction,_blocks = blocks,_highlights = highlights,_suggestions = suggestions,_citations = citations;
+  factory _ChatDoneDto.fromJson(Map<String, dynamic> json) => _$ChatDoneDtoFromJson(json);
+
+@override final  String threadId;
+@override@JsonKey() final  String reply;
+@override final  ChatConfirmationDto? confirm;
+ final  Map<String, dynamic>? _uiAction;
+@override Map<String, dynamic>? get uiAction {
+  final value = _uiAction;
+  if (value == null) return null;
+  if (_uiAction is EqualUnmodifiableMapView) return _uiAction;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(value);
+}
+
+ final  List<Map<String, dynamic>> _blocks;
+@override@JsonKey() List<Map<String, dynamic>> get blocks {
+  if (_blocks is EqualUnmodifiableListView) return _blocks;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_blocks);
+}
+
+ final  List<Map<String, dynamic>> _highlights;
+@override@JsonKey() List<Map<String, dynamic>> get highlights {
+  if (_highlights is EqualUnmodifiableListView) return _highlights;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_highlights);
+}
+
+ final  List<Map<String, dynamic>> _suggestions;
+@override@JsonKey() List<Map<String, dynamic>> get suggestions {
+  if (_suggestions is EqualUnmodifiableListView) return _suggestions;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_suggestions);
+}
+
+@override@JsonKey() final  bool didMutate;
+ final  List<String> _citations;
+@override@JsonKey() List<String> get citations {
+  if (_citations is EqualUnmodifiableListView) return _citations;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_citations);
+}
+
+
+/// Create a copy of ChatDoneDto
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ChatDoneDtoCopyWith<_ChatDoneDto> get copyWith => __$ChatDoneDtoCopyWithImpl<_ChatDoneDto>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$ChatDoneDtoToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChatDoneDto&&(identical(other.threadId, threadId) || other.threadId == threadId)&&(identical(other.reply, reply) || other.reply == reply)&&(identical(other.confirm, confirm) || other.confirm == confirm)&&const DeepCollectionEquality().equals(other._uiAction, _uiAction)&&const DeepCollectionEquality().equals(other._blocks, _blocks)&&const DeepCollectionEquality().equals(other._highlights, _highlights)&&const DeepCollectionEquality().equals(other._suggestions, _suggestions)&&(identical(other.didMutate, didMutate) || other.didMutate == didMutate)&&const DeepCollectionEquality().equals(other._citations, _citations));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,threadId,reply,confirm,const DeepCollectionEquality().hash(_uiAction),const DeepCollectionEquality().hash(_blocks),const DeepCollectionEquality().hash(_highlights),const DeepCollectionEquality().hash(_suggestions),didMutate,const DeepCollectionEquality().hash(_citations));
+
+@override
+String toString() {
+  return 'ChatDoneDto(threadId: $threadId, reply: $reply, confirm: $confirm, uiAction: $uiAction, blocks: $blocks, highlights: $highlights, suggestions: $suggestions, didMutate: $didMutate, citations: $citations)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ChatDoneDtoCopyWith<$Res> implements $ChatDoneDtoCopyWith<$Res> {
+  factory _$ChatDoneDtoCopyWith(_ChatDoneDto value, $Res Function(_ChatDoneDto) _then) = __$ChatDoneDtoCopyWithImpl;
+@override @useResult
+$Res call({
+ String threadId, String reply, ChatConfirmationDto? confirm, Map<String, dynamic>? uiAction, List<Map<String, dynamic>> blocks, List<Map<String, dynamic>> highlights, List<Map<String, dynamic>> suggestions, bool didMutate, List<String> citations
+});
+
+
+@override $ChatConfirmationDtoCopyWith<$Res>? get confirm;
+
+}
+/// @nodoc
+class __$ChatDoneDtoCopyWithImpl<$Res>
+    implements _$ChatDoneDtoCopyWith<$Res> {
+  __$ChatDoneDtoCopyWithImpl(this._self, this._then);
+
+  final _ChatDoneDto _self;
+  final $Res Function(_ChatDoneDto) _then;
+
+/// Create a copy of ChatDoneDto
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? threadId = null,Object? reply = null,Object? confirm = freezed,Object? uiAction = freezed,Object? blocks = null,Object? highlights = null,Object? suggestions = null,Object? didMutate = null,Object? citations = null,}) {
+  return _then(_ChatDoneDto(
+threadId: null == threadId ? _self.threadId : threadId // ignore: cast_nullable_to_non_nullable
+as String,reply: null == reply ? _self.reply : reply // ignore: cast_nullable_to_non_nullable
+as String,confirm: freezed == confirm ? _self.confirm : confirm // ignore: cast_nullable_to_non_nullable
+as ChatConfirmationDto?,uiAction: freezed == uiAction ? _self._uiAction : uiAction // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,blocks: null == blocks ? _self._blocks : blocks // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,highlights: null == highlights ? _self._highlights : highlights // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,suggestions: null == suggestions ? _self._suggestions : suggestions // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,didMutate: null == didMutate ? _self.didMutate : didMutate // ignore: cast_nullable_to_non_nullable
+as bool,citations: null == citations ? _self._citations : citations // ignore: cast_nullable_to_non_nullable
+as List<String>,
+  ));
+}
+
+/// Create a copy of ChatDoneDto
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ChatConfirmationDtoCopyWith<$Res>? get confirm {
+    if (_self.confirm == null) {
+    return null;
+  }
+
+  return $ChatConfirmationDtoCopyWith<$Res>(_self.confirm!, (value) {
+    return _then(_self.copyWith(confirm: value));
+  });
+}
 }
 
 

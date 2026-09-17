@@ -19,6 +19,7 @@ abstract final class AppTextStyle {
   static TextStyle get sm12 => _style(12, FontWeight.w600);
   static TextStyle get sm14 => _style(14, FontWeight.w600);
   static TextStyle get sm16 => _style(16, FontWeight.w600);
+  static TextStyle get sm20 => _style(20, FontWeight.w600);
   static TextStyle get b16 => _style(16, FontWeight.w700);
   static TextStyle get b20 => _style(20, FontWeight.w700);
   static TextStyle get b24 => _style(24, FontWeight.w700);

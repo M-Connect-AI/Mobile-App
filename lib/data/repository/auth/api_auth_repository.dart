@@ -41,10 +41,42 @@ class ApiAuthRepository implements AuthRepository {
     }
   }
 
+  @override
+  Future<AuthSession> register({
+    required String email,
+    required String password,
+    required String fullName,
+    required UserRole role,
+  }) async {
+    try {
+      final response = await _remoteDataSource.register(
+        RegisterRequestDto(
+          email: email.trim().toLowerCase(),
+          password: password,
+          fullName: fullName.trim(),
+          role: role == UserRole.manager ? 'MANAGER' : 'STAFF',
+        ),
+      );
+      if (response.accessToken.trim().isEmpty) {
+        throw const AuthException(
+          type: AuthFailureType.invalidResponse,
+          message: 'Máy chủ không trả về access token.',
+        );
+      }
+      return AuthSession(
+        accessToken: response.accessToken,
+        user: _mapUser(response.user),
+      );
+    } on AuthRemoteException catch (error) {
+      throw _mapException(error);
+    }
+  }
+
   AuthException _mapException(AuthRemoteException error) => AuthException(
     type: switch (error.type) {
       AuthRemoteErrorType.unauthorized => AuthFailureType.invalidCredentials,
       AuthRemoteErrorType.validation => AuthFailureType.validation,
+      AuthRemoteErrorType.conflict => AuthFailureType.conflict,
       AuthRemoteErrorType.network => AuthFailureType.network,
       AuthRemoteErrorType.server => AuthFailureType.server,
       AuthRemoteErrorType.malformed => AuthFailureType.invalidResponse,

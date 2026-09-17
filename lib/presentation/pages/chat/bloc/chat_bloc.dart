@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../domain/model/chat_message.dart';
 import '../../../../domain/model/chat_result.dart';
+import '../../../../domain/model/chat_rich_content.dart';
 import '../../../../domain/model/chat_stream_event.dart';
 import '../../../../domain/repository/chat_repository.dart';
 import '../../../../domain/repository/speech_to_text_repository.dart';
@@ -26,6 +27,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<ChatStarted>(_onStarted);
     on<MessageChanged>(_onMessageChanged);
     on<SendTextMessage>(_onSendText);
+    on<SuggestionSelected>(_onSuggestionSelected);
     on<StartRecording>(_onStartRecording);
     on<StopRecording>(_onStopRecording);
     on<CancelRecording>(_onCancelRecording);
@@ -131,6 +133,33 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     final text = state.inputText.trim();
+    if (text.isEmpty || state.isLoading || state.isRecording) return;
+    final message = ChatMessage(
+      id: 'user-${DateTime.now().microsecondsSinceEpoch}',
+      type: MessageType.text,
+      sender: MessageSender.user,
+      content: text,
+      createdAt: DateTime.now(),
+      status: MessageStatus.sending,
+    );
+    emit(
+      state.copyWith(
+        messages: [...state.messages, message],
+        inputText: '',
+        isLoading: true,
+        aiProcessingState: AiProcessingState.thinking,
+        clearBackendStatusLabel: true,
+        clearError: true,
+      ),
+    );
+    await _sendAndReceive(message, emit);
+  }
+
+  Future<void> _onSuggestionSelected(
+    SuggestionSelected event,
+    Emitter<ChatState> emit,
+  ) async {
+    final text = event.text.trim();
     if (text.isEmpty || state.isLoading || state.isRecording) return;
     final message = ChatMessage(
       id: 'user-${DateTime.now().microsecondsSinceEpoch}',
@@ -448,6 +477,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     String? assistantMessageId;
     var receivedToken = false;
     var terminalEventSeen = false;
+    ChatResultEnvelope? pendingResult;
     try {
       final responseStream = _chatRepository.sendMessage(
         message: userMessage.content!,
@@ -484,27 +514,34 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             confirmation: event.action,
           );
         } else if (event is ChatStreamResult) {
-          if (confirmationMessageId != null && event.result.isMutation) {
-            _updateConfirmation(
-              emit,
-              confirmationMessageId,
-              status: ConfirmationStatus.success,
-              result: event.result,
-              clearError: true,
-            );
-          } else {
-            _upsertAssistant(
-              emit,
-              userMessage,
-              assistantMessageId,
-              executedResult: event.result,
-            );
-          }
-          if (event.result.isMutation) {
-            _refreshCoordinator?.notify(event.result.refreshScopes);
-          }
+          pendingResult = event.result;
         } else if (event is ChatStreamDone) {
           terminalEventSeen = true;
+          final result = pendingResult ?? event.previewResult;
+          if (confirmationMessageId != null) {
+            if (event.didMutate) {
+              _updateConfirmation(
+                emit,
+                confirmationMessageId,
+                status: ConfirmationStatus.success,
+                result: result,
+                clearError: true,
+              );
+            } else if (result != null) {
+              _updateConfirmation(
+                emit,
+                confirmationMessageId,
+                status: ConfirmationStatus.failure,
+                error: S.current.mutationResultMismatch,
+              );
+            }
+          }
+          if (event.didMutate) {
+            final scopes = result?.refreshScopes.isNotEmpty == true
+                ? result!.refreshScopes
+                : _refreshScopesForTool(confirmedTool);
+            _refreshCoordinator?.notify(scopes);
+          }
           final hasAssistantMessage = state.messages.any(
             (message) => message.id == assistantMessageId,
           );
@@ -513,8 +550,21 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
               emit,
               userMessage,
               assistantMessageId,
+              content: event.reply.trim().isEmpty ? null : event.reply,
+              confirmation: event.confirmation,
               status: MessageStatus.success,
               citations: event.citations,
+              uiAction: event.uiAction,
+              blocks: event.blocks,
+              highlights: event.highlights,
+              suggestions: event.suggestions,
+              didMutate: event.didMutate,
+              executedResult:
+                  confirmationMessageId == null &&
+                      result != null &&
+                      (!result.isMutation || event.didMutate)
+                  ? result
+                  : null,
               isLoading: false,
             );
           }
@@ -591,6 +641,30 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
+  Set<DataRefreshScope> _refreshScopesForTool(ChatConfirmationTool? tool) =>
+      switch (tool) {
+        ChatConfirmationTool.createLeave ||
+        ChatConfirmationTool.updateLeave ||
+        ChatConfirmationTool.cancelLeave ||
+        ChatConfirmationTool.approveLeaves ||
+        ChatConfirmationTool.rejectLeaves => const {
+          DataRefreshScope.leaves,
+          DataRefreshScope.home,
+        },
+        ChatConfirmationTool.createTrip ||
+        ChatConfirmationTool.approveTrips ||
+        ChatConfirmationTool.rejectTrips => const {
+          DataRefreshScope.trips,
+          DataRefreshScope.home,
+        },
+        ChatConfirmationTool.createJiraTask => const {DataRefreshScope.jira},
+        ChatConfirmationTool.createOutlookEvent ||
+        ChatConfirmationTool.replyOutlookMail => const {
+          DataRefreshScope.outlook,
+        },
+        ChatConfirmationTool.unknown || null => const {},
+      };
+
   void _updateConfirmation(
     Emitter<ChatState> emit,
     String messageId, {
@@ -630,6 +704,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     ChatConfirmAction? confirmation,
     List<String>? citations,
     ChatResultEnvelope? executedResult,
+    ChatUiAction? uiAction,
+    List<ChatRichBlock>? blocks,
+    List<ChatHighlight>? highlights,
+    List<ChatSuggestion>? suggestions,
+    bool? didMutate,
     bool isLoading = true,
   }) {
     final current = state.messages
@@ -646,6 +725,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             confirmation: confirmation,
             citations: citations ?? const [],
             executedResult: executedResult,
+            uiAction: uiAction,
+            blocks: blocks ?? const [],
+            highlights: highlights ?? const [],
+            suggestions: suggestions ?? const [],
+            didMutate: didMutate ?? false,
           )
         : current.copyWith(
             content: content,
@@ -653,6 +737,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             confirmation: confirmation,
             citations: citations,
             executedResult: executedResult,
+            uiAction: uiAction,
+            blocks: blocks,
+            highlights: highlights,
+            suggestions: suggestions,
+            didMutate: didMutate,
           );
     final updated = state.messages
         .map(

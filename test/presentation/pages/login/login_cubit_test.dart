@@ -1,5 +1,6 @@
 import 'package:chatbot_project/domain/model/auth_session.dart';
 import 'package:chatbot_project/domain/repository/auth_repository.dart';
+import 'package:chatbot_project/domain/repository/auth_preference_repository.dart';
 import 'package:chatbot_project/domain/repository/credential_repository.dart';
 import 'package:chatbot_project/domain/usecase/login/login_use_case.dart';
 import 'package:chatbot_project/domain/usecase/login/restore_session_use_case.dart';
@@ -13,6 +14,7 @@ void main() {
     final cubit = LoginCubit(
       LoginUseCase(authRepository),
       RestoreSessionUseCase(authRepository, credentialRepository),
+      credentialRepository,
       credentialRepository,
     );
     addTearDown(cubit.close);
@@ -36,6 +38,7 @@ void main() {
       LoginUseCase(authRepository),
       RestoreSessionUseCase(authRepository, credentialRepository),
       credentialRepository,
+      credentialRepository,
     );
     addTearDown(cubit.close);
 
@@ -46,38 +49,43 @@ void main() {
     expect(cubit.state.failureType, AuthFailureType.invalidCredentials);
   });
 
-  test('gửi email/password và lưu session khi người dùng bật lưu', () async {
+  test('gửi email/password và lưu session khi tự động đăng nhập bật', () async {
     final authRepository = _AuthRepository();
-    final credentialRepository = _CredentialRepository();
+    final credentialRepository = _CredentialRepository(autoLoginEnabled: true);
     final cubit = LoginCubit(
       LoginUseCase(authRepository),
       RestoreSessionUseCase(authRepository, credentialRepository),
+      credentialRepository,
       credentialRepository,
     );
     addTearDown(cubit.close);
     await Future<void>.delayed(Duration.zero);
 
-    cubit.toggleRememberSession();
     await cubit.submit(email: 'A.NGUYEN@MSB.VN', password: 'password123');
 
     expect(authRepository.email, 'A.NGUYEN@MSB.VN');
     expect(authRepository.password, 'password123');
     expect(credentialRepository.savedSession, _session);
+    expect(credentialRepository.lastEmail, _session.user.email);
+    expect(credentialRepository.persist, isTrue);
     expect(cubit.state.session, _session);
     expect(cubit.state.status, LoginStatus.success);
   });
 
   test('giữ session trong RAM nhưng không persist khi tắt duy trì', () async {
-    final credentialRepository = _CredentialRepository(initial: _session);
+    final credentialRepository = _CredentialRepository(
+      initial: _session,
+      autoLoginEnabled: false,
+    );
     final cubit = LoginCubit(
       LoginUseCase(_AuthRepository()),
       RestoreSessionUseCase(_AuthRepository(), credentialRepository),
+      credentialRepository,
       credentialRepository,
     );
     addTearDown(cubit.close);
     await Future<void>.delayed(Duration.zero);
 
-    cubit.toggleRememberSession();
     await cubit.submit(email: 'b.tran@msb.vn', password: 'new-password');
 
     expect(credentialRepository.savedSession, _session);
@@ -97,6 +105,7 @@ void main() {
       LoginUseCase(authRepository),
       RestoreSessionUseCase(authRepository, credentialRepository),
       credentialRepository,
+      credentialRepository,
     );
     addTearDown(cubit.close);
     await Future<void>.delayed(Duration.zero);
@@ -105,6 +114,27 @@ void main() {
 
     expect(cubit.state.status, LoginStatus.failure);
     expect(cubit.state.failureType, AuthFailureType.network);
+  });
+
+  test('đọc email gần nhất dù tự động đăng nhập đang tắt', () async {
+    final authRepository = _AuthRepository();
+    final credentialRepository = _CredentialRepository(
+      lastEmail: 'previous@msb.vn',
+      autoLoginEnabled: false,
+    );
+    final cubit = LoginCubit(
+      LoginUseCase(authRepository),
+      RestoreSessionUseCase(authRepository, credentialRepository),
+      credentialRepository,
+      credentialRepository,
+    );
+    addTearDown(cubit.close);
+
+    await Future<void>.delayed(Duration.zero);
+
+    expect(cubit.state.savedEmail, 'previous@msb.vn');
+    expect(cubit.state.status, LoginStatus.idle);
+    expect(authRepository.profileAccessToken, isNull);
   });
 }
 
@@ -135,15 +165,27 @@ class _AuthRepository implements AuthRepository {
     if (failure != null) throw failure;
     return _session;
   }
+
+  @override
+  Future<AuthSession> register({
+    required String email,
+    required String password,
+    required String fullName,
+    required UserRole role,
+  }) async => _session;
 }
 
-class _CredentialRepository implements CredentialRepository {
-  _CredentialRepository({this.initial});
+class _CredentialRepository
+    implements CredentialRepository, AuthPreferenceRepository {
+  _CredentialRepository({this.initial, this.lastEmail, bool? autoLoginEnabled})
+    : autoLoginEnabled = autoLoginEnabled ?? initial != null;
 
   final AuthSession? initial;
   AuthSession? savedSession;
   bool wasCleared = false;
   bool? persist;
+  bool autoLoginEnabled;
+  String? lastEmail;
 
   @override
   Future<void> clear() async {
@@ -159,6 +201,19 @@ class _CredentialRepository implements CredentialRepository {
     savedSession = session;
     this.persist = persist;
   }
+
+  @override
+  Future<bool> readAutoLoginEnabled() async => autoLoginEnabled;
+
+  @override
+  Future<String?> readLastEmail() async => lastEmail;
+
+  @override
+  Future<void> saveLastEmail(String email) async => lastEmail = email;
+
+  @override
+  Future<void> setAutoLoginEnabled(bool enabled) async =>
+      autoLoginEnabled = enabled;
 }
 
 const _session = AuthSession(

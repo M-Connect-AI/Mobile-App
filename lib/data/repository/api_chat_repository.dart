@@ -5,6 +5,7 @@ import '../../domain/repository/chat_repository.dart';
 import '../../domain/repository/chat_thread_repository.dart';
 import '../../domain/repository/credential_repository.dart';
 import '../mapper/chat_result_mapper.dart';
+import '../mapper/chat_rich_content_mapper.dart';
 import '../model/chat/chat_api_models.dart';
 import '../source/remote/agent_chat_remote_data_source.dart';
 
@@ -48,10 +49,7 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
               previewHint: previewHint,
             ),
           ),
-          AgentDoneEvent() => ChatStreamDone(
-            threadId: event.threadId,
-            citations: event.citations,
-          ),
+          AgentDoneEvent() => _mapDone(event.done),
           AgentErrorEvent() => ChatStreamFailure(event.message),
           AgentInterruptedEvent() => const ChatStreamFailure(
             'Kết nối bị gián đoạn. Hãy tải lại hội thoại trước khi thử lại.',
@@ -113,6 +111,22 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
               ),
             },
             content: detail.messages[index].content,
+            uiAction: ChatRichContentMapper.mapAction(
+              detail.messages[index].uiAction,
+            ),
+            blocks: ChatRichContentMapper.mapBlocks(
+              detail.messages[index].blocks,
+            ),
+            highlights: ChatRichContentMapper.mapHighlights(
+              detail.messages[index].highlights,
+              detail.messages[index].content,
+            ),
+            suggestions: ChatRichContentMapper.mapSuggestions(
+              detail.messages[index].suggestions,
+            ),
+            executedResult: ChatResultMapper.mapJiraBlocks(
+              ChatRichContentMapper.mapBlocks(detail.messages[index].blocks),
+            ),
             createdAt: restoredAt,
             status: MessageStatus.success,
           ),
@@ -207,6 +221,14 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
         ChatConfirmationTool.rejectTrips,
       'create_jira_task' when _matchesJiraArgs(args) =>
         ChatConfirmationTool.createJiraTask,
+      'create_outlook_event' when _matchesOutlookEventArgs(args) =>
+        ChatConfirmationTool.createOutlookEvent,
+      'reply_outlook_mail'
+          when _matchesArgs(
+            args,
+            requiredStrings: const {'messageId', 'comment'},
+          ) =>
+        ChatConfirmationTool.replyOutlookMail,
       _ => ChatConfirmationTool.unknown,
     };
     return mapped;
@@ -262,8 +284,55 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
         args['assignToSprint'] is bool;
   }
 
+  bool _matchesOutlookEventArgs(Map<String, dynamic> args) {
+    const stringKeys = {
+      'subject',
+      'start',
+      'end',
+      'timeZone',
+      'location',
+      'body',
+    };
+    const allowedKeys = {...stringKeys, 'isAllDay', 'attendees'};
+    if (args.keys.any((key) => !allowedKeys.contains(key)) ||
+        !_isNonEmptyString(args['subject']) ||
+        !_isNonEmptyString(args['start'])) {
+      return false;
+    }
+    for (final key in stringKeys.difference(const {'subject', 'start'})) {
+      if (args.containsKey(key) && !_isNonEmptyString(args[key])) return false;
+    }
+    if (args.containsKey('isAllDay') && args['isAllDay'] is! bool) {
+      return false;
+    }
+    final attendees = args['attendees'];
+    return attendees == null ||
+        (attendees is List && attendees.every(_isNonEmptyString));
+  }
+
   bool _isNonEmptyString(Object? value) =>
       value is String && value.trim().isNotEmpty;
+
+  ChatStreamDone _mapDone(ChatDoneDto done) {
+    final blocks = ChatRichContentMapper.mapBlocks(done.blocks);
+    return ChatStreamDone(
+      threadId: done.threadId,
+      reply: done.reply,
+      confirmation: done.confirm == null
+          ? null
+          : _mapConfirmation(done.confirm!),
+      uiAction: ChatRichContentMapper.mapAction(done.uiAction),
+      blocks: blocks,
+      highlights: ChatRichContentMapper.mapHighlights(
+        done.highlights,
+        done.reply,
+      ),
+      suggestions: ChatRichContentMapper.mapSuggestions(done.suggestions),
+      previewResult: ChatResultMapper.mapJiraBlocks(blocks),
+      didMutate: done.didMutate,
+      citations: done.citations,
+    );
+  }
 
   ChatResultPreviewHint? _previewHint(String label) => switch (label.trim()) {
     'Đang tra cứu đơn nghỉ phép…' => ChatResultPreviewHint.leaveList,

@@ -35,10 +35,32 @@ abstract class PersistedChatMessageDto with _$PersistedChatMessageDto {
   const factory PersistedChatMessageDto({
     required String role,
     @Default('') String content,
+    @Default(<Map<String, dynamic>>[]) List<Map<String, dynamic>> blocks,
+    @Default(<Map<String, dynamic>>[]) List<Map<String, dynamic>> highlights,
+    Map<String, dynamic>? uiAction,
+    @Default(<Map<String, dynamic>>[]) List<Map<String, dynamic>> suggestions,
   }) = _PersistedChatMessageDto;
 
   factory PersistedChatMessageDto.fromJson(Map<String, dynamic> json) =>
       _$PersistedChatMessageDtoFromJson(json);
+}
+
+@freezed
+abstract class ChatDoneDto with _$ChatDoneDto {
+  const factory ChatDoneDto({
+    required String threadId,
+    @Default('') String reply,
+    ChatConfirmationDto? confirm,
+    Map<String, dynamic>? uiAction,
+    @Default(<Map<String, dynamic>>[]) List<Map<String, dynamic>> blocks,
+    @Default(<Map<String, dynamic>>[]) List<Map<String, dynamic>> highlights,
+    @Default(<Map<String, dynamic>>[]) List<Map<String, dynamic>> suggestions,
+    @Default(false) bool didMutate,
+    @Default(<String>[]) List<String> citations,
+  }) = _ChatDoneDto;
+
+  factory ChatDoneDto.fromJson(Map<String, dynamic> json) =>
+      _$ChatDoneDtoFromJson(json);
 }
 
 @freezed

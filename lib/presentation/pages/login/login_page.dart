@@ -3,16 +3,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../common/components/app_text_field.dart';
-import '../../../common/components/app_text_style.dart';
 import '../../../common/components/app_toast.dart';
 import '../../../common/components/irh_button.dart';
 import '../../../common/components/irh_text.dart';
 import '../../../common/extensions/responsive_extension.dart';
 import '../../../common/themes/theme_extensions/app_color_scheme.dart';
 import '../../../domain/repository/auth_repository.dart';
+import '../../../domain/repository/auth_preference_repository.dart';
 import '../../../domain/repository/credential_repository.dart';
 import '../../../domain/usecase/login/login_use_case.dart';
 import '../../../domain/usecase/login/restore_session_use_case.dart';
@@ -35,6 +34,7 @@ class LoginPage extends StatelessWidget {
           context.read<CredentialRepository>(),
         ),
         context.read<CredentialRepository>(),
+        context.read<AuthPreferenceRepository>(),
       ),
       child: const _LoginView(),
     );
@@ -59,23 +59,6 @@ class _LoginViewState extends State<_LoginView> {
       email: values['email'].toString().trim().toLowerCase(),
       password: values['password'].toString(),
     );
-  }
-
-  Future<void> _showAccountDialog() async {
-    final email = await showDialog<String>(
-      context: context,
-      builder: (_) => const _AccountPickerDialog(),
-    );
-    if (!mounted || email == null) return;
-
-    final selectedEmail = email.isNotEmpty
-        ? email
-        : await showDialog<String>(
-            context: context,
-            builder: (_) => const _OtherEmailDialog(),
-          );
-    if (!mounted || selectedEmail == null) return;
-    _formKey.currentState?.fields['email']?.didChange(selectedEmail);
   }
 
   @override
@@ -127,7 +110,6 @@ class _LoginViewState extends State<_LoginView> {
                               _LoginFormCard(
                                 formKey: _formKey,
                                 onLogin: _login,
-                                onSelectAccount: _showAccountDialog,
                               ).paddingSymmetric(horizontal: 16.width),
                             ],
                           ).paddingLTRB(0, 64.height, 0, 24.height),
@@ -152,6 +134,7 @@ class _LoginViewState extends State<_LoginView> {
   String _failureMessage(S strings, LoginState state) {
     return switch (state.failureType) {
       AuthFailureType.invalidCredentials => strings.loginFailed,
+      AuthFailureType.conflict => strings.loginFailed,
       AuthFailureType.network => strings.loginNetworkError,
       AuthFailureType.server => strings.loginServerError,
       AuthFailureType.validation =>
@@ -181,15 +164,10 @@ class _LoginLogo extends StatelessWidget {
 }
 
 class _LoginFormCard extends StatelessWidget {
-  const _LoginFormCard({
-    required this.formKey,
-    required this.onLogin,
-    required this.onSelectAccount,
-  });
+  const _LoginFormCard({required this.formKey, required this.onLogin});
 
   final GlobalKey<FormBuilderState> formKey;
   final VoidCallback onLogin;
-  final VoidCallback onSelectAccount;
 
   @override
   Widget build(BuildContext context) {
@@ -229,8 +207,6 @@ class _LoginFormCard extends StatelessWidget {
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
                 hintText: strings.emailHint,
-                readOnly: true,
-                onTap: onSelectAccount,
                 validator: (value) => (value?.trim().isEmpty ?? true)
                     ? strings.emailRequired
                     : null,
@@ -293,6 +269,12 @@ class _LoginFormCard extends StatelessWidget {
               },
             ),
             20.height.heightBox,
+            IrhRichTextButton(
+              text: strings.noAccount,
+              actionText: strings.registerButton,
+              onPressed: () => const RegisterRoute().push(context),
+            ),
+            12.height.heightBox,
             IrhText.small(
               strings.loginCopyright,
               textAlign: TextAlign.center,
@@ -320,159 +302,6 @@ class _LoginField extends StatelessWidget {
         8.height.heightBox,
         child,
       ],
-    );
-  }
-}
-
-class _AccountPickerDialog extends StatelessWidget {
-  const _AccountPickerDialog();
-
-  @override
-  Widget build(BuildContext context) {
-    final strings = S.of(context);
-    final accounts = [
-      (email: 'a.nguyen@msb.vn', label: strings.employeeNguyenVanA),
-      (email: 'c.le@msb.vn', label: strings.employeeLeVanC),
-      (email: 'b.tran@msb.vn', label: strings.managerTranThiB),
-    ];
-    final colors = context.appColorScheme;
-    return Dialog(
-      backgroundColor: colors.surfaceSecondary,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Text(
-                strings.suggestedAccounts,
-                style: AppTextStyle.b20.copyWith(color: colors.textPrimary),
-              ),
-            ),
-            16.height.heightBox,
-            ...accounts.map(
-              (account) => _AccountDialogOption(
-                email: account.email,
-                label: account.label,
-              ),
-            ),
-            8.height.heightBox,
-            IrhTextButton(
-              label: strings.otherEmail,
-              onPressed: () => GoRouterHelper(context).pop(''),
-            ),
-          ],
-        ).paddingAll(20.width),
-      ),
-    );
-  }
-}
-
-class _AccountDialogOption extends StatelessWidget {
-  const _AccountDialogOption({required this.email, required this.label});
-
-  final String email;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColorScheme;
-    return CupertinoButton(
-      key: ValueKey('account-$email'),
-      minimumSize: Size.zero,
-      padding: EdgeInsets.symmetric(horizontal: 12.width, vertical: 12.height),
-      onPressed: () => GoRouterHelper(context).pop(email),
-      child: Row(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: AppTextStyle.m16.copyWith(color: colors.textPrimary),
-              ),
-              4.height.heightBox,
-              Text(
-                email,
-                style: AppTextStyle.r14.copyWith(color: colors.textSecondary),
-              ),
-            ],
-          ).expanded(),
-          Icon(
-            CupertinoIcons.chevron_right,
-            size: 16.sp,
-            color: colors.iconSecondary,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _OtherEmailDialog extends StatefulWidget {
-  const _OtherEmailDialog();
-
-  @override
-  State<_OtherEmailDialog> createState() => _OtherEmailDialogState();
-}
-
-class _OtherEmailDialogState extends State<_OtherEmailDialog> {
-  final _formKey = GlobalKey<FormBuilderState>();
-
-  void _select() {
-    if (!(_formKey.currentState?.saveAndValidate() ?? false)) return;
-    GoRouterHelper(
-      context,
-    ).pop(_formKey.currentState!.value['otherEmail'].toString().trim());
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final strings = S.of(context);
-    final colors = context.appColorScheme;
-    return Dialog(
-      backgroundColor: colors.surfaceSecondary,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: FormBuilder(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              strings.otherEmailTitle,
-              style: AppTextStyle.b20.copyWith(color: colors.textPrimary),
-            ),
-            16.height.heightBox,
-            AppTextField(
-              context,
-              key: const Key('other-email-field'),
-              name: 'otherEmail',
-              keyboardType: TextInputType.emailAddress,
-              textInputAction: TextInputAction.done,
-              labelText: strings.emailLabel,
-              hintText: strings.emailHint,
-              validator: (value) => (value?.trim().isEmpty ?? true)
-                  ? strings.emailRequired
-                  : null,
-              onSubmitted: (_) => _select(),
-            ),
-            12.height.heightBox,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IrhTextButton(
-                  label: strings.cancelButton,
-                  onPressed: () => GoRouterHelper(context).pop(),
-                ),
-                12.width.widthBox,
-                IrhTextButton(label: strings.selectButton, onPressed: _select),
-              ],
-            ),
-          ],
-        ).paddingAll(20.width),
-      ),
     );
   }
 }
