@@ -7,12 +7,12 @@ on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: Shorebird release version, for example 1.0.0+1
+        description: Release version, for example 1.0.0+1
         required: true
         type: string
 
 concurrency:
-  group: shorebird-release-android
+  group: release-android
   cancel-in-progress: false
 
 permissions:
@@ -20,7 +20,6 @@ permissions:
 
 env:
   FLUTTER_VERSION: 3.41.9
-  SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
   ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/android/app/mconnect-chatbot-upload.jks
   ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
   ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
@@ -64,7 +63,6 @@ jobs:
           HR_API_BASE_URL: ${{ vars.HR_API_BASE_URL }}
           AGENT_API_BASE_URL: ${{ vars.AGENT_API_BASE_URL }}
         run: |
-          test -n "$SHOREBIRD_TOKEN" || { echo "Missing SHOREBIRD_TOKEN" >&2; exit 1; }
           test -n "$KEYSTORE_BASE64" || { echo "Missing ANDROID_KEYSTORE_BASE64" >&2; exit 1; }
           test -n "$ANDROID_KEY_ALIAS" || { echo "Missing ANDROID_KEY_ALIAS" >&2; exit 1; }
           test -n "$ANDROID_STORE_PASSWORD" || { echo "Missing ANDROID_STORE_PASSWORD" >&2; exit 1; }
@@ -98,11 +96,6 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Set up Shorebird
-        uses: shorebirdtech/setup-shorebird@v1
-        with:
-          cache: true
-
       - name: Install dependencies
         run: flutter pub get
 
@@ -112,16 +105,12 @@ jobs:
       - name: Test
         run: flutter test
 
-      - name: Create Shorebird release
-        id: shorebird-release
-        uses: shorebirdtech/shorebird-release@v1
-        with:
-          platform: android
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          args: >-
-            --artifact=apk
-            --build-name=${{ steps.version.outputs.build_name }}
-            --build-number=${{ steps.version.outputs.build_number }}
+      - name: Build release APK
+        run: >-
+          flutter build apk
+          --release
+          --build-name=${{ steps.version.outputs.build_name }}
+          --build-number=${{ steps.version.outputs.build_number }}
 
       - name: Prepare release asset
         env:
@@ -140,7 +129,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
           VERSION: ${{ steps.version.outputs.version }}
-          SHOREBIRD_RELEASE: ${{ steps.shorebird-release.outputs.release-version }}
         run: |
           ASSET="mconnect-chatbot-$VERSION.apk"
           if gh release view "$TAG" >/dev/null 2>&1; then
@@ -149,18 +137,16 @@ jobs:
             gh release create "$TAG" "$ASSET" \
               --target "$GITHUB_SHA" \
               --title "MConnect Chatbot $VERSION" \
-              --notes "Internal Android APK. Shorebird release: $SHOREBIRD_RELEASE" \
+              --notes "Internal Android APK." \
               --prerelease
           fi
 
       - name: Write summary
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          PATCH_BASE: ${{ steps.shorebird-release.outputs.release-version }}
         run: |
           {
             echo "## Android internal release"
             echo "- Version: $VERSION"
-            echo "- Shorebird release: $PATCH_BASE"
             echo "- Package: com.irohasu.mconnect.chatbot"
           } >> "$GITHUB_STEP_SUMMARY"

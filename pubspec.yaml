@@ -85,7 +85,6 @@ flutter:
   uses-material-design: true
   assets:
     - .env
-    - shorebird.yaml
     - assets/image/
 
   fonts:

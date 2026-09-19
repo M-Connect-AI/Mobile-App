@@ -118,13 +118,10 @@ tester sẽ không thể cài APK mới đè lên phiên bản hiện có.
 
 ## CI/CD Android nội bộ
 
-Repository có ba GitHub Actions workflow:
+Repository có hai GitHub Actions workflow:
 
 - `CI`: kiểm tra format, analyze và test trên pull request/push vào `main`.
-- `Release Android APK`: tạo Shorebird release, ký APK và đính kèm APK vào
-  GitHub prerelease.
-- `Patch Android with Shorebird`: phát hành patch thủ công cho một release và
-  track cụ thể.
+- `Release Android APK`: build, ký APK và đính kèm APK vào GitHub prerelease.
 
 Tạo GitHub Environment tên `internal`, sau đó cấu hình:
 
@@ -134,7 +131,6 @@ HR_API_BASE_URL
 AGENT_API_BASE_URL
 
 Secrets:
-SHOREBIRD_TOKEN
 ANDROID_KEYSTORE_BASE64
 ANDROID_KEY_ALIAS
 ANDROID_STORE_PASSWORD
@@ -154,6 +150,4 @@ git push origin 'internal-v1.0.0+1'
 ```
 
 Cũng có thể chạy workflow `Release Android APK` thủ công và nhập version dạng
-`1.0.0+1`. Để tạo patch, chạy workflow `Patch Android with Shorebird`, nhập
-đúng Shorebird release version và chọn `staging`. Sau khi QA xác nhận, chạy lại
-cho track `stable` hoặc promote patch trên Shorebird Console.
+`1.0.0+1`.

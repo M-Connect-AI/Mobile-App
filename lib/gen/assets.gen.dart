@@ -71,10 +71,9 @@ class Assets {
 
   static const String aEnv = '.env';
   static const $AssetsImageGen image = $AssetsImageGen();
-  static const String shorebird = 'shorebird.yaml';
 
   /// List of all assets
-  static List<String> get values => [aEnv, shorebird];
+  static List<String> get values => [aEnv];
 }
 
 class SvgGenImage {
