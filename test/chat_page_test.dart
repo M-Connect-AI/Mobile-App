@@ -33,15 +33,10 @@ void main() {
     expect(find.text(S.current.newConversationTitle), findsOneWidget);
     expect(find.textContaining('Xin chào'), findsOneWidget);
 
-    await tester.enterText(
-      find.byKey(const Key('chat-text-field')),
-      'Xin chào AI',
-    );
+    await tester.enterText(find.byKey(const Key('chat-text-field')), 'Xin chào AI');
     await tester.pump();
     expect(find.byKey(const ValueKey('send-icon')), findsOneWidget);
-    final inputBeforeSend = tester.widget<TextField>(
-      find.byKey(const Key('chat-text-field')),
-    );
+    final inputBeforeSend = tester.widget<TextField>(find.byKey(const Key('chat-text-field')));
     expect(inputBeforeSend.focusNode?.hasFocus, isTrue);
 
     await tester.tap(find.byKey(const Key('chat-action-button')));
@@ -81,9 +76,7 @@ void main() {
     expect(find.textContaining('Tôi đã hiểu yêu cầu'), findsOneWidget);
   });
 
-  testWidgets('tracks backend status label while a turn is running', (
-    tester,
-  ) async {
+  testWidgets('tracks backend status label while a turn is running', (tester) async {
     await tester.pumpWidget(const _ChatTestApp());
     await tester.pump();
     await tester.enterText(find.byKey(const Key('chat-text-field')), '#status');
@@ -101,9 +94,7 @@ void main() {
     expect(chatBloc.state.backendStatusLabel, isNull);
   });
 
-  testWidgets('reconciles done reply and sends exact suggestion text', (
-    tester,
-  ) async {
+  testWidgets('reconciles done reply and sends exact suggestion text', (tester) async {
     final repository = _FakeChatRepository();
     await tester.pumpWidget(_ChatTestApp(repository: repository));
     await tester.pump();
@@ -123,16 +114,11 @@ void main() {
     expect(repository.requests.last.message, 'Liệt kê đơn nghỉ của tôi');
   });
 
-  testWidgets('renders backend confirmation and sends confirm flag', (
-    tester,
-  ) async {
+  testWidgets('renders backend confirmation and sends confirm flag', (tester) async {
     final repository = _FakeChatRepository();
     await tester.pumpWidget(_ChatTestApp(repository: repository));
     await tester.pump();
-    await tester.enterText(
-      find.byKey(const Key('chat-text-field')),
-      '#confirm',
-    );
+    await tester.enterText(find.byKey(const Key('chat-text-field')), '#confirm');
     await tester.pump();
     await tester.tap(find.byKey(const Key('chat-action-button')));
     await tester.pump();
@@ -140,10 +126,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Gửi đơn nghỉ phép'), findsNothing);
-    expect(
-      find.text(S.current.leaveBalanceProjectedTitle('6')),
-      findsOneWidget,
-    );
+    expect(find.text(S.current.leaveBalanceProjectedTitle('6')), findsOneWidget);
     expect(find.textContaining(S.current.leaveAnnualType), findsOneWidget);
     expect(find.text('8 ngày'), findsOneWidget);
     expect(find.text('2 ngày'), findsOneWidget);
@@ -159,18 +142,15 @@ void main() {
 
     expect(repository.requests.last.message, 'Xác nhận');
     expect(repository.requests.last.confirm, isTrue);
-    expect(
-      repository.requests.last.confirmedTool,
-      ChatConfirmationTool.createLeave,
-    );
+    expect(repository.requests.last.confirmedTool, ChatConfirmationTool.createLeave);
     expect(repository.requests.last.threadId, 'thread-new');
     expect(find.text(S.current.createLeaveSuccess), findsOneWidget);
-    expect(find.textContaining('leave-id'), findsOneWidget);
+    // The request code is intentionally hidden; the success card surfaces the
+    // resulting request status instead.
+    expect(find.text(S.current.statusPending), findsOneWidget);
   });
 
-  testWidgets('supports half-day leave and blocks an insufficient balance', (
-    tester,
-  ) async {
+  testWidgets('supports half-day leave and blocks an insufficient balance', (tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final message = ChatMessage(
@@ -199,17 +179,10 @@ void main() {
     expect(find.text('0 ngày'), findsOneWidget);
     expect(find.text(S.current.leaveBalanceInsufficientHelper), findsOneWidget);
     expect(find.text(S.current.leaveBalanceChooseDatesAgain), findsOneWidget);
-    expect(
-      tester
-          .widget<IrhButton>(find.byKey(const Key('confirm-action')))
-          .onPressed,
-      isNull,
-    );
+    expect(tester.widget<IrhButton>(find.byKey(const Key('confirm-action'))).onPressed, isNull);
   });
 
-  testWidgets('recalculates a valid half-day request consistently', (
-    tester,
-  ) async {
+  testWidgets('recalculates a valid half-day request consistently', (tester) async {
     final message = ChatMessage(
       id: 'half-day-balance',
       type: MessageType.text,
@@ -218,11 +191,7 @@ void main() {
       status: MessageStatus.success,
       confirmation: const ChatConfirmAction(
         tool: ChatConfirmationTool.createLeave,
-        args: {
-          'type': 'ANNUAL',
-          'reason': 'Việc cá nhân',
-          'requestedDays': 1.5,
-        },
+        args: {'type': 'ANNUAL', 'reason': 'Việc cá nhân', 'requestedDays': 1.5},
         summary: 'Gửi đơn nghỉ phép',
       ),
     );
@@ -233,17 +202,10 @@ void main() {
     expect(find.text('1.5 ngày'), findsOneWidget);
     expect(find.text('6.5 ngày'), findsOneWidget);
     expect(find.bySemanticsLabel(RegExp('6[.,]5.*12')), findsOneWidget);
-    expect(
-      tester
-          .widget<IrhButton>(find.byKey(const Key('confirm-action')))
-          .onPressed,
-      isNotNull,
-    );
+    expect(tester.widget<IrhButton>(find.byKey(const Key('confirm-action'))).onPressed, isNotNull);
   });
 
-  testWidgets('shows only the current balance before dates are selected', (
-    tester,
-  ) async {
+  testWidgets('shows only the current balance before dates are selected', (tester) async {
     final message = ChatMessage(
       id: 'current-leave-balance',
       type: MessageType.text,
@@ -263,23 +225,13 @@ void main() {
     expect(find.text(S.current.leaveBalanceCurrentTitle), findsNWidgets(2));
     expect(find.text(S.current.leaveBalanceRequestedLabel), findsNothing);
     expect(find.text(S.current.leaveBalanceProjectedLabel), findsNothing);
-    expect(
-      tester
-          .widget<IrhButton>(find.byKey(const Key('confirm-action')))
-          .onPressed,
-      isNull,
-    );
+    expect(tester.widget<IrhButton>(find.byKey(const Key('confirm-action'))).onPressed, isNull);
   });
 
-  testWidgets('renders read preview without a completed-action label', (
-    tester,
-  ) async {
+  testWidgets('renders read preview without a completed-action label', (tester) async {
     await tester.pumpWidget(const _ChatTestApp());
     await tester.pump();
-    await tester.enterText(
-      find.byKey(const Key('chat-text-field')),
-      '#preview',
-    );
+    await tester.enterText(find.byKey(const Key('chat-text-field')), '#preview');
     await tester.pump();
     await tester.tap(find.byKey(const Key('chat-action-button')));
     await tester.pumpAndSettle();
@@ -288,26 +240,19 @@ void main() {
     expect(find.text(S.current.chatActionCompleted), findsNothing);
   });
 
-  testWidgets('keeps a failed confirmation on the same card and retries', (
-    tester,
-  ) async {
+  testWidgets('keeps a failed confirmation on the same card and retries', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final repository = _FakeChatRepository(failConfirmationOnce: true);
     await tester.pumpWidget(_ChatTestApp(repository: repository));
     await tester.pump();
-    await tester.enterText(
-      find.byKey(const Key('chat-text-field')),
-      '#confirm',
-    );
+    await tester.enterText(find.byKey(const Key('chat-text-field')), '#confirm');
     await tester.pump();
     await tester.tap(find.byKey(const Key('chat-action-button')));
     await tester.pump(const Duration(seconds: 1));
 
     final card = find.byWidgetPredicate(
-      (widget) =>
-          widget.key?.toString().contains('confirmation-card-assistant-') ==
-          true,
+      (widget) => widget.key?.toString().contains('confirmation-card-assistant-') == true,
     );
     expect(card, findsOneWidget);
     await tester.ensureVisible(find.byKey(const Key('confirm-action')));
@@ -326,16 +271,11 @@ void main() {
     expect(card, findsOneWidget);
   });
 
-  testWidgets('does not accept a mutation result when done disagrees', (
-    tester,
-  ) async {
+  testWidgets('does not accept a mutation result when done disagrees', (tester) async {
     final repository = _FakeChatRepository(didMutateOnConfirm: false);
     await tester.pumpWidget(_ChatTestApp(repository: repository));
     await tester.pump();
-    await tester.enterText(
-      find.byKey(const Key('chat-text-field')),
-      '#confirm',
-    );
+    await tester.enterText(find.byKey(const Key('chat-text-field')), '#confirm');
     await tester.pump();
     await tester.tap(find.byKey(const Key('chat-action-button')));
     await tester.pumpAndSettle();
@@ -346,17 +286,12 @@ void main() {
     expect(find.text(S.current.createLeaveSuccess), findsNothing);
   });
 
-  testWidgets('prefills the composer when editing a confirmation card', (
-    tester,
-  ) async {
+  testWidgets('prefills the composer when editing a confirmation card', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(const _ChatTestApp());
     await tester.pump();
-    await tester.enterText(
-      find.byKey(const Key('chat-text-field')),
-      '#confirm',
-    );
+    await tester.enterText(find.byKey(const Key('chat-text-field')), '#confirm');
     await tester.pump();
     await tester.tap(find.byKey(const Key('chat-action-button')));
     await tester.pump(const Duration(seconds: 1));
@@ -364,16 +299,12 @@ void main() {
     await tester.tap(find.byKey(const Key('edit-action')));
     await tester.pump();
 
-    final input = tester.widget<TextField>(
-      find.byKey(const Key('chat-text-field')),
-    );
+    final input = tester.widget<TextField>(find.byKey(const Key('chat-text-field')));
     expect(input.controller?.text, S.current.editConfirmationPrompt);
     expect(find.byKey(const Key('confirm-action')), findsOneWidget);
   });
 
-  testWidgets('notifies chat history and affected mutation data', (
-    tester,
-  ) async {
+  testWidgets('notifies chat history and affected mutation data', (tester) async {
     final coordinator = DataRefreshCoordinator();
     addTearDown(coordinator.close);
     final changes = <Set<DataRefreshScope>>[];
@@ -382,10 +313,7 @@ void main() {
 
     await tester.pumpWidget(_ChatTestApp(refreshCoordinator: coordinator));
     await tester.pump();
-    await tester.enterText(
-      find.byKey(const Key('chat-text-field')),
-      '#preview',
-    );
+    await tester.enterText(find.byKey(const Key('chat-text-field')), '#preview');
     await tester.pump();
     await tester.tap(find.byKey(const Key('chat-action-button')));
     await tester.pumpAndSettle();
@@ -394,10 +322,7 @@ void main() {
     ]);
     changes.clear();
 
-    await tester.enterText(
-      find.byKey(const Key('chat-text-field')),
-      '#confirm',
-    );
+    await tester.enterText(find.byKey(const Key('chat-text-field')), '#confirm');
     await tester.pump();
     await tester.tap(find.byKey(const Key('chat-action-button')));
     await tester.pumpAndSettle();
@@ -407,23 +332,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(changes.where((scopes) => scopes.contains(DataRefreshScope.home)), [
-      {
-        DataRefreshScope.leaves,
-        DataRefreshScope.home,
-        DataRefreshScope.chatHistory,
-      },
+      {DataRefreshScope.leaves, DataRefreshScope.home, DataRefreshScope.chatHistory},
     ]);
-    expect(
-      changes
-          .where((scopes) => scopes.contains(DataRefreshScope.chatHistory))
-          .length,
-      2,
-    );
+    expect(changes.where((scopes) => scopes.contains(DataRefreshScope.chatHistory)).length, 2);
   });
 
-  testWidgets('renders Jira issue details, stats and truncated state', (
-    tester,
-  ) async {
+  testWidgets('renders Jira issue details, stats and truncated state', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 1800));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
@@ -464,18 +378,13 @@ void main() {
     expect(find.text(S.current.jiraPossiblyTruncated), findsNothing);
   });
 
-  testWidgets('renders a single Jira task as a tappable detail card', (
-    tester,
-  ) async {
+  testWidgets('renders a single Jira task as a tappable detail card', (tester) async {
     Uri? openedUri;
     await tester.pumpWidget(
       _BubbleTestApp(
         message: _assistantMessage(
           result: ChatResultEnvelope.jiraIssues(
-            JiraIssueList(
-              issues: const [_jiraIssue],
-              stats: _jiraStats(total: 1, toDo: 1),
-            ),
+            JiraIssueList(issues: const [_jiraIssue], stats: _jiraStats(total: 1, toDo: 1)),
           ),
         ),
         openExternalUrl: (uri) async {
@@ -500,16 +409,10 @@ void main() {
     expect(openedUri, Uri.parse('https://jira.example/browse/SCRUM-1'));
   });
 
-  testWidgets('renders compact Jira metadata and overdue states', (
-    tester,
-  ) async {
+  testWidgets('renders compact Jira metadata and overdue states', (tester) async {
     final longTitle = List.filled(20, 'Tiêu đề Jira rất dài').join(' ');
     final issues = [
-      _jiraIssue.copyWith(
-        key: 'SCRUM-OVERDUE',
-        summary: 'Task quá hạn',
-        dueDate: '2020-01-01',
-      ),
+      _jiraIssue.copyWith(key: 'SCRUM-OVERDUE', summary: 'Task quá hạn', dueDate: '2020-01-01'),
       _jiraIssue.copyWith(
         key: 'SCRUM-DONE',
         summary: 'Task đã hoàn thành',
@@ -554,9 +457,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('renders Jira empty and capability-unavailable states', (
-    tester,
-  ) async {
+  testWidgets('renders Jira empty and capability-unavailable states', (tester) async {
     await tester.pumpWidget(
       _BubbleTestApp(
         message: _assistantMessage(
@@ -586,17 +487,11 @@ void main() {
 
     await tester.pumpWidget(const _ChatTestApp());
     await tester.pump();
-    await tester.enterText(
-      find.byKey(const Key('chat-text-field')),
-      '#capability',
-    );
+    await tester.enterText(find.byKey(const Key('chat-text-field')), '#capability');
     await tester.pump();
     await tester.tap(find.byKey(const Key('chat-action-button')));
     await tester.pumpAndSettle();
-    expect(
-      find.text('Jira MCP chưa được cấu hình credential trên máy chủ.'),
-      findsWidgets,
-    );
+    expect(find.text('Jira MCP chưa được cấu hình credential trên máy chủ.'), findsWidgets);
   });
 
   testWidgets('opens only validated HTTP citations externally', (tester) async {
@@ -638,23 +533,12 @@ void main() {
           createdAt: DateTime(2026, 9, 17),
           status: MessageStatus.success,
           highlights: const [
-            ChatHighlight(
-              start: 9,
-              end: 10,
-              kind: ChatHighlightKind.metric,
-              tone: ChatTone.ok,
-            ),
+            ChatHighlight(start: 9, end: 10, kind: ChatHighlightKind.metric, tone: ChatTone.ok),
           ],
           blocks: const [
             ChatRichBlock(
               type: ChatBlockType.kpis,
-              items: [
-                ChatBlockItem(
-                  label: 'Phép còn lại',
-                  value: 9,
-                  tone: ChatTone.ok,
-                ),
-              ],
+              items: [ChatBlockItem(label: 'Phép còn lại', value: 9, tone: ChatTone.ok)],
             ),
           ],
           uiAction: const ChatUiAction(
@@ -662,9 +546,7 @@ void main() {
             label: 'Xem đơn nghỉ phép',
             path: '/leaves',
           ),
-          suggestions: const [
-            ChatSuggestion(label: 'Xem chi tiết', text: 'Liệt kê đơn nghỉ'),
-          ],
+          suggestions: const [ChatSuggestion(label: 'Xem chi tiết', text: 'Liệt kê đơn nghỉ')],
         ),
       ),
     );
@@ -675,18 +557,14 @@ void main() {
     expect(find.text('9'), findsOneWidget);
     expect(find.text('Xem đơn nghỉ phép'), findsOneWidget);
     expect(
-      tester
-          .getSize(find.byKey(const Key('chat-ui-action-leaveResults')))
-          .width,
+      tester.getSize(find.byKey(const Key('chat-ui-action-leaveResults'))).width,
       greaterThan(200),
     );
     expect(find.text('Xem chi tiết'), findsNothing);
     expect(find.byType(IrhOptionChip), findsNothing);
   });
 
-  testWidgets('text size also scales result labels and rich blocks', (
-    tester,
-  ) async {
+  testWidgets('text size also scales result labels and rich blocks', (tester) async {
     final cubit = ChatTextSizeCubit(_ChatTextSizeRepository());
     addTearDown(cubit.close);
     await tester.pumpWidget(
@@ -713,9 +591,7 @@ void main() {
     final richLabel = find.text('Phép còn lại');
     double renderedSize(Finder finder) {
       final text = tester.widget<Text>(finder);
-      return MediaQuery.textScalerOf(
-        tester.element(finder),
-      ).scale(text.style!.fontSize!);
+      return MediaQuery.textScalerOf(tester.element(finder)).scale(text.style!.fontSize!);
     }
 
     final initialResultSize = renderedSize(result);
@@ -727,9 +603,7 @@ void main() {
     expect(renderedSize(richLabel), closeTo(initialRichSize * 1.5, .01));
   });
 
-  testWidgets('renders empty, single and multiple leave rich list items', (
-    tester,
-  ) async {
+  testWidgets('renders empty, single and multiple leave rich list items', (tester) async {
     await tester.binding.setSurfaceSize(const Size(320, 1200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -750,11 +624,7 @@ void main() {
             ChatBlockItem(label: 'Đã duyệt', value: 1),
           ],
         ),
-        ChatRichBlock(
-          type: ChatBlockType.list,
-          title: 'Đơn nghỉ phép',
-          items: items,
-        ),
+        ChatRichBlock(type: ChatBlockType.list, title: 'Đơn nghỉ phép', items: items),
       ],
     );
 
@@ -778,15 +648,12 @@ void main() {
 
     const second = ChatBlockItem(
       title: 'Phép năm · Tên nhân viên rất dài để kiểm tra bố cục',
-      subtitle:
-          'Lý do nghỉ dài để kiểm tra nội dung trên hai dòng và dấu ba chấm',
+      subtitle: 'Lý do nghỉ dài để kiểm tra nội dung trên hai dòng và dấu ba chấm',
       kicker: '25/09/2026 → 27/09/2026 · 3 ngày',
       badge: 'Đã duyệt',
       tone: ChatTone.ok,
     );
-    await tester.pumpWidget(
-      _BubbleTestApp(message: messageFor([first, second])),
-    );
+    await tester.pumpWidget(_BubbleTestApp(message: messageFor([first, second])));
     expect(find.text('Đơn nghỉ phép (2)'), findsOneWidget);
     expect(find.text('25/09/2026 · 1 ngày'), findsOneWidget);
     expect(find.text('25/09/2026 → 27/09/2026 · 3 ngày'), findsOneWidget);
@@ -794,66 +661,49 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets(
-    'aligns leave balance values with two-line labels at larger text scale',
-    (tester) async {
-      await tester.binding.setSurfaceSize(const Size(320, 1200));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
-      tester.binding.platformDispatcher.textScaleFactorTestValue = 1.5;
-      addTearDown(
-        tester.binding.platformDispatcher.clearTextScaleFactorTestValue,
-      );
-
-      await tester.pumpWidget(
-        _BubbleTestApp(
-          message: ChatMessage(
-            id: 'leave-balance-layout',
-            type: MessageType.text,
-            sender: MessageSender.assistant,
-            content: 'Số dư ngày phép',
-            createdAt: DateTime(2026, 9, 20),
-            status: MessageStatus.success,
-            blocks: const [
-              ChatRichBlock(
-                type: ChatBlockType.kpis,
-                items: [
-                  ChatBlockItem(label: 'Phép năm còn', value: '12 ngày'),
-                  ChatBlockItem(label: 'Phép năm tổng', value: '12 ngày'),
-                  ChatBlockItem(
-                    label: 'Khung phép ốm rất dài',
-                    value: '30 ngày',
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
-
-      final values = find.text('12 ngày');
-      expect(values, findsNWidgets(2));
-      expect(
-        tester.getTopLeft(values.at(0)).dy,
-        tester.getTopLeft(values.at(1)).dy,
-      );
-      expect(
-        tester.getTopLeft(values.at(0)).dy,
-        tester.getTopLeft(find.text('30 ngày')).dy,
-      );
-      final remainingColor = tester.widget<Text>(values.at(0)).style!.color;
-      final totalColor = tester.widget<Text>(values.at(1)).style!.color;
-      expect(remainingColor, isNot(totalColor));
-      expect(
-        totalColor,
-        tester.widget<Text>(find.text('30 ngày')).style!.color,
-      );
-      expect(tester.takeException(), isNull);
-    },
-  );
-
-  testWidgets('shows suggestion chips only for the latest message', (
+  testWidgets('aligns leave balance values with two-line labels at larger text scale', (
     tester,
   ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    tester.binding.platformDispatcher.textScaleFactorTestValue = 1.5;
+    addTearDown(tester.binding.platformDispatcher.clearTextScaleFactorTestValue);
+
+    await tester.pumpWidget(
+      _BubbleTestApp(
+        message: ChatMessage(
+          id: 'leave-balance-layout',
+          type: MessageType.text,
+          sender: MessageSender.assistant,
+          content: 'Số dư ngày phép',
+          createdAt: DateTime(2026, 9, 20),
+          status: MessageStatus.success,
+          blocks: const [
+            ChatRichBlock(
+              type: ChatBlockType.kpis,
+              items: [
+                ChatBlockItem(label: 'Phép năm còn', value: '12 ngày'),
+                ChatBlockItem(label: 'Phép năm tổng', value: '12 ngày'),
+                ChatBlockItem(label: 'Khung phép ốm rất dài', value: '30 ngày'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+
+    final values = find.text('12 ngày');
+    expect(values, findsNWidgets(2));
+    expect(tester.getTopLeft(values.at(0)).dy, tester.getTopLeft(values.at(1)).dy);
+    expect(tester.getTopLeft(values.at(0)).dy, tester.getTopLeft(find.text('30 ngày')).dy);
+    final remainingColor = tester.widget<Text>(values.at(0)).style!.color;
+    final totalColor = tester.widget<Text>(values.at(1)).style!.color;
+    expect(remainingColor, isNot(totalColor));
+    expect(totalColor, tester.widget<Text>(find.text('30 ngày')).style!.color);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('shows suggestion chips only for the latest message', (tester) async {
     final messages = [
       ChatMessage(
         id: 'older-suggestions',
@@ -862,9 +712,7 @@ void main() {
         content: 'Phản hồi cũ',
         createdAt: DateTime(2026, 9, 17, 8),
         status: MessageStatus.success,
-        suggestions: const [
-          ChatSuggestion(label: 'Lựa chọn cũ', text: 'Nội dung cũ'),
-        ],
+        suggestions: const [ChatSuggestion(label: 'Lựa chọn cũ', text: 'Nội dung cũ')],
       ),
       ChatMessage(
         id: 'latest-suggestions',
@@ -903,9 +751,7 @@ void main() {
     expect(find.byKey(const Key('chat-quick-actions')), findsOneWidget);
     expect(
       tester.getBottomLeft(find.byKey(const Key('chat-quick-actions'))).dy,
-      lessThanOrEqualTo(
-        tester.getTopLeft(find.byKey(const Key('chat-text-field'))).dy,
-      ),
+      lessThanOrEqualTo(tester.getTopLeft(find.byKey(const Key('chat-text-field'))).dy),
     );
   });
 
@@ -917,17 +763,11 @@ void main() {
       createdAt: DateTime(2026, 9, 17),
       status: MessageStatus.success,
       executedResult: ChatResultEnvelope.jiraIssues(
-        JiraIssueList(
-          issues: const [_jiraIssue],
-          stats: _jiraStats(total: 1, toDo: 1),
-        ),
+        JiraIssueList(issues: const [_jiraIssue], stats: _jiraStats(total: 1, toDo: 1)),
       ),
       suggestions: const [
         ChatSuggestion(label: 'Tóm tắt task thứ nhất', text: 'Tóm tắt task'),
-        ChatSuggestion(
-          label: 'Chuyển trạng thái task này',
-          text: 'Chuyển trạng thái task',
-        ),
+        ChatSuggestion(label: 'Chuyển trạng thái task này', text: 'Chuyển trạng thái task'),
       ],
     );
     await tester.pumpWidget(
@@ -974,9 +814,7 @@ void main() {
     expect(opened?.toString(), 'https://jira.example/browse/SCRUM-1');
   });
 
-  testWidgets('renders created Jira result with validated task link', (
-    tester,
-  ) async {
+  testWidgets('renders created Jira result with validated task link', (tester) async {
     await tester.pumpWidget(
       _BubbleTestApp(
         message: _assistantMessage(
@@ -1003,9 +841,7 @@ void main() {
     expect(find.byKey(const Key('jira-created-SCRUM-2')), findsOneWidget);
   });
 
-  testWidgets('dismisses keyboard when tapping outside the chat input', (
-    tester,
-  ) async {
+  testWidgets('dismisses keyboard when tapping outside the chat input', (tester) async {
     await tester.pumpWidget(const _ChatTestApp());
     await tester.pump();
 
@@ -1022,8 +858,7 @@ void main() {
   });
 
   testWidgets('shows back, title and settings in the app bar', (tester) async {
-    const longTitle =
-        'Cuộc trò chuyện có tiêu đề rất dài cần được rút gọn trên một dòng';
+    const longTitle = 'Cuộc trò chuyện có tiêu đề rất dài cần được rút gọn trên một dòng';
     await tester.pumpWidget(const _ChatTestApp(title: longTitle));
     await tester.pump();
 
@@ -1036,93 +871,73 @@ void main() {
     expect(title.overflow, TextOverflow.ellipsis);
   });
 
-  testWidgets(
-    'settings button opens text settings and keeps the chosen size on return',
-    (tester) async {
-      tester.view.physicalSize = const Size(390, 844);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets('settings button opens text settings and keeps the chosen size on return', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
-      final sizeRepository = _ChatTextSizeRepository();
-      final sizeCubit = ChatTextSizeCubit(sizeRepository);
-      final router = GoRouter(
-        initialLocation: ChatRoute.path,
-        routes: appRoutes,
-      );
-      addTearDown(sizeCubit.close);
-      addTearDown(router.dispose);
+    final sizeRepository = _ChatTextSizeRepository();
+    final sizeCubit = ChatTextSizeCubit(sizeRepository);
+    final router = GoRouter(initialLocation: ChatRoute.path, routes: appRoutes);
+    addTearDown(sizeCubit.close);
+    addTearDown(router.dispose);
 
-      await tester.pumpWidget(
-        MultiRepositoryProvider(
-          providers: [
-            RepositoryProvider<ChatRepository>.value(
-              value: _FakeChatRepository(),
-            ),
-            RepositoryProvider<SpeechToTextRepository>.value(
-              value: FakeSpeechToTextRepository(),
-            ),
-            RepositoryProvider<CredentialRepository>.value(
-              value: const _FakeCredentialRepository(),
-            ),
-          ],
-          child: BlocProvider.value(
-            value: sizeCubit,
-            child: ScreenUtilInit(
-              designSize: const Size(390, 844),
-              builder: (context, child) => MaterialApp.router(
-                locale: const Locale('vi'),
-                localizationsDelegates: const [
-                  S.delegate,
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                supportedLocales: S.delegate.supportedLocales,
-                routerConfig: router,
-              ),
+    await tester.pumpWidget(
+      MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider<ChatRepository>.value(value: _FakeChatRepository()),
+          RepositoryProvider<SpeechToTextRepository>.value(value: FakeSpeechToTextRepository()),
+          RepositoryProvider<CredentialRepository>.value(value: const _FakeCredentialRepository()),
+        ],
+        child: BlocProvider.value(
+          value: sizeCubit,
+          child: ScreenUtilInit(
+            designSize: const Size(390, 844),
+            builder: (context, child) => MaterialApp.router(
+              locale: const Locale('vi'),
+              localizationsDelegates: const [
+                S.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: S.delegate.supportedLocales,
+              routerConfig: router,
             ),
           ),
         ),
-      );
-      await tester.pumpAndSettle();
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const Key('chat-settings-button')));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('chat-text-size-slider')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('chat-settings-button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('chat-text-size-slider')), findsOneWidget);
 
-      final slider = tester.getRect(
-        find.byKey(const Key('chat-text-size-slider')),
-      );
-      await tester.dragFrom(
-        Offset(slider.left + slider.width / 3, slider.center.dy),
-        const Offset(300, 0),
-      );
-      await tester.pumpAndSettle();
-      expect(sizeCubit.state, ChatTextSizeCubit.maxSize);
-      expect(sizeRepository.savedSize, ChatTextSizeCubit.maxSize);
+    final slider = tester.getRect(find.byKey(const Key('chat-text-size-slider')));
+    await tester.dragFrom(
+      Offset(slider.left + slider.width / 3, slider.center.dy),
+      const Offset(300, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(sizeCubit.state, ChatTextSizeCubit.maxSize);
+    expect(sizeRepository.savedSize, ChatTextSizeCubit.maxSize);
 
-      await tester.tap(find.byKey(const Key('chat-settings-back-button')));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('chat-list')), findsOneWidget);
-      expect(sizeCubit.state, ChatTextSizeCubit.maxSize);
-      final welcome = tester.widget<Text>(find.text(S.current.welcomeMessage));
-      expect(
-        welcome.style?.fontSize,
-        ScreenUtil().setSp(ChatTextSizeCubit.maxSize),
-      );
-    },
-  );
+    await tester.tap(find.byKey(const Key('chat-settings-back-button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('chat-list')), findsOneWidget);
+    expect(sizeCubit.state, ChatTextSizeCubit.maxSize);
+    final welcome = tester.widget<Text>(find.text(S.current.welcomeMessage));
+    expect(welcome.style?.fontSize, ScreenUtil().setSp(ChatTextSizeCubit.maxSize));
+  });
 
-  testWidgets('keeps request cancellation on the confirmation card', (
-    tester,
-  ) async {
+  testWidgets('keeps request cancellation on the confirmation card', (tester) async {
     await tester.pumpWidget(const _ChatTestApp());
     await tester.pump();
-    await tester.enterText(
-      find.byKey(const Key('chat-text-field')),
-      '#confirm',
-    );
+    await tester.enterText(find.byKey(const Key('chat-text-field')), '#confirm');
     await tester.pump();
     await tester.tap(find.byKey(const Key('chat-action-button')));
     await tester.pumpAndSettle();
@@ -1137,9 +952,7 @@ void main() {
     expect(find.byKey(const Key('cancel-request-action')), findsNothing);
   });
 
-  testWidgets('scrolls to the latest message when the keyboard opens', (
-    tester,
-  ) async {
+  testWidgets('scrolls to the latest message when the keyboard opens', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -1164,9 +977,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final listView = tester.widget<ListView>(
-      find.byKey(const Key('chat-list')),
-    );
+    final listView = tester.widget<ListView>(find.byKey(const Key('chat-list')));
     final position = listView.controller!.position;
     final maxBeforeKeyboard = position.maxScrollExtent;
 
@@ -1178,9 +989,7 @@ void main() {
     expect(position.pixels, closeTo(position.maxScrollExtent, .1));
   });
 
-  testWidgets('shows the supplied thread title in the floating header', (
-    tester,
-  ) async {
+  testWidgets('shows the supplied thread title in the floating header', (tester) async {
     await tester.pumpWidget(const _ChatTestApp(title: 'Chính sách nghỉ phép'));
     await tester.pump();
 
@@ -1188,18 +997,14 @@ void main() {
     expect(find.text(S.current.newConversationTitle), findsNothing);
   });
 
-  testWidgets('uses a localized fallback for an empty thread title', (
-    tester,
-  ) async {
+  testWidgets('uses a localized fallback for an empty thread title', (tester) async {
     await tester.pumpWidget(const _ChatTestApp(title: '   '));
     await tester.pump();
 
     expect(find.text(S.current.newConversationTitle), findsOneWidget);
   });
 
-  testWidgets('scrolls to the latest message after restoring a thread', (
-    tester,
-  ) async {
+  testWidgets('scrolls to the latest message after restoring a thread', (tester) async {
     final messages = List.generate(
       24,
       (index) => ChatMessage(
@@ -1219,18 +1024,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final listView = tester.widget<ListView>(
-      find.byKey(const Key('chat-list')),
-    );
+    final listView = tester.widget<ListView>(find.byKey(const Key('chat-list')));
     final position = listView.controller!.position;
     expect(position.maxScrollExtent, greaterThan(0));
     expect(position.pixels, closeTo(position.maxScrollExtent, .1));
     expect(find.byKey(const Key('assistant-subtitle')), findsNothing);
   });
 
-  testWidgets('settles at the bottom while restored lazy items are laid out', (
-    tester,
-  ) async {
+  testWidgets('settles at the bottom while restored lazy items are laid out', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -1258,9 +1059,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final listView = tester.widget<ListView>(
-      find.byKey(const Key('chat-list')),
-    );
+    final listView = tester.widget<ListView>(find.byKey(const Key('chat-list')));
     final position = listView.controller!.position;
     expect(position.maxScrollExtent, greaterThan(0));
     expect(position.pixels, closeTo(position.maxScrollExtent, .1));
@@ -1269,12 +1068,7 @@ void main() {
 }
 
 class _ChatTestApp extends StatelessWidget {
-  const _ChatTestApp({
-    this.repository,
-    this.threadId,
-    this.title,
-    this.refreshCoordinator,
-  });
+  const _ChatTestApp({this.repository, this.threadId, this.title, this.refreshCoordinator});
 
   final _FakeChatRepository? repository;
   final String? threadId;
@@ -1285,38 +1079,33 @@ class _ChatTestApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(390, 844),
-      builder: (context, child) =>
-          RepositoryProvider<CredentialRepository>.value(
-            value: const _FakeCredentialRepository(),
-            child: MaterialApp(
-              locale: const Locale('vi'),
-              localizationsDelegates: const [
-                S.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: S.delegate.supportedLocales,
-              home: BlocProvider(
-                create: (_) => ChatBloc(
-                  repository ?? _FakeChatRepository(),
-                  FakeSpeechToTextRepository(),
-                  refreshCoordinator: refreshCoordinator,
-                )..add(ChatStarted(threadId: threadId)),
-                child: ChatPage(title: title),
-              ),
-            ),
+      builder: (context, child) => RepositoryProvider<CredentialRepository>.value(
+        value: const _FakeCredentialRepository(),
+        child: MaterialApp(
+          locale: const Locale('vi'),
+          localizationsDelegates: const [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: S.delegate.supportedLocales,
+          home: BlocProvider(
+            create: (_) => ChatBloc(
+              repository ?? _FakeChatRepository(),
+              FakeSpeechToTextRepository(),
+              refreshCoordinator: refreshCoordinator,
+            )..add(ChatStarted(threadId: threadId)),
+            child: ChatPage(title: title),
           ),
+        ),
+      ),
     );
   }
 }
 
 class _BubbleTestApp extends StatelessWidget {
-  const _BubbleTestApp({
-    required this.message,
-    this.openExternalUrl,
-    this.textSizeCubit,
-  });
+  const _BubbleTestApp({required this.message, this.openExternalUrl, this.textSizeCubit});
 
   final ChatMessage message;
   final ExternalUrlOpener? openExternalUrl;
@@ -1369,12 +1158,7 @@ class _FakeChatRepository implements ChatRepository {
   final Set<String> _failedOnce = {};
   bool _confirmationFailed = false;
   final List<
-    ({
-      String message,
-      String? threadId,
-      bool confirm,
-      ChatConfirmationTool? confirmedTool,
-    })
+    ({String message, String? threadId, bool confirm, ChatConfirmationTool? confirmedTool})
   >
   requests = [];
 
@@ -1431,19 +1215,12 @@ class _FakeChatRepository implements ChatRepository {
             items: [ChatBlockItem(label: 'Phép còn lại', value: 9)],
           ),
         ],
-        suggestions: [
-          ChatSuggestion(
-            label: 'Xem chi tiết',
-            text: 'Liệt kê đơn nghỉ của tôi',
-          ),
-        ],
+        suggestions: [ChatSuggestion(label: 'Xem chi tiết', text: 'Liệt kê đơn nghỉ của tôi')],
       );
       return;
     }
     if (message == '#capability') {
-      yield const ChatStreamFailure(
-        'Jira MCP chưa được cấu hình credential trên máy chủ.',
-      );
+      yield const ChatStreamFailure('Jira MCP chưa được cấu hình credential trên máy chủ.');
       return;
     }
     if (message == '#confirm') {
@@ -1491,13 +1268,8 @@ class _FakeChatRepository implements ChatRepository {
       );
       return;
     }
-    yield const ChatStreamToken(
-      'Tôi đã hiểu yêu cầu của bạn. Đây là phản hồi từ AI.',
-    );
-    yield ChatStreamDone(
-      threadId: threadId ?? 'thread-new',
-      citations: const [],
-    );
+    yield const ChatStreamToken('Tôi đã hiểu yêu cầu của bạn. Đây là phản hồi từ AI.');
+    yield ChatStreamDone(threadId: threadId ?? 'thread-new', citations: const []);
   }
 
   @override
@@ -1532,19 +1304,17 @@ const _chatSession = AuthSession(
   ),
 );
 
-ChatMessage _assistantMessage({
-  ChatResultEnvelope? result,
-  List<String> citations = const [],
-}) => ChatMessage(
-  id: 'assistant-test',
-  type: MessageType.text,
-  sender: MessageSender.assistant,
-  content: 'Kết quả Jira',
-  createdAt: DateTime(2026, 9, 16),
-  status: MessageStatus.success,
-  citations: citations,
-  executedResult: result,
-);
+ChatMessage _assistantMessage({ChatResultEnvelope? result, List<String> citations = const []}) =>
+    ChatMessage(
+      id: 'assistant-test',
+      type: MessageType.text,
+      sender: MessageSender.assistant,
+      content: 'Kết quả Jira',
+      createdAt: DateTime(2026, 9, 16),
+      status: MessageStatus.success,
+      citations: citations,
+      executedResult: result,
+    );
 
 const _jiraIssue = JiraIssue(
   key: 'SCRUM-1',
@@ -1559,25 +1329,21 @@ const _jiraIssue = JiraIssue(
   url: 'https://jira.example/browse/SCRUM-1',
 );
 
-JiraStats _jiraStats({
-  required int total,
-  int toDo = 0,
-  int inProgress = 0,
-  int done = 0,
-}) => JiraStats(
-  total: total,
-  toDo: toDo,
-  inProgress: inProgress,
-  done: done,
-  unknown: total - toDo - inProgress - done,
-  overdue: 0,
-  stale: 0,
-  withoutDueDate: 0,
-  byStatus: const {},
-  byPriority: const {},
-  byIssueType: const {},
-  byProject: const {},
-);
+JiraStats _jiraStats({required int total, int toDo = 0, int inProgress = 0, int done = 0}) =>
+    JiraStats(
+      total: total,
+      toDo: toDo,
+      inProgress: inProgress,
+      done: done,
+      unknown: total - toDo - inProgress - done,
+      overdue: 0,
+      stale: 0,
+      withoutDueDate: 0,
+      byStatus: const {},
+      byPriority: const {},
+      byIssueType: const {},
+      byProject: const {},
+    );
 
 class FakeSpeechToTextRepository implements SpeechToTextRepository {
   @override
