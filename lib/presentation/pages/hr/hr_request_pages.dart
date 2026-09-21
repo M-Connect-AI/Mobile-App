@@ -2,7 +2,6 @@ import 'package:awesome_extensions/awesome_extensions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../common/components/irh_button.dart';
@@ -52,17 +51,11 @@ class HrRequestDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-    create: (context) =>
-        HrRequestCubit(
-          context.read<HrRequestRepository>(),
-          context.read<CredentialRepository>(),
-          refreshCoordinator: context.read<DataRefreshCoordinator?>(),
-        )..loadDetail(
-          kind,
-          id,
-          employeeName: employeeName,
-          initialTrip: initialTrip,
-        ),
+    create: (context) => HrRequestCubit(
+      context.read<HrRequestRepository>(),
+      context.read<CredentialRepository>(),
+      refreshCoordinator: context.read<DataRefreshCoordinator?>(),
+    )..loadDetail(kind, id, employeeName: employeeName, initialTrip: initialTrip),
     child: _RequestScreen(kind: kind, id: id),
   );
 }
@@ -76,9 +69,7 @@ class _RequestScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = S.of(context);
-    final title = kind == HrRequestKind.leave
-        ? strings.leaveRequest
-        : strings.businessTrip;
+    final title = kind == HrRequestKind.leave ? strings.leaveRequest : strings.businessTrip;
     return BlocListener<HrRequestCubit, HrRequestState>(
       listener: (context, state) {
         if (state.failure == HrFailureType.sessionExpired ||
@@ -87,10 +78,7 @@ class _RequestScreen extends StatelessWidget {
         } else if (state.batchResult != null) {
           final message = state.batchFailed == 0
               ? strings.batchResult(state.batchResult!)
-              : strings.batchResultPartial(
-                  state.batchResult!,
-                  state.batchFailed,
-                );
+              : strings.batchResultPartial(state.batchResult!, state.batchFailed);
           if (state.batchFailed == 0) {
             AppToast.showSuccess(context, message);
           } else {
@@ -99,17 +87,13 @@ class _RequestScreen extends StatelessWidget {
         } else if (state.actionError != null) {
           AppToast.showError(
             context,
-            state.actionError!.message ??
-                _failureMessage(context, state.actionError!.type),
+            state.actionError!.message ?? _failureMessage(context, state.actionError!.type),
           );
         } else if (state.actionSuccess != null) {
           final message = switch ((kind, state.actionSuccess!)) {
-            (HrRequestKind.leave, HrAction.approve) =>
-              strings.approveLeavesSuccess,
-            (HrRequestKind.leave, HrAction.reject) =>
-              strings.rejectLeavesSuccess,
-            (HrRequestKind.trip, HrAction.approve) =>
-              strings.approveTripsSuccess,
+            (HrRequestKind.leave, HrAction.approve) => strings.approveLeavesSuccess,
+            (HrRequestKind.leave, HrAction.reject) => strings.rejectLeavesSuccess,
+            (HrRequestKind.trip, HrAction.approve) => strings.approveTripsSuccess,
             _ => strings.rejectTripsSuccess,
           };
           AppToast.showSuccess(context, message);
@@ -152,17 +136,11 @@ class _RequestScreen extends StatelessWidget {
                 builder: (context, state) {
                   if (state.status == HrRequestStatus.loading) {
                     return Center(
-                      child: CircularProgressIndicator(
-                        color: context.appColorScheme.iconBrand,
-                      ),
+                      child: CircularProgressIndicator(color: context.appColorScheme.iconBrand),
                     ).expanded();
                   }
                   if (state.status == HrRequestStatus.failure) {
-                    return _RequestError(
-                      kind: kind,
-                      id: id,
-                      failure: state.failure!,
-                    ).expanded();
+                    return _RequestError(kind: kind, id: id, failure: state.failure!).expanded();
                   }
                   if (id != null) {
                     return _RequestDetail(kind: kind, state: state).expanded();
@@ -186,15 +164,11 @@ class _RequestList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final count = kind == HrRequestKind.leave
-        ? state.leaves.length
-        : state.trips.length;
+    final count = kind == HrRequestKind.leave ? state.leaves.length : state.trips.length;
     if (count == 0) {
       return Center(
         child: IrhText.regular(
-          kind == HrRequestKind.leave
-              ? S.of(context).leaveListEmpty
-              : S.of(context).tripListEmpty,
+          kind == HrRequestKind.leave ? S.of(context).leaveListEmpty : S.of(context).tripListEmpty,
           textAlign: TextAlign.center,
           color: context.appColorScheme.textSecondary,
         ).paddingAll(24.width),
@@ -202,9 +176,7 @@ class _RequestList extends StatelessWidget {
     }
     return Column(
       children: [
-        if (kind == HrRequestKind.leave &&
-            state.isManager &&
-            state.selectedIds.isNotEmpty)
+        if (kind == HrRequestKind.leave && state.isManager && state.selectedIds.isNotEmpty)
           IrhButton(
             label: S.of(context).approveBatchCount(state.selectedIds.length),
             loading: state.action == HrAction.batchApprove,
@@ -215,53 +187,33 @@ class _RequestList extends StatelessWidget {
         RefreshIndicator(
           onRefresh: () => context.read<HrRequestCubit>().loadList(kind),
           child: ListView.separated(
-            padding: EdgeInsets.fromLTRB(
-              16.width,
-              8.height,
-              16.width,
-              24.height,
-            ),
+            padding: EdgeInsets.fromLTRB(16.width, 8.height, 16.width, 24.height),
             itemCount: count,
             separatorBuilder: (context, index) => 12.height.heightBox,
             itemBuilder: (context, index) {
-              final leave = kind == HrRequestKind.leave
-                  ? state.leaves[index]
-                  : null;
-              final trip = kind == HrRequestKind.trip
-                  ? state.trips[index]
-                  : null;
+              final leave = kind == HrRequestKind.leave ? state.leaves[index] : null;
+              final trip = kind == HrRequestKind.trip ? state.trips[index] : null;
               return Row(
                 children: [
-                  if (leave != null &&
-                      state.isManager &&
-                      leave.status == RequestStatus.pending)
+                  if (leave != null && state.isManager && leave.status == RequestStatus.pending)
                     CupertinoButton(
                       padding: EdgeInsets.zero,
                       onPressed: state.action != null
                           ? null
-                          : () => context
-                                .read<HrRequestCubit>()
-                                .toggleSelection(leave.id),
+                          : () => context.read<HrRequestCubit>().toggleSelection(leave.id),
                       child: IrhText.medium(
                         state.selectedIds.contains(leave.id) ? '☑' : '□',
                         color: context.appColorScheme.textBrand,
                       ),
                     ),
                   _RequestCard(
-                    title: leave == null
-                        ? trip!.destination
-                        : _leaveType(context, leave.type),
-                    subtitle: leave == null
-                        ? trip!.purpose
-                        : leave.employeeName ?? leave.reason,
+                    title: leave == null ? trip!.destination : _leaveType(context, leave.type),
+                    subtitle: leave == null ? trip!.purpose : leave.employeeName ?? leave.reason,
                     from: leave?.from ?? trip!.from,
                     to: leave?.to ?? trip!.to,
                     status: leave?.status ?? trip!.status,
                     onPressed: () => kind == HrRequestKind.leave
-                        ? LeaveDetailRoute(
-                            leave!.id,
-                            $extra: leave.employeeName,
-                          ).push(context)
+                        ? LeaveDetailRoute(leave!.id, $extra: leave.employeeName).push(context)
                         : TripDetailRoute(trip!.id, $extra: trip).push(context),
                   ).expanded(),
                 ],
@@ -315,9 +267,7 @@ class _RequestCard extends StatelessWidget {
               ],
             ),
             8.height.heightBox,
-            IrhText.small(
-              S.of(context).tripDateRange(_formatDate(from), _formatDate(to)),
-            ),
+            IrhText.small(S.of(context).tripDateRange(_formatDate(from), _formatDate(to))),
             8.height.heightBox,
             IrhText.small(subtitle, maxLines: 2),
           ],
@@ -358,44 +308,13 @@ class _RequestDetail extends StatelessWidget {
               Row(
                 children: [
                   IrhText.medium(
-                    leave == null
-                        ? trip!.destination
-                        : _leaveType(context, leave.type),
+                    leave == null ? trip!.destination : _leaveType(context, leave.type),
                   ).expanded(),
                   8.width.widthBox,
                   _RequestStatus(status: status),
                 ],
               ),
               20.height.heightBox,
-              IrhText.small(strings.requestCode),
-              Row(
-                children: [
-                  IrhText.regular(
-                    _shortId(leave?.id ?? trip!.id),
-                    maxLines: 1,
-                  ).expanded(),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () async {
-                      await Clipboard.setData(
-                        ClipboardData(text: leave?.id ?? trip!.id),
-                      );
-                      if (context.mounted) {
-                        AppToast.showSuccess(
-                          context,
-                          strings.requestCodeCopied,
-                        );
-                      }
-                    },
-                    child: Icon(
-                      CupertinoIcons.doc_on_doc,
-                      size: 20.sp,
-                      color: context.appColorScheme.iconBrand,
-                    ),
-                  ),
-                ],
-              ),
-              16.height.heightBox,
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -408,31 +327,21 @@ class _RequestDetail extends StatelessWidget {
                     label: strings.requestCreatedAt,
                     value: (leave?.createdAt ?? trip?.createdAt) == null
                         ? strings.valueUnavailable
-                        : _formatDate(
-                            (leave?.createdAt ?? trip!.createdAt)!.toLocal(),
-                          ),
+                        : _formatDate((leave?.createdAt ?? trip!.createdAt)!.toLocal()),
                   ).expanded(),
                 ],
               ),
-              if ((leave?.employeeName ?? trip?.employeeName)
-                  case final name?) ...[
+              if ((leave?.employeeName ?? trip?.employeeName) case final name?) ...[
                 _DetailField(label: strings.employeeName, value: name),
               ],
               _DetailField(
                 label: strings.requestPeriod,
                 value: leave == null
                     ? _formatPeriod(trip!.from, trip.to)
-                    : _formatPeriod(
-                        leave.from,
-                        leave.to,
-                        days: leave.days,
-                        strings: strings,
-                      ),
+                    : _formatPeriod(leave.from, leave.to, days: leave.days, strings: strings),
               ),
               _DetailField(
-                label: leave == null
-                    ? strings.tripPurpose
-                    : strings.leaveReason,
+                label: leave == null ? strings.tripPurpose : strings.leaveReason,
                 value: leave?.reason ?? trip!.purpose,
               ),
             ],
@@ -496,11 +405,7 @@ class _RequestStatus extends StatelessWidget {
 }
 
 class _RequestError extends StatelessWidget {
-  const _RequestError({
-    required this.kind,
-    required this.id,
-    required this.failure,
-  });
+  const _RequestError({required this.kind, required this.id, required this.failure});
 
   final HrRequestKind kind;
   final String? id;
@@ -551,9 +456,7 @@ class _ActionBar extends StatelessWidget {
             foregroundColor: colors.textError,
             borderColor: colors.textError,
             loading: action == HrAction.reject,
-            onPressed: action == null
-                ? () => _confirmAction(context, HrAction.reject, kind)
-                : null,
+            onPressed: action == null ? () => _confirmAction(context, HrAction.reject, kind) : null,
           ).expanded(),
           12.width.widthBox,
           IrhButton(
@@ -569,11 +472,7 @@ class _ActionBar extends StatelessWidget {
   }
 }
 
-Future<void> _confirmAction(
-  BuildContext context,
-  HrAction action,
-  HrRequestKind kind,
-) async {
+Future<void> _confirmAction(BuildContext context, HrAction action, HrRequestKind kind) async {
   final strings = S.of(context);
   final confirmed = await showDialog<bool>(
     context: context,
@@ -585,9 +484,7 @@ Future<void> _confirmAction(
                   ? strings.rejectTripConfirmTitle
                   : strings.rejectConfirmTitle
             : action == HrAction.batchApprove
-            ? strings.approveBatchCount(
-                context.read<HrRequestCubit>().state.selectedIds.length,
-              )
+            ? strings.approveBatchCount(context.read<HrRequestCubit>().state.selectedIds.length)
             : kind == HrRequestKind.trip
             ? strings.approveTripConfirmTitle
             : strings.approveConfirmTitle,
@@ -607,9 +504,7 @@ Future<void> _confirmAction(
           onPressed: () => GoRouterHelper(dialogContext).pop(false),
         ),
         IrhTextButton(
-          label: action == HrAction.reject
-              ? strings.rejectRequest
-              : strings.approveRequest,
+          label: action == HrAction.reject ? strings.rejectRequest : strings.approveRequest,
           onPressed: () => GoRouterHelper(dialogContext).pop(true),
         ),
       ],
@@ -622,9 +517,7 @@ Future<void> _confirmAction(
   } else {
     await cubit.setStatus(
       kind,
-      action == HrAction.approve
-          ? RequestStatus.approved
-          : RequestStatus.rejected,
+      action == HrAction.approve ? RequestStatus.approved : RequestStatus.rejected,
     );
   }
 }
@@ -632,18 +525,11 @@ Future<void> _confirmAction(
 String _formatDate(DateTime date) =>
     '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
 
-String _shortId(String id) => id.length <= 18
-    ? id
-    : '${id.substring(0, 8)}…${id.substring(id.length - 6)}';
-
 String _formatPeriod(DateTime from, DateTime to, {int? days, S? strings}) {
-  final range =
-      from.year == to.year && from.month == to.month && from.day == to.day
+  final range = from.year == to.year && from.month == to.month && from.day == to.day
       ? _formatDate(from)
       : '${_formatDate(from)} → ${_formatDate(to)}';
-  return days == null || strings == null
-      ? range
-      : '$range · ${strings.leaveDayCount(days)}';
+  return days == null || strings == null ? range : '$range · ${strings.leaveDayCount(days)}';
 }
 
 String _failureMessage(BuildContext context, HrFailureType failure) {

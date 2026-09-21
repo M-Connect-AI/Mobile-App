@@ -30,21 +30,14 @@ import 'jira_result_card.dart';
 
 typedef ExternalUrlOpener = Future<bool> Function(Uri uri);
 
-Future<bool> _openExternalUrl(Uri uri) =>
-    launchUrl(uri, mode: LaunchMode.externalApplication);
+Future<bool> _openExternalUrl(Uri uri) => launchUrl(uri, mode: LaunchMode.externalApplication);
 
 double _chatBodyFontSize(BuildContext context) => context
-    .select<ChatTextSizeCubit?, int>(
-      (cubit) => cubit?.state ?? ChatTextSizeCubit.defaultSize,
-    )
+    .select<ChatTextSizeCubit?, int>((cubit) => cubit?.state ?? ChatTextSizeCubit.defaultSize)
     .sp;
 
 class ChatBubble extends StatelessWidget {
-  const ChatBubble({
-    super.key,
-    required this.message,
-    this.openExternalUrl = _openExternalUrl,
-  });
+  const ChatBubble({super.key, required this.message, this.openExternalUrl = _openExternalUrl});
 
   final ChatMessage message;
   final ExternalUrlOpener openExternalUrl;
@@ -77,24 +70,18 @@ class ChatBubble extends StatelessWidget {
         alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: isUser
-              ? CrossAxisAlignment.end
-              : CrossAxisAlignment.start,
+          crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             if (hasBody) _MessageBubbleBody(message: message, isUser: isUser),
             if (hasAttachments) ...[
               if (hasBody) 8.height.heightBox,
-              _AssistantAttachments(
-                message: message,
-                openExternalUrl: openExternalUrl,
-              ),
+              _AssistantAttachments(message: message, openExternalUrl: openExternalUrl),
             ],
             if (isUser && message.status == MessageStatus.failed) ...[
               4.height.heightBox,
               IrhTextButton(
                 label: S.of(context).retry,
-                onPressed: () =>
-                    context.read<ChatBloc>().add(RetryMessage(message.id)),
+                onPressed: () => context.read<ChatBloc>().add(RetryMessage(message.id)),
               ),
             ],
           ],
@@ -182,11 +169,7 @@ class _TextMessageContent extends StatelessWidget {
             isProcessing && index == paragraphs.length - 1
                 ? '${paragraphs[index]} ▍'
                 : paragraphs[index],
-            style: AppTextStyle.r16.copyWith(
-              color: color,
-              fontSize: textSize,
-              height: 1.4,
-            ),
+            style: AppTextStyle.r16.copyWith(color: color, fontSize: textSize, height: 1.4),
           ),
           if (index < paragraphs.length - 1) 16.height.heightBox,
         ],
@@ -196,10 +179,7 @@ class _TextMessageContent extends StatelessWidget {
 }
 
 class _AssistantAttachments extends StatelessWidget {
-  const _AssistantAttachments({
-    required this.message,
-    required this.openExternalUrl,
-  });
+  const _AssistantAttachments({required this.message, required this.openExternalUrl});
 
   final ChatMessage message;
   final ExternalUrlOpener openExternalUrl;
@@ -211,11 +191,8 @@ class _AssistantAttachments extends StatelessWidget {
     );
     final mediaQuery = MediaQuery.of(context);
     final resultTextScale =
-        mediaQuery.textScaler.scale(1) *
-        selectedSize /
-        ChatTextSizeCubit.defaultSize;
-    final isLeaveCreation =
-        message.confirmation?.tool == ChatConfirmationTool.createLeave;
+        mediaQuery.textScaler.scale(1) * selectedSize / ChatTextSizeCubit.defaultSize;
+    final isLeaveCreation = message.confirmation?.tool == ChatConfirmationTool.createLeave;
     final hasJiraResult = message.executedResult is ChatJiraIssuesResult;
     final isLeaveList =
         message.executedResult is ChatLeaveListResult ||
@@ -237,10 +214,7 @@ class _AssistantAttachments extends StatelessWidget {
             if (message.confirmation != null)
               _ConfirmationCard(message: message)
             else if (message.executedResult?.isKnown ?? false)
-              _ChatResultView(
-                result: message.executedResult!,
-                openExternalUrl: openExternalUrl,
-              ),
+              _ChatResultView(result: message.executedResult!, openExternalUrl: openExternalUrl),
             if (!hasJiraResult)
               for (final block in message.blocks) ...[
                 8.height.heightBox,
@@ -253,17 +227,13 @@ class _AssistantAttachments extends StatelessWidget {
               ],
             if (message.uiAction case final action?
                 when action.key != ChatUiActionKey.none &&
-                    !(hasJiraResult &&
-                        action.key == ChatUiActionKey.jiraIssue)) ...[
+                    !(hasJiraResult && action.key == ChatUiActionKey.jiraIssue)) ...[
               8.height.heightBox,
               _UiActionButton(action: action, openExternalUrl: openExternalUrl),
             ],
             if (message.citations.isNotEmpty) ...[
               8.height.heightBox,
-              _CitationList(
-                citations: message.citations,
-                openExternalUrl: openExternalUrl,
-              ),
+              _CitationList(citations: message.citations, openExternalUrl: openExternalUrl),
             ],
           ],
         ),
@@ -312,11 +282,7 @@ class _HighlightedText extends StatelessWidget {
     if (isProcessing) spans.add(const TextSpan(text: ' ▍'));
     return Text.rich(
       TextSpan(children: spans),
-      style: AppTextStyle.r16.copyWith(
-        color: color,
-        fontSize: textSize,
-        height: 1.4,
-      ),
+      style: AppTextStyle.r16.copyWith(color: color, fontSize: textSize, height: 1.4),
     );
   }
 }
@@ -358,10 +324,7 @@ class _StandardConfirmationCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          IrhText.semibold(
-            strings.reviewRequestTitle,
-            color: colors.textPrimary,
-          ),
+          IrhText.semibold(strings.reviewRequestTitle, color: colors.textPrimary),
           if (fields.isNotEmpty) ...[
             12.height.heightBox,
             for (var index = 0; index < fields.length; index++) ...[
@@ -371,8 +334,9 @@ class _StandardConfirmationCard extends StatelessWidget {
           ],
           16.height.heightBox,
           switch (message.confirmationStatus) {
-            ConfirmationStatus.pending when action.canExecute =>
-              _PendingConfirmationActions(messageId: message.id),
+            ConfirmationStatus.pending when action.canExecute => _PendingConfirmationActions(
+              messageId: message.id,
+            ),
             ConfirmationStatus.pending => IrhText.small(
               strings.unsupportedChatAction,
               color: colors.textError,
@@ -380,9 +344,7 @@ class _StandardConfirmationCard extends StatelessWidget {
             ConfirmationStatus.submitting => _ConfirmationProgress(
               label: strings.submittingRequest,
             ),
-            ConfirmationStatus.success => _ConfirmationSuccess(
-              result: message.executedResult,
-            ),
+            ConfirmationStatus.success => _ConfirmationSuccess(result: message.executedResult),
             ConfirmationStatus.failure => _ConfirmationFailure(
               messageId: message.id,
               error: message.confirmationError,
@@ -404,12 +366,10 @@ class _LeaveBalanceConfirmationCard extends StatefulWidget {
   final ChatMessage message;
 
   @override
-  State<_LeaveBalanceConfirmationCard> createState() =>
-      _LeaveBalanceConfirmationCardState();
+  State<_LeaveBalanceConfirmationCard> createState() => _LeaveBalanceConfirmationCardState();
 }
 
-class _LeaveBalanceConfirmationCardState
-    extends State<_LeaveBalanceConfirmationCard> {
+class _LeaveBalanceConfirmationCardState extends State<_LeaveBalanceConfirmationCard> {
   Future<AuthSession?>? _sessionFuture;
 
   @override
@@ -460,9 +420,7 @@ class _LeaveBalanceSummaryCard extends StatelessWidget {
       isInsufficient ? colors.textError : colors.iconBrand,
       .16,
     )!;
-    final initialDays = hasRequestedDays
-        ? data.currentRemainingDays
-        : displayedDays;
+    final initialDays = hasRequestedDays ? data.currentRemainingDays : displayedDays;
     return Container(
       key: Key('confirmation-card-${message.id}'),
       width: double.infinity,
@@ -483,10 +441,7 @@ class _LeaveBalanceSummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TweenAnimationBuilder<double>(
-            tween: Tween<double>(
-              begin: initialDays.toDouble(),
-              end: displayedDays.toDouble(),
-            ),
+            tween: Tween<double>(begin: initialDays.toDouble(), end: displayedDays.toDouble()),
             duration: const Duration(milliseconds: 360),
             curve: Curves.easeOutCubic,
             builder: (context, animatedDays, child) {
@@ -516,17 +471,11 @@ class _LeaveBalanceSummaryCard extends StatelessWidget {
             },
           ),
           16.height.heightBox,
-          Divider(
-            height: 1.height,
-            thickness: 1.height,
-            color: colors.borderTertiary,
-          ),
+          Divider(height: 1.height, thickness: 1.height, color: colors.borderTertiary),
           4.height.heightBox,
           _LeaveBalanceInfoRow(
             label: strings.leaveBalanceCurrentLabel,
-            value: strings.leaveBalanceDays(
-              _formatLeaveDays(data.currentRemainingDays),
-            ),
+            value: strings.leaveBalanceDays(_formatLeaveDays(data.currentRemainingDays)),
           ),
           if (requestedDays != null) ...[
             _LeaveBalanceInfoRow(
@@ -554,16 +503,10 @@ class _LeaveBalanceSummaryCard extends StatelessWidget {
               key: const Key('confirm-action'),
               label: strings.leaveBalanceContinue,
               height: 48.height,
-              onPressed:
-                  !hasRequestedDays ||
-                      isInsufficient ||
-                      !message.confirmation!.canExecute
+              onPressed: !hasRequestedDays || isInsufficient || !message.confirmation!.canExecute
                   ? null
                   : () => context.read<ChatBloc>().add(
-                      ConfirmationResponded(
-                        messageId: message.id,
-                        confirmed: true,
-                      ),
+                      ConfirmationResponded(messageId: message.id, confirmed: true),
                     ),
             ),
             SizedBox(
@@ -573,9 +516,8 @@ class _LeaveBalanceSummaryCard extends StatelessWidget {
                 label: isInsufficient
                     ? strings.leaveBalanceChooseDatesAgain
                     : strings.leaveBalanceChangeDates,
-                onPressed: () => context.read<ChatBloc>().add(
-                  ConfirmationEditRequested(message.id),
-                ),
+                onPressed: () =>
+                    context.read<ChatBloc>().add(ConfirmationEditRequested(message.id)),
               ),
             ),
             SizedBox(
@@ -584,10 +526,7 @@ class _LeaveBalanceSummaryCard extends StatelessWidget {
                 key: const Key('cancel-request-action'),
                 label: strings.cancelRequest,
                 onPressed: () => context.read<ChatBloc>().add(
-                  ConfirmationResponded(
-                    messageId: message.id,
-                    confirmed: false,
-                  ),
+                  ConfirmationResponded(messageId: message.id, confirmed: false),
                 ),
               ),
             ),
@@ -597,9 +536,7 @@ class _LeaveBalanceSummaryCard extends StatelessWidget {
               ConfirmationStatus.submitting => _ConfirmationProgress(
                 label: strings.submittingRequest,
               ),
-              ConfirmationStatus.success => _ConfirmationSuccess(
-                result: message.executedResult,
-              ),
+              ConfirmationStatus.success => _ConfirmationSuccess(result: message.executedResult),
               ConfirmationStatus.failure => _ConfirmationFailure(
                 messageId: message.id,
                 error: message.confirmationError,
@@ -645,8 +582,7 @@ class _LeaveBalanceHeader extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final useColumn =
-            constraints.maxWidth < 284.width ||
-            MediaQuery.textScalerOf(context).scale(1) > 1.3;
+            constraints.maxWidth < 284.width || MediaQuery.textScalerOf(context).scale(1) > 1.3;
         final indicator = _LeaveBalanceIndicator(
           animatedDays: animatedDays,
           progress: progress,
@@ -758,9 +694,7 @@ class _LeaveBalancePrimarySummary extends StatelessWidget {
       children: [
         Text(
           hasRequestedDays
-              ? strings.leaveBalanceProjectedTitle(
-                  _formatLeaveDays(targetRemainingDays),
-                )
+              ? strings.leaveBalanceProjectedTitle(_formatLeaveDays(targetRemainingDays))
               : strings.leaveBalanceCurrentTitle,
           style: AppTextStyle.sm20.copyWith(color: colors.textPrimary),
         ),
@@ -768,17 +702,12 @@ class _LeaveBalancePrimarySummary extends StatelessWidget {
         IrhText.small(
           hasRequestedDays
               ? strings.leaveBalanceAfterSubmission
-              : strings.leaveBalanceCurrentAvailable(
-                  _formatLeaveDays(targetRemainingDays),
-                ),
+              : strings.leaveBalanceCurrentAvailable(_formatLeaveDays(targetRemainingDays)),
           color: colors.textSecondary,
         ),
         8.height.heightBox,
         IrhText.small(
-          strings.leaveBalanceTypeTotal(
-            leaveTypeLabel,
-            _formatLeaveDays(totalLeaveDays),
-          ),
+          strings.leaveBalanceTypeTotal(leaveTypeLabel, _formatLeaveDays(totalLeaveDays)),
           color: colors.textSecondary,
         ),
       ],
@@ -787,11 +716,7 @@ class _LeaveBalancePrimarySummary extends StatelessWidget {
 }
 
 class _LeaveBalanceInfoRow extends StatelessWidget {
-  const _LeaveBalanceInfoRow({
-    required this.label,
-    required this.value,
-    this.valueColor,
-  });
+  const _LeaveBalanceInfoRow({required this.label, required this.value, this.valueColor});
 
   final String label;
   final String value;
@@ -828,11 +753,9 @@ class _LeaveBalanceSummaryData {
 
   num get projectedRemainingDays => currentRemainingDays - (requestedDays ?? 0);
 
-  num get displayedRemainingDays =>
-      projectedRemainingDays < 0 ? 0 : projectedRemainingDays;
+  num get displayedRemainingDays => projectedRemainingDays < 0 ? 0 : projectedRemainingDays;
 
-  bool get isInsufficient =>
-      requestedDays != null && projectedRemainingDays < 0;
+  bool get isInsufficient => requestedDays != null && projectedRemainingDays < 0;
 
   static _LeaveBalanceSummaryData? from({
     required ChatConfirmAction action,
@@ -841,21 +764,11 @@ class _LeaveBalanceSummaryData {
     final args = action.args;
     final type = args['type']?.toString().trim().toUpperCase() ?? '';
     final fallback = switch (type) {
-      'ANNUAL' => (
-        total: user.annualTotal as num,
-        remaining: user.annualRemaining as num,
-      ),
-      'SICK' => (
-        total: user.sickRemaining as num,
-        remaining: user.sickRemaining as num,
-      ),
+      'ANNUAL' => (total: user.annualTotal as num, remaining: user.annualRemaining as num),
+      'SICK' => (total: user.sickRemaining as num, remaining: user.sickRemaining as num),
       _ => null,
     };
-    final total = _firstNum(args, const [
-      'totalLeaveDays',
-      'totalDays',
-      'annualTotal',
-    ]);
+    final total = _firstNum(args, const ['totalLeaveDays', 'totalDays', 'annualTotal']);
     final remaining = _firstNum(args, const [
       'remainingLeaveDays',
       'remainingDays',
@@ -874,11 +787,7 @@ class _LeaveBalanceSummaryData {
       totalLeaveDays: resolvedTotal,
       currentRemainingDays: resolvedRemaining,
       requestedDays:
-          _firstNum(args, const [
-            'requestedLeaveDays',
-            'requestedDays',
-            'days',
-          ]) ??
+          _firstNum(args, const ['requestedLeaveDays', 'requestedDays', 'days']) ??
           _inclusiveDays(args['from'], args['to']),
     );
   }
@@ -964,9 +873,7 @@ class _PendingConfirmationActions extends StatelessWidget {
               label: strings.editButton,
               height: 44.height,
               secondary: true,
-              onPressed: () => context.read<ChatBloc>().add(
-                ConfirmationEditRequested(messageId),
-              ),
+              onPressed: () => context.read<ChatBloc>().add(ConfirmationEditRequested(messageId)),
             ).expanded(),
           ],
         ),
@@ -1019,11 +926,7 @@ class _ConfirmationSuccess extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          CupertinoIcons.checkmark_circle_fill,
-          size: 24.sp,
-          color: colors.textSuccess,
-        ),
+        Icon(CupertinoIcons.checkmark_circle_fill, size: 24.sp, color: colors.textSuccess),
         8.width.widthBox,
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1063,9 +966,7 @@ class _ConfirmationFailure extends StatelessWidget {
           label: strings.retry,
           height: 44.height,
           secondary: true,
-          onPressed: () => context.read<ChatBloc>().add(
-            ConfirmationRetryRequested(messageId),
-          ),
+          onPressed: () => context.read<ChatBloc>().add(ConfirmationRetryRequested(messageId)),
         ),
       ],
     );
@@ -1074,10 +975,7 @@ class _ConfirmationFailure extends StatelessWidget {
 
 typedef _ConfirmationFieldData = ({String label, String value});
 
-List<_ConfirmationFieldData> _confirmationFields(
-  ChatConfirmAction action,
-  S strings,
-) {
+List<_ConfirmationFieldData> _confirmationFields(ChatConfirmAction action, S strings) {
   final args = action.args;
   final fields = <_ConfirmationFieldData>[];
   void add(String label, String key, {String Function(String)? format}) {
@@ -1101,10 +999,7 @@ List<_ConfirmationFieldData> _confirmationFields(
   void addPeriod() {
     final fromValue = args['from']?.toString().trim();
     final toValue = args['to']?.toString().trim();
-    if (fromValue == null ||
-        fromValue.isEmpty ||
-        toValue == null ||
-        toValue.isEmpty) {
+    if (fromValue == null || fromValue.isEmpty || toValue == null || toValue.isEmpty) {
       add(strings.requestFrom, 'from', format: formatDate);
       add(strings.requestTo, 'to', format: formatDate);
       return;
@@ -1133,21 +1028,17 @@ List<_ConfirmationFieldData> _confirmationFields(
       add(strings.leaveType, 'type', format: formatLeaveType);
       addPeriod();
       add(strings.leaveReason, 'reason');
-      add(strings.requestCode, 'id');
     case ChatConfirmationTool.createTrip:
       add(strings.tripDestination, 'destination');
       addPeriod();
       add(strings.tripPurpose, 'purpose');
     case ChatConfirmationTool.cancelLeave:
-      add(strings.requestCode, 'id');
+      break;
     case ChatConfirmationTool.approveLeaves:
     case ChatConfirmationTool.rejectLeaves:
     case ChatConfirmationTool.approveTrips:
     case ChatConfirmationTool.rejectTrips:
-      final ids = args['ids'];
-      if (ids is List && ids.isNotEmpty) {
-        fields.add((label: strings.requestCode, value: ids.join(', ')));
-      }
+      break;
     case ChatConfirmationTool.createJiraTask:
       add(strings.jiraProject, 'projectKey');
       add(strings.jiraTaskSummary, 'summary');
@@ -1160,10 +1051,7 @@ List<_ConfirmationFieldData> _confirmationFields(
       add(strings.outlookLocation, 'location');
       final attendees = args['attendees'];
       if (attendees is List && attendees.isNotEmpty) {
-        fields.add((
-          label: strings.outlookAttendees,
-          value: attendees.join(', '),
-        ));
+        fields.add((label: strings.outlookAttendees, value: attendees.join(', ')));
       }
     case ChatConfirmationTool.replyOutlookMail:
       add(strings.outlookMessageId, 'messageId');
@@ -1176,16 +1064,10 @@ List<_ConfirmationFieldData> _confirmationFields(
 
 String? _successDetails(ChatResultEnvelope? result, S strings) {
   return switch (result) {
-    ChatLeaveMutationResult(:final data) =>
-      '${strings.requestCode}: ${data.id} · ${_requestStatus(data.status, strings)}',
-    ChatTripMutationResult(:final data) =>
-      '${strings.requestCode}: ${data.id} · ${_requestStatus(data.status, strings)}',
-    ChatLeaveBatchMutationResult(:final data) => strings.completedRequestCount(
-      data.count,
-    ),
-    ChatTripBatchMutationResult(:final data) => strings.completedRequestCount(
-      data.count,
-    ),
+    ChatLeaveMutationResult(:final data) => _requestStatus(data.status, strings),
+    ChatTripMutationResult(:final data) => _requestStatus(data.status, strings),
+    ChatLeaveBatchMutationResult(:final data) => strings.completedRequestCount(data.count),
+    ChatTripBatchMutationResult(:final data) => strings.completedRequestCount(data.count),
     ChatJiraMutationResult(:final data) => strings.jiraCreatedResult(data.key),
     ChatOutlookEventMutationResult(:final data) => data.event.subject,
     ChatOutlookReplyMutationResult(:final data) => data.microsoftEmail,
@@ -1193,32 +1075,30 @@ String? _successDetails(ChatResultEnvelope? result, S strings) {
   };
 }
 
-ChatMutationType? _resultMutation(ChatResultEnvelope? result) =>
-    switch (result) {
-      ChatLeaveMutationResult(:final mutation) => mutation,
-      ChatTripMutationResult(:final mutation) => mutation,
-      ChatLeaveBatchMutationResult(:final mutation) => mutation,
-      ChatTripBatchMutationResult(:final mutation) => mutation,
-      ChatJiraMutationResult(:final mutation) => mutation,
-      ChatOutlookEventMutationResult(:final mutation) => mutation,
-      ChatOutlookReplyMutationResult(:final mutation) => mutation,
-      _ => null,
-    };
+ChatMutationType? _resultMutation(ChatResultEnvelope? result) => switch (result) {
+  ChatLeaveMutationResult(:final mutation) => mutation,
+  ChatTripMutationResult(:final mutation) => mutation,
+  ChatLeaveBatchMutationResult(:final mutation) => mutation,
+  ChatTripBatchMutationResult(:final mutation) => mutation,
+  ChatJiraMutationResult(:final mutation) => mutation,
+  ChatOutlookEventMutationResult(:final mutation) => mutation,
+  ChatOutlookReplyMutationResult(:final mutation) => mutation,
+  _ => null,
+};
 
-String _mutationSuccessLabel(ChatMutationType mutation, S strings) =>
-    switch (mutation) {
-      ChatMutationType.createLeave => strings.createLeaveSuccess,
-      ChatMutationType.updateLeave => strings.updateLeaveSuccess,
-      ChatMutationType.cancelLeave => strings.cancelLeaveSuccess,
-      ChatMutationType.createTrip => strings.createTripSuccess,
-      ChatMutationType.approveLeaves => strings.approveLeavesSuccess,
-      ChatMutationType.rejectLeaves => strings.rejectLeavesSuccess,
-      ChatMutationType.approveTrips => strings.approveTripsSuccess,
-      ChatMutationType.rejectTrips => strings.rejectTripsSuccess,
-      ChatMutationType.createJiraTask => strings.createJiraTaskSuccess,
-      ChatMutationType.createOutlookEvent => strings.createOutlookEventSuccess,
-      ChatMutationType.replyOutlookMail => strings.replyOutlookMailSuccess,
-    };
+String _mutationSuccessLabel(ChatMutationType mutation, S strings) => switch (mutation) {
+  ChatMutationType.createLeave => strings.createLeaveSuccess,
+  ChatMutationType.updateLeave => strings.updateLeaveSuccess,
+  ChatMutationType.cancelLeave => strings.cancelLeaveSuccess,
+  ChatMutationType.createTrip => strings.createTripSuccess,
+  ChatMutationType.approveLeaves => strings.approveLeavesSuccess,
+  ChatMutationType.rejectLeaves => strings.rejectLeavesSuccess,
+  ChatMutationType.approveTrips => strings.approveTripsSuccess,
+  ChatMutationType.rejectTrips => strings.rejectTripsSuccess,
+  ChatMutationType.createJiraTask => strings.createJiraTaskSuccess,
+  ChatMutationType.createOutlookEvent => strings.createOutlookEventSuccess,
+  ChatMutationType.replyOutlookMail => strings.replyOutlookMailSuccess,
+};
 
 String _requestStatus(RequestStatus status, S strings) => switch (status) {
   RequestStatus.pending => strings.statusPending,
@@ -1270,17 +1150,10 @@ class _ChatResultView extends StatelessWidget {
       );
     }
     if (result case ChatJiraMutationResult(:final mutation, :final data)) {
-      return _JiraCreatedCard(
-        mutation: mutation,
-        data: data,
-        openExternalUrl: openExternalUrl,
-      );
+      return _JiraCreatedCard(mutation: mutation, data: data, openExternalUrl: openExternalUrl);
     }
     if (result case ChatOutlookEventMutationResult(:final data)) {
-      return _OutlookEventResultCard(
-        data: data,
-        openExternalUrl: openExternalUrl,
-      );
+      return _OutlookEventResultCard(data: data, openExternalUrl: openExternalUrl);
     }
     if (result case ChatOutlookReplyMutationResult(:final data)) {
       return IrhText.smallMedium(
@@ -1294,33 +1167,17 @@ class _ChatResultView extends StatelessWidget {
         data.annualTotal,
         data.sickRemaining,
       ),
-      ChatLeaveListResult(:final data) => strings.chatLeaveListResult(
-        data.length,
-      ),
-      ChatTripListResult(:final data) => strings.chatTripListResult(
-        data.length,
-      ),
+      ChatLeaveListResult(:final data) => strings.chatLeaveListResult(data.length),
+      ChatTripListResult(:final data) => strings.chatTripListResult(data.length),
       ChatPendingApprovalsResult(:final data) => strings.chatPendingResult(
         data.leaves.length,
         data.trips.length,
       ),
       ChatJiraIssuesResult() => '',
-      ChatLeaveMutationResult(:final mutation) => _mutationSuccessLabel(
-        mutation,
-        strings,
-      ),
-      ChatTripMutationResult(:final mutation) => _mutationSuccessLabel(
-        mutation,
-        strings,
-      ),
-      ChatLeaveBatchMutationResult(:final mutation) => _mutationSuccessLabel(
-        mutation,
-        strings,
-      ),
-      ChatTripBatchMutationResult(:final mutation) => _mutationSuccessLabel(
-        mutation,
-        strings,
-      ),
+      ChatLeaveMutationResult(:final mutation) => _mutationSuccessLabel(mutation, strings),
+      ChatTripMutationResult(:final mutation) => _mutationSuccessLabel(mutation, strings),
+      ChatLeaveBatchMutationResult(:final mutation) => _mutationSuccessLabel(mutation, strings),
+      ChatTripBatchMutationResult(:final mutation) => _mutationSuccessLabel(mutation, strings),
       ChatJiraMutationResult() => '',
       ChatOutlookEventMutationResult() => '',
       ChatOutlookReplyMutationResult() => '',
@@ -1338,10 +1195,7 @@ class _ChatResultView extends StatelessWidget {
 }
 
 class _OutlookEventResultCard extends StatelessWidget {
-  const _OutlookEventResultCard({
-    required this.data,
-    required this.openExternalUrl,
-  });
+  const _OutlookEventResultCard({required this.data, required this.openExternalUrl});
 
   final OutlookEventMutation data;
   final ExternalUrlOpener openExternalUrl;
@@ -1363,10 +1217,7 @@ class _OutlookEventResultCard extends StatelessWidget {
         children: [
           IrhText.smallMedium(event.subject, color: colors.textPrimary),
           4.height.heightBox,
-          IrhText.small(
-            '${event.start} → ${event.end}',
-            color: colors.textSecondary,
-          ),
+          IrhText.small('${event.start} → ${event.end}', color: colors.textSecondary),
           if (event.location != null) ...[
             4.height.heightBox,
             IrhText.small(event.location!, color: colors.textSecondary),
@@ -1411,15 +1262,9 @@ class _JiraCreatedCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          IrhText.small(
-            _mutationSuccessLabel(mutation, strings),
-            color: colors.textSuccess,
-          ),
+          IrhText.small(_mutationSuccessLabel(mutation, strings), color: colors.textSuccess),
           4.height.heightBox,
-          IrhText.smallMedium(
-            strings.jiraCreatedResult(data.key),
-            color: colors.textPrimary,
-          ),
+          IrhText.smallMedium(strings.jiraCreatedResult(data.key), color: colors.textPrimary),
           4.height.heightBox,
           IrhText.small(data.summary, color: colors.textPrimary),
           4.height.heightBox,
@@ -1507,11 +1352,7 @@ class _MetricItems extends StatelessWidget {
         children: [
           for (var index = 0; index < items.length; index++) ...[
             if (index > 0)
-              Container(
-                width: 1.width,
-                height: 48.height,
-                color: colors.borderSecondary,
-              ),
+              Container(width: 1.width, height: 48.height, color: colors.borderSecondary),
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -1525,18 +1366,12 @@ class _MetricItems extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
-                        style: AppTextStyle.r12.copyWith(
-                          color: colors.textSecondary,
-                        ),
+                        style: AppTextStyle.r12.copyWith(color: colors.textSecondary),
                       ),
                     ),
                   )
                 else
-                  IrhText.small(
-                    items[index].label ?? '',
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                  ),
+                  IrhText.small(items[index].label ?? '', textAlign: TextAlign.center, maxLines: 2),
                 4.height.heightBox,
                 Text(
                   _displayValue(items[index].value),
@@ -1564,16 +1399,11 @@ class _MetricItems extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              IrhText.small(
-                item.label ?? '',
-                color: context.appColorScheme.textSecondary,
-              ),
+              IrhText.small(item.label ?? '', color: context.appColorScheme.textSecondary),
               4.height.heightBox,
               Text(
                 _displayValue(item.value),
-                style: AppTextStyle.b20.copyWith(
-                  color: _toneColor(context, item.tone),
-                ),
+                style: AppTextStyle.b20.copyWith(color: _toneColor(context, item.tone)),
               ),
             ],
           ),
@@ -1596,10 +1426,7 @@ class _ChartItems extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        IrhText.smallMedium(
-          block.title ?? '',
-          color: context.appColorScheme.textPrimary,
-        ),
+        IrhText.smallMedium(block.title ?? '', color: context.appColorScheme.textPrimary),
         12.height.heightBox,
         for (var index = 0; index < block.items.length; index++) ...[
           _ChartRow(item: block.items[index], maxValue: maxValue),
@@ -1620,23 +1447,15 @@ class _ChartRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
     final value = item.value is num ? item.value! as num : 0;
-    final progress = maxValue <= 0
-        ? 0.0
-        : (value / maxValue).clamp(0, 1).toDouble();
+    final progress = maxValue <= 0 ? 0.0 : (value / maxValue).clamp(0, 1).toDouble();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
           children: [
-            IrhText.small(
-              item.label ?? '',
-              color: colors.textSecondary,
-            ).expanded(),
+            IrhText.small(item.label ?? '', color: colors.textSecondary).expanded(),
             8.width.widthBox,
-            IrhText.smallMedium(
-              _displayValue(value),
-              color: colors.textPrimary,
-            ),
+            IrhText.smallMedium(_displayValue(value), color: colors.textPrimary),
           ],
         ),
         4.height.heightBox,
@@ -1668,10 +1487,7 @@ class _ProgressBlock extends StatelessWidget {
       children: [
         Row(
           children: [
-            IrhText.smallMedium(
-              block.title ?? '',
-              color: colors.textPrimary,
-            ).expanded(),
+            IrhText.smallMedium(block.title ?? '', color: colors.textPrimary).expanded(),
             8.width.widthBox,
             IrhText.small(
               '${_displayValue(value)}/${_displayValue(max)}${block.suffix ?? ''}',
@@ -1693,11 +1509,7 @@ class _ProgressBlock extends StatelessWidget {
 }
 
 class _RichList extends StatelessWidget {
-  const _RichList({
-    required this.block,
-    required this.openExternalUrl,
-    required this.isLeaveList,
-  });
+  const _RichList({required this.block, required this.openExternalUrl, required this.isLeaveList});
 
   final ChatRichBlock block;
   final ExternalUrlOpener openExternalUrl;
@@ -1757,27 +1569,13 @@ class _RichListItem extends StatelessWidget {
       final isPending =
           item.tone == ChatTone.warn ||
           (item.badge?.isNotEmpty ?? false) &&
-              S
-                  .of(context)
-                  .statusPending
-                  .toLowerCase()
-                  .contains(item.badge!.toLowerCase());
-      final badgeColor = isPending
-          ? colors.textBrand
-          : _toneColor(context, item.tone);
-      final subtitleHasDate =
-          item.subtitle != null && _leaveDatePattern.hasMatch(item.subtitle!);
-      final kickerHasDate =
-          item.kicker != null && _leaveDatePattern.hasMatch(item.kicker!);
-      var dateLine = kickerHasDate && !subtitleHasDate
-          ? item.kicker
-          : item.subtitle;
-      var reasonLine = kickerHasDate && !subtitleHasDate
-          ? item.subtitle
-          : item.kicker;
-      if (reasonLine == null &&
-          dateLine != null &&
-          _leaveDatePattern.hasMatch(dateLine)) {
+              S.of(context).statusPending.toLowerCase().contains(item.badge!.toLowerCase());
+      final badgeColor = isPending ? colors.textBrand : _toneColor(context, item.tone);
+      final subtitleHasDate = item.subtitle != null && _leaveDatePattern.hasMatch(item.subtitle!);
+      final kickerHasDate = item.kicker != null && _leaveDatePattern.hasMatch(item.kicker!);
+      var dateLine = kickerHasDate && !subtitleHasDate ? item.kicker : item.subtitle;
+      var reasonLine = kickerHasDate && !subtitleHasDate ? item.subtitle : item.kicker;
+      if (reasonLine == null && dateLine != null && _leaveDatePattern.hasMatch(dateLine)) {
         final parts = dateLine.split(' · ');
         if (parts.length > 2) {
           dateLine = parts.take(2).join(' · ');
@@ -1798,10 +1596,7 @@ class _RichListItem extends StatelessWidget {
               if (item.badge != null) ...[
                 8.width.widthBox,
                 Container(
-                  constraints: BoxConstraints(
-                    maxWidth: 104.width,
-                    minHeight: 24.height,
-                  ),
+                  constraints: BoxConstraints(maxWidth: 104.width, minHeight: 24.height),
                   decoration: BoxDecoration(
                     color: Color.lerp(colors.surfaceSecondary, badgeColor, .08),
                     borderRadius: BorderRadius.circular(8),
@@ -1840,15 +1635,11 @@ class _RichListItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (item.kicker != null)
-          IrhText.small(item.kicker!, color: colors.textBrand),
+        if (item.kicker != null) IrhText.small(item.kicker!, color: colors.textBrand),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            IrhText.smallMedium(
-              item.title ?? '',
-              color: colors.textPrimary,
-            ).expanded(),
+            IrhText.smallMedium(item.title ?? '', color: colors.textPrimary).expanded(),
             if (item.badge != null) ...[
               8.width.widthBox,
               IrhText.small(item.badge!, color: _toneColor(context, item.tone)),
@@ -1885,10 +1676,7 @@ class _QuoteBlock extends StatelessWidget {
         8.height.heightBox,
         Text(
           block.text ?? '',
-          style: AppTextStyle.r14.copyWith(
-            color: colors.textSecondary,
-            height: 1.4,
-          ),
+          style: AppTextStyle.r14.copyWith(color: colors.textSecondary, height: 1.4),
         ),
         if (block.source != null) ...[
           8.height.heightBox,
@@ -1949,15 +1737,12 @@ class _UiActionButton extends StatelessWidget {
   }
 }
 
-String _displayValue(Object? value) => value is num
-    ? intl.NumberFormat.decimalPattern().format(value)
-    : value?.toString() ?? '';
+String _displayValue(Object? value) =>
+    value is num ? intl.NumberFormat.decimalPattern().format(value) : value?.toString() ?? '';
 
 bool _isLeaveBalanceMetrics(List<ChatBlockItem> items) {
   if (items.length != 3) return false;
-  final labels = items
-      .map((item) => item.label?.trim().toLowerCase() ?? '')
-      .toList();
+  final labels = items.map((item) => item.label?.trim().toLowerCase() ?? '').toList();
   return labels[0].startsWith('phép năm còn') &&
       labels[1].startsWith('phép năm tổng') &&
       labels[2].startsWith('khung phép ốm');
@@ -1970,9 +1755,8 @@ final RegExp _leaveDateRangePattern = RegExp(
 
 String _formatLeaveDateRange(String value) => value.replaceAllMapped(
   _leaveDateRangePattern,
-  (match) => match.group(1) == match.group(2)
-      ? match.group(1)!
-      : '${match.group(1)} → ${match.group(2)}',
+  (match) =>
+      match.group(1) == match.group(2) ? match.group(1)! : '${match.group(1)} → ${match.group(2)}',
 );
 
 Color _toneColor(BuildContext context, ChatTone? tone) {
@@ -2097,11 +1881,7 @@ class _AudioContent extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             message.content!,
-            style: AppTextStyle.r16.copyWith(
-              color: color,
-              fontSize: textSize,
-              height: 1.35,
-            ),
+            style: AppTextStyle.r16.copyWith(color: color, fontSize: textSize, height: 1.35),
           ),
         ],
       ],
