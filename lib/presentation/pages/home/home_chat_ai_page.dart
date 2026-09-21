@@ -8,6 +8,7 @@ import 'package:chatbot_project/domain/repository/chat_thread_repository.dart';
 import 'package:chatbot_project/domain/repository/credential_repository.dart';
 import 'package:chatbot_project/domain/service/data_refresh_coordinator.dart';
 import 'package:chatbot_project/generated/l10n.dart';
+import 'package:chatbot_project/presentation/pages/chat/widgets/microphone_permission_dialog.dart';
 import 'package:chatbot_project/presentation/pages/chat/widgets/chat_input.dart';
 import 'package:chatbot_project/presentation/pages/home/bloc/home_chat_ai_cubit.dart';
 import 'package:chatbot_project/presentation/pages/home/widgets/chat_thread_history.dart';
@@ -58,7 +59,12 @@ class _HomeChatAiView extends StatelessWidget {
               child: ChatInput.launcher(
                 key: const Key('home-chat-input'),
                 onInputTap: () => const ChatRoute().push(context),
-                onMicrophoneTap: () => const VoiceAssistantRoute().push(context),
+                onMicrophoneTap: () async {
+                  if (!await confirmMicrophoneAccess(context) || !context.mounted) {
+                    return;
+                  }
+                  const ChatRoute(startRecording: true).push(context);
+                },
               ).paddingLTRB(
                 20.width,
                 12.height,

@@ -97,7 +97,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       final position = _scrollController.position;
       final maxExtent = position.maxScrollExtent;
       _scrollController.jumpTo(maxExtent);
-      final extentIsStable = previousMaxExtent != null && (maxExtent - previousMaxExtent!).abs() < .5;
+      final extentIsStable =
+          previousMaxExtent != null && (maxExtent - previousMaxExtent!).abs() < .5;
       final isAtBottom = (position.pixels - maxExtent).abs() < .5;
       stableFrames = extentIsStable && isAtBottom ? stableFrames + 1 : 0;
       previousMaxExtent = maxExtent;
@@ -115,7 +116,11 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       }
       final target = _scrollController.position.maxScrollExtent;
       _scrollController
-          .animateTo(target, duration: const Duration(milliseconds: 320), curve: Curves.easeOutCubic)
+          .animateTo(
+            target,
+            duration: const Duration(milliseconds: 320),
+            curve: Curves.easeOutCubic,
+          )
           .whenComplete(() {
             if (!mounted || requestId != _scrollRequestId) return;
             WidgetsBinding.instance.addPostFrameCallback(settleAtBottom);
@@ -142,7 +147,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           previous.aiProcessingState != current.aiProcessingState ||
           previous.error != current.error,
       listener: (context, state) {
-        final restoredThread = state.activeThreadId != null && !state.isLoading && !state.isRestoring;
+        final restoredThread =
+            state.activeThreadId != null && !state.isLoading && !state.isRestoring;
         if (restoredThread) _initialScrollScheduled = true;
         _scrollToBottom(immediately: restoredThread);
         if (state.sessionExpired) {
@@ -208,7 +214,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                   ).expanded(),
                   BlocBuilder<ChatBloc, ChatState>(
                     buildWhen: (previous, current) =>
-                        previous.messages != current.messages || previous.isLoading != current.isLoading,
+                        previous.messages != current.messages ||
+                        previous.isLoading != current.isLoading,
                     builder: (context, state) => _ChatQuickActions(state: state),
                   ),
                   Container(
@@ -253,7 +260,8 @@ class _ChatQuickActions extends StatelessWidget {
               IrhOptionChip(
                 key: Key('chat-suggestion-$index'),
                 label: actions[index].label,
-                onPressed: () => context.read<ChatBloc>().add(SuggestionSelected(actions[index].text)),
+                onPressed: () =>
+                    context.read<ChatBloc>().add(SuggestionSelected(actions[index].text)),
               ),
               if (index < actions.length - 1) 8.width.widthBox,
             ],
@@ -287,13 +295,22 @@ List<ChatSuggestion> _quickActions(BuildContext context, ChatState state) {
           if (issue == null) return null;
           final label = suggestion.label.toLowerCase();
           if (label.contains('tóm tắt') || label.contains('summar')) {
-            return ChatSuggestion(label: S.of(context).jiraSummarizeTask(issue.key), text: suggestion.text);
+            return ChatSuggestion(
+              label: S.of(context).jiraSummarizeTask(issue.key),
+              text: suggestion.text,
+            );
           }
           if (label.contains('trạng thái') || label.contains('status')) {
-            return ChatSuggestion(label: S.of(context).jiraTransitionTask(issue.key), text: suggestion.text);
+            return ChatSuggestion(
+              label: S.of(context).jiraTransitionTask(issue.key),
+              text: suggestion.text,
+            );
           }
           if (label.contains('lịch') || label.contains('calendar')) {
-            return ChatSuggestion(label: S.of(context).jiraAddTaskToCalendar(issue.key), text: suggestion.text);
+            return ChatSuggestion(
+              label: S.of(context).jiraAddTaskToCalendar(issue.key),
+              text: suggestion.text,
+            );
           }
           return combined.contains(issue.key.toLowerCase()) ? suggestion : null;
         })
@@ -319,17 +336,22 @@ class _FloatingChatNavigation extends StatelessWidget {
       child: Stack(
         children: [
           Positioned.fill(
-            child: _NavigationBackdrop(isScrolled: isScrolled, useOpaqueFallback: useOpaqueFallback),
+            child: _NavigationBackdrop(
+              isScrolled: isScrolled,
+              useOpaqueFallback: useOpaqueFallback,
+            ),
           ),
           SafeArea(
             bottom: false,
             child: AssistantHeader(
-              title: title?.trim().isNotEmpty == true ? title!.trim() : S.of(context).newConversationTitle,
+              title: title?.trim().isNotEmpty == true
+                  ? title!.trim()
+                  : S.of(context).newConversationTitle,
               backLabel: S.of(context).backToHome,
               onBack: () => popOrGo(context, HomeChatAiRoute.path),
               trailingLabel: S.of(context).chatSettingsTitle,
               onTrailing: () => const ChatSettingsRoute().push(context),
-              trailingIcon: CupertinoIcons.settings,
+              trailingIcon: Icons.settings,
               backKey: const Key('chat-back-button'),
               trailingKey: const Key('chat-settings-button'),
             ).paddingSymmetric(horizontal: 16.width, vertical: 4.height),
