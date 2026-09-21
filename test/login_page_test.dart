@@ -1,7 +1,10 @@
+import 'package:chatbot_project/common/navigation/external_action_handler.dart';
 import 'package:chatbot_project/common/theme/app_theme.dart';
 import 'package:chatbot_project/common/server_config/server_config_scope.dart';
+import 'package:chatbot_project/data/repository/pending_action_store.dart';
 import 'package:chatbot_project/domain/model/auth_session.dart';
 import 'package:chatbot_project/domain/model/home_data.dart';
+import 'package:chatbot_project/domain/model/pending_action.dart';
 import 'package:chatbot_project/domain/model/server_config.dart';
 import 'package:chatbot_project/domain/repository/auth_repository.dart';
 import 'package:chatbot_project/domain/repository/auth_preference_repository.dart';
@@ -18,22 +21,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
-  testWidgets('server config opens and login flow reaches home', (
-    tester,
-  ) async {
+  testWidgets('server config opens and login flow reaches home', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final auth = _SuccessfulAuthRepository();
-    final authPreferences = _MemoryAuthPreferenceRepository(
-      lastEmail: 'previous@msb.vn',
-    );
+    final authPreferences = _MemoryAuthPreferenceRepository(lastEmail: 'previous@msb.vn');
     final serverConfig = _MemoryServerConfigRepository();
-    final router = GoRouter(
-      initialLocation: const LoginRoute().location,
-      routes: appRoutes,
+    final externalActions = ExternalActionHandler(
+      credentials: _MemoryCredentialRepository(),
+      auth: auth,
+      pending: _EmptyPendingActionStore(),
     );
+    final router = GoRouter(initialLocation: const LoginRoute().location, routes: appRoutes);
     addTearDown(router.dispose);
     await tester.pumpWidget(
       ServerConfigScope(
@@ -41,18 +42,11 @@ void main() {
         child: MultiRepositoryProvider(
           providers: [
             RepositoryProvider<AuthRepository>(create: (_) => auth),
-            RepositoryProvider<CredentialRepository>(
-              create: (_) => _MemoryCredentialRepository(),
-            ),
-            RepositoryProvider<AuthPreferenceRepository>(
-              create: (_) => authPreferences,
-            ),
-            RepositoryProvider<HomeRepository>(
-              create: (_) => const _LoginHomeRepository(),
-            ),
-            RepositoryProvider<ServerConfigRepository>.value(
-              value: serverConfig,
-            ),
+            RepositoryProvider<CredentialRepository>(create: (_) => _MemoryCredentialRepository()),
+            RepositoryProvider<AuthPreferenceRepository>(create: (_) => authPreferences),
+            RepositoryProvider<HomeRepository>(create: (_) => const _LoginHomeRepository()),
+            RepositoryProvider<ServerConfigRepository>.value(value: serverConfig),
+            RepositoryProvider<ExternalActionHandler>.value(value: externalActions),
           ],
           child: ScreenUtilInit(
             designSize: const Size(390, 844),
@@ -88,9 +82,7 @@ void main() {
     expect(tester.getTopLeft(find.byKey(const Key('login-logo'))).dx, 55);
     expect(
       tester.getBottomLeft(find.byKey(const Key('login-logo'))).dy,
-      lessThanOrEqualTo(
-        tester.getTopLeft(find.byKey(const Key('login-form-card'))).dy,
-      ),
+      lessThanOrEqualTo(tester.getTopLeft(find.byKey(const Key('login-form-card'))).dy),
     );
     expect(find.text('© MSB 2023 ALL RIGHT RESERVED'), findsOneWidget);
     expect(find.byKey(const Key('server-config-button')), findsOneWidget);
@@ -99,20 +91,11 @@ void main() {
     expect(find.byKey(const Key('server-config-dialog')), findsOneWidget);
     await tester.tap(find.text(S.current.cancelButton));
     await tester.pumpAndSettle();
-    expect(
-      find.text('Đăng nhập mô phỏng · Chưa kết nối API thật'),
-      findsNothing,
-    );
+    expect(find.text('Đăng nhập mô phỏng · Chưa kết nối API thật'), findsNothing);
 
     expect(find.text('Tài khoản gợi ý'), findsNothing);
-    await tester.enterText(
-      find.byKey(const Key('login-email-field')),
-      'a.nguyen@msb.vn',
-    );
-    await tester.enterText(
-      find.byKey(const Key('login-password-field')),
-      'password123',
-    );
+    await tester.enterText(find.byKey(const Key('login-email-field')), 'a.nguyen@msb.vn');
+    await tester.enterText(find.byKey(const Key('login-password-field')), 'password123');
     final loginButton = find.byKey(const Key('login-button'));
     await tester.ensureVisible(loginButton);
     await tester.tap(loginButton);
@@ -153,10 +136,7 @@ class _SuccessfulAuthRepository implements AuthRepository {
   Future<AuthUser> getProfile(String accessToken) async => _session.user;
 
   @override
-  Future<AuthSession> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<AuthSession> login({required String email, required String password}) async {
     this.email = email;
     return _session;
   }
@@ -170,6 +150,20 @@ class _SuccessfulAuthRepository implements AuthRepository {
   }) async => _session;
 }
 
+class _EmptyPendingActionStore extends PendingActionStore {
+  @override
+  Future<void> save(PendingAction action) async {}
+
+  @override
+  Future<PendingAction?> peek() async => null;
+
+  @override
+  Future<PendingAction?> consume() async => null;
+
+  @override
+  Future<void> clear() async {}
+}
+
 class _MemoryCredentialRepository implements CredentialRepository {
   AuthSession? session;
 
@@ -180,8 +174,7 @@ class _MemoryCredentialRepository implements CredentialRepository {
   Future<AuthSession?> read() async => session;
 
   @override
-  Future<void> save(AuthSession value, {required bool persist}) async =>
-      session = value;
+  Future<void> save(AuthSession value, {required bool persist}) async => session = value;
 }
 
 class _MemoryServerConfigRepository implements ServerConfigRepository {

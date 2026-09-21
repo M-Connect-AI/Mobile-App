@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:waveform_flutter/waveform_flutter.dart';
 
@@ -21,12 +23,24 @@ class VoiceRecorder extends StatefulWidget {
 }
 
 class _VoiceRecorderState extends State<VoiceRecorder> {
-  late final Stream<Amplitude> _amplitudeStream;
+  final _amplitudeController = StreamController<Amplitude>.broadcast();
+  StreamSubscription<Amplitude>? _amplitudeSubscription;
 
   @override
   void initState() {
     super.initState();
-    _amplitudeStream = createRandomAmplitudeStream();
+    // Forward the package's periodic amplitude stream through a controller we
+    // own so the underlying timer is cancelled when this widget is disposed.
+    _amplitudeSubscription = createRandomAmplitudeStream().listen((amplitude) {
+      if (!_amplitudeController.isClosed) _amplitudeController.add(amplitude);
+    });
+  }
+
+  @override
+  void dispose() {
+    _amplitudeSubscription?.cancel();
+    _amplitudeController.close();
+    super.dispose();
   }
 
   @override
@@ -53,11 +67,7 @@ class _VoiceRecorderState extends State<VoiceRecorder> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: colors.onSurface,
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(color: colors.onSurface, fontSize: 17, fontWeight: FontWeight.w700),
             ),
           ),
           const SizedBox(height: 10),
@@ -65,7 +75,7 @@ class _VoiceRecorderState extends State<VoiceRecorder> {
             height: 54,
             child: ClipRect(
               child: AnimatedWaveList(
-                stream: _amplitudeStream,
+                stream: _amplitudeController.stream,
                 barBuilder: (animation, amplitude) => SizedBox(
                   width: 10,
                   height: 54,
@@ -93,28 +103,37 @@ class _VoiceRecorderState extends State<VoiceRecorder> {
               Container(
                 width: 9,
                 height: 9,
-                decoration: BoxDecoration(
-                  color: colors.error,
-                  shape: BoxShape.circle,
+                decoration: BoxDecoration(color: colors.error, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  '$minutes:$seconds',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: colors.onSurface,
+                    fontWeight: FontWeight.w600,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                '$minutes:$seconds',
-                style: TextStyle(
-                  color: colors.onSurface,
-                  fontWeight: FontWeight.w600,
-                  fontFeatures: [FontFeature.tabularFigures()],
+              Flexible(
+                child: TextButton(
+                  onPressed: widget.onCancel,
+                  style: TextButton.styleFrom(
+                    foregroundColor: colors.onSurfaceVariant,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                  child: Text(
+                    S.of(context).cancelButton,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
-              const Spacer(),
-              TextButton(
-                onPressed: widget.onCancel,
-                style: TextButton.styleFrom(
-                  foregroundColor: colors.onSurfaceVariant,
-                ),
-                child: Text(S.of(context).cancelButton),
-              ),
+              const SizedBox(width: 4),
               IconButton.filled(
                 key: const Key('stop-send-voice'),
                 tooltip: S.of(context).voiceStopAndSend,
