@@ -20,6 +20,10 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
     required this.iconBrand,
     required this.userBubble,
     required this.userText,
+    required this.voiceViolet,
+    required this.voicePink,
+    required this.voiceBlue,
+    required this.voiceCyan,
   });
 
   final Color textPrimary;
@@ -39,6 +43,10 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
   final Color iconBrand;
   final Color userBubble;
   final Color userText;
+  final Color voiceViolet;
+  final Color voicePink;
+  final Color voiceBlue;
+  final Color voiceCyan;
 
   static const light = AppColorScheme(
     textPrimary: Color(0xFF17171F),
@@ -58,6 +66,10 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
     iconBrand: Color(0xFFF4600C),
     userBubble: Color(0xFFF4600C),
     userText: Color(0xFFFFFFFF),
+    voiceViolet: Color(0xFF9A73DD),
+    voicePink: Color(0xFFE992CA),
+    voiceBlue: Color(0xFF72A9EC),
+    voiceCyan: Color(0xFF73D9DF),
   );
 
   static const dark = AppColorScheme(
@@ -78,6 +90,10 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
     iconBrand: Color(0xFFF4600C),
     userBubble: Color(0xFFF4600C),
     userText: Color(0xFFFFFFFF),
+    voiceViolet: Color(0xFFBD9AFE),
+    voicePink: Color(0xFFF7A4DB),
+    voiceBlue: Color(0xFF9AC2FF),
+    voiceCyan: Color(0xFF9BE9EE),
   );
 
   @override
@@ -99,6 +115,10 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
     Color? iconBrand,
     Color? userBubble,
     Color? userText,
+    Color? voiceViolet,
+    Color? voicePink,
+    Color? voiceBlue,
+    Color? voiceCyan,
   }) {
     return AppColorScheme(
       textPrimary: textPrimary ?? this.textPrimary,
@@ -118,6 +138,10 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
       iconBrand: iconBrand ?? this.iconBrand,
       userBubble: userBubble ?? this.userBubble,
       userText: userText ?? this.userText,
+      voiceViolet: voiceViolet ?? this.voiceViolet,
+      voicePink: voicePink ?? this.voicePink,
+      voiceBlue: voiceBlue ?? this.voiceBlue,
+      voiceCyan: voiceCyan ?? this.voiceCyan,
     );
   }
 
@@ -142,6 +166,10 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
       iconBrand: Color.lerp(iconBrand, other.iconBrand, t)!,
       userBubble: Color.lerp(userBubble, other.userBubble, t)!,
       userText: Color.lerp(userText, other.userText, t)!,
+      voiceViolet: Color.lerp(voiceViolet, other.voiceViolet, t)!,
+      voicePink: Color.lerp(voicePink, other.voicePink, t)!,
+      voiceBlue: Color.lerp(voiceBlue, other.voiceBlue, t)!,
+      voiceCyan: Color.lerp(voiceCyan, other.voiceCyan, t)!,
     );
   }
 }

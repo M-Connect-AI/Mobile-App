@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../../domain/model/outlook.dart';
 import '../../../domain/repository/credential_repository.dart';
 import '../../../domain/repository/outlook_repository.dart';
+import '../../../domain/service/session_expiry.dart';
 import '../../mapper/outlook_mapper.dart';
 import '../../source/remote/outlook_remote_data_source.dart';
 
@@ -133,7 +134,9 @@ class ApiOutlookRepository implements OutlookRepository {
     try {
       return await request(session.accessToken);
     } on OutlookRemoteException catch (error) {
-      if (error.statusCode == 401) await _credentials.clear();
+      if (error.statusCode == 401) {
+        await expireSessionForToken(_credentials, session.accessToken);
+      }
       throw OutlookException(switch (error.statusCode) {
         401 => OutlookFailureType.sessionExpired,
         403 => OutlookFailureType.permissionDenied,

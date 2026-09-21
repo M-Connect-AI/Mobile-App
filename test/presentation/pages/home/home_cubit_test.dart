@@ -23,6 +23,8 @@ void main() {
     await cubit.load();
     await Future<void>.delayed(Duration.zero);
 
+    expect(cubit.state.aliceBubbleEnabled, isFalse);
+
     expect(
       states.map((state) => state.status),
       containsAllInOrder([HomeStatus.loading, HomeStatus.success]),
@@ -103,10 +105,28 @@ void main() {
     expect(credentials.persist, isTrue);
     expect(cubit.state.autoLoginEnabled, isTrue);
   });
+
+  test('bật Alice lưu lựa chọn và cập nhật trạng thái', () async {
+    final preferences = _AuthPreferences();
+    final cubit = HomeCubit(
+      _HomeRepository(data: _data),
+      _CredentialRepository(),
+      authPreferences: preferences,
+    );
+    addTearDown(cubit.close);
+    await Future<void>.delayed(Duration.zero);
+
+    await cubit.setAliceBubbleEnabled(true);
+
+    expect(preferences.aliceBubbleEnabled, isTrue);
+    expect(cubit.state.aliceBubbleEnabled, isTrue);
+    expect(cubit.state.isUpdatingAliceBubble, isFalse);
+  });
 }
 
 class _AuthPreferences implements AuthPreferenceRepository {
   bool enabled = false;
+  bool aliceBubbleEnabled = false;
 
   @override
   Future<bool> readAutoLoginEnabled() async => enabled;
@@ -119,6 +139,12 @@ class _AuthPreferences implements AuthPreferenceRepository {
 
   @override
   Future<void> setAutoLoginEnabled(bool value) async => enabled = value;
+  @override
+  Future<bool> readAliceBubbleEnabled() async => aliceBubbleEnabled;
+
+  @override
+  Future<void> setAliceBubbleEnabled(bool enabled) async =>
+      aliceBubbleEnabled = enabled;
 }
 
 class _CredentialRepository implements CredentialRepository {

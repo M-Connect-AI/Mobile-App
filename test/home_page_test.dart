@@ -149,7 +149,14 @@ void main() {
       );
       expect(
         tester.getSize(find.byKey(const Key('home-bottom-bar'))).height,
-        64,
+        80,
+      );
+      expect(
+        tester.getBottomLeft(find.byKey(const Key('home-navigation-item'))).dy,
+        lessThanOrEqualTo(
+          tester.getBottomLeft(find.byKey(const Key('home-bottom-bar'))).dy -
+              16,
+        ),
       );
       expect(
         tester.getSize(find.byKey(const Key('assistant-bubble'))).width,
@@ -376,6 +383,29 @@ void main() {
           .color,
       AppColorScheme.dark.surfaceSecondary,
     );
+    expect(tester.getSize(find.byKey(const Key('home-bottom-bar'))).height, 80);
+
+    tester.view.padding = const FakeViewPadding(bottom: 24);
+    await tester.pump();
+    expect(
+      tester
+          .widget<BottomAppBar>(find.byKey(const Key('home-bottom-bar')))
+          .height,
+      88,
+    );
+    expect(
+      (tester
+                  .widget<BottomAppBar>(
+                    find.byKey(const Key('home-bottom-bar')),
+                  )
+                  .child
+              as SafeArea)
+          .minimum
+          .bottom,
+      0,
+    );
+    tester.view.resetPadding();
+    await tester.pump();
 
     await tester.tap(find.byKey(const Key('utilities-navigation-item')));
     await tester.pumpAndSettle();
@@ -386,6 +416,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('auto-login-switch')), findsOneWidget);
+    expect(find.byKey(const Key('alice-switch')), findsOneWidget);
   });
 }
 
@@ -467,6 +498,11 @@ class _FakeAuthPreferenceRepository implements AuthPreferenceRepository {
 
   @override
   Future<void> setAutoLoginEnabled(bool value) async => enabled = value;
+  @override
+  Future<bool> readAliceBubbleEnabled() async => false;
+
+  @override
+  Future<void> setAliceBubbleEnabled(bool enabled) async {}
 }
 
 final _homeData = HomeData(

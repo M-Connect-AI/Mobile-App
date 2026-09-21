@@ -21,20 +21,13 @@ class ChatThreadHistory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeChatAiCubit, HomeChatAiState>(
-      buildWhen: (previous, current) =>
-          previous.status != current.status ||
-          previous.threads != current.threads,
+      buildWhen: (previous, current) => previous.status != current.status || previous.threads != current.threads,
       builder: (context, state) {
         return switch (state.status) {
-          ChatThreadStatus.initial ||
-          ChatThreadStatus.loading => const _HistoryLoading(),
+          ChatThreadStatus.initial || ChatThreadStatus.loading => const _HistoryLoading(),
           ChatThreadStatus.failure => const _HistoryFailure(),
-          ChatThreadStatus.success when state.threads.isEmpty =>
-            const _HistoryEmpty(),
-          ChatThreadStatus.success => _HistoryList(
-            threads: state.threads,
-            maxItems: maxItems,
-          ),
+          ChatThreadStatus.success when state.threads.isEmpty => const _HistoryEmpty(),
+          ChatThreadStatus.success => _HistoryList(threads: state.threads, maxItems: maxItems),
         };
       },
     );
@@ -52,10 +45,7 @@ class _HistoryLoading extends StatelessWidget {
         child: SizedBox(
           width: 24.width,
           height: 24.width,
-          child: CircularProgressIndicator(
-            strokeWidth: 4.width,
-            color: context.appColorScheme.iconBrand,
-          ),
+          child: CircularProgressIndicator(strokeWidth: 4.width, color: context.appColorScheme.iconBrand),
         ),
       ),
     );
@@ -73,15 +63,10 @@ class _HistoryFailure extends StatelessWidget {
         Text(
           strings.historyLoadError,
           textAlign: TextAlign.center,
-          style: AppTextStyle.r12.copyWith(
-            color: context.appColorScheme.textError,
-          ),
+          style: AppTextStyle.r12.copyWith(color: context.appColorScheme.textError),
         ),
         8.height.heightBox,
-        IrhTextButton(
-          label: strings.retry,
-          onPressed: context.read<HomeChatAiCubit>().loadThreads,
-        ),
+        IrhTextButton(label: strings.retry, onPressed: context.read<HomeChatAiCubit>().loadThreads),
       ],
     ).paddingSymmetric(vertical: 16.height);
   }
@@ -95,9 +80,7 @@ class _HistoryEmpty extends StatelessWidget {
     return Text(
       S.of(context).historyEmpty,
       textAlign: TextAlign.center,
-      style: AppTextStyle.r12.copyWith(
-        color: context.appColorScheme.textSecondary,
-      ),
+      style: AppTextStyle.r12.copyWith(color: context.appColorScheme.textSecondary),
     ).paddingSymmetric(vertical: 24.height);
   }
 }
@@ -111,14 +94,8 @@ class _HistoryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
-    final accentColors = [
-      colors.iconBrand,
-      colors.textSuccess,
-      colors.textBrand,
-      colors.iconSecondary,
-    ];
-    final sortedThreads = [...threads]
-      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    final accentColors = [colors.iconBrand, colors.textSuccess, colors.textBrand, colors.iconSecondary];
+    final sortedThreads = [...threads]..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     final visibleThreads = maxItems != null && sortedThreads.length > maxItems!
         ? sortedThreads.sublist(0, maxItems!)
         : sortedThreads;
@@ -137,12 +114,7 @@ class _HistoryList extends StatelessWidget {
 }
 
 class _HistoryItem extends StatelessWidget {
-  const _HistoryItem({
-    super.key,
-    required this.thread,
-    required this.accentColor,
-    required this.showDivider,
-  });
+  const _HistoryItem({super.key, required this.thread, required this.accentColor, required this.showDivider});
 
   final ChatThread thread;
   final Color accentColor;
@@ -151,18 +123,13 @@ class _HistoryItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
-    final updatedDate = DateFormat(
-      'dd/MM/yyyy',
-    ).format(thread.updatedAt.toLocal());
+    final updatedDate = DateFormat('dd/MM/yyyy').format(thread.updatedAt.toLocal());
     return Column(
       children: [
         CupertinoButton(
           minimumSize: Size.zero,
           padding: EdgeInsets.symmetric(vertical: 8.height),
-          onPressed: () => ChatRoute(
-            threadId: thread.threadId,
-            title: thread.title,
-          ).push(context),
+          onPressed: () => ChatRoute(threadId: thread.threadId, title: thread.title).push(context),
           child: Row(
             children: [
               _HistoryMark(color: accentColor),
@@ -178,30 +145,19 @@ class _HistoryItem extends StatelessWidget {
                   ),
                   4.height.heightBox,
                   Text(
-                    S
-                        .of(context)
-                        .threadPreviewWithDate(thread.preview, updatedDate),
+                    S.of(context).threadPreviewWithDate(thread.preview, updatedDate),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyle.r12.copyWith(
-                      color: colors.textSecondary,
-                    ),
+                    style: AppTextStyle.r12.copyWith(color: colors.textSecondary),
                   ),
                 ],
               ).expanded(),
               8.width.widthBox,
-              Text(
-                '›',
-                style: AppTextStyle.b24.copyWith(color: colors.iconSecondary),
-              ),
+              Text('›', style: AppTextStyle.b24.copyWith(color: colors.iconSecondary)),
             ],
           ),
         ),
-        if (showDivider)
-          Container(
-            height: 1.height,
-            color: colors.borderTertiary,
-          ).paddingOnly(left: 52.width),
+        if (showDivider) Container(height: 1.height, color: colors.borderTertiary).paddingOnly(left: 52.width),
       ],
     );
   }
@@ -217,18 +173,12 @@ class _HistoryMark extends StatelessWidget {
     return Container(
       width: 40.width,
       height: 40.width,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: .14),
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: color.withValues(alpha: .14), shape: BoxShape.circle),
       alignment: Alignment.center,
       child: Container(
         width: 16.width,
         height: 16.width,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(4),
-        ),
+        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
       ),
     );
   }

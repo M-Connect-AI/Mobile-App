@@ -4,6 +4,7 @@ import '../../domain/model/chat_thread.dart';
 import '../../domain/repository/chat_repository.dart';
 import '../../domain/repository/chat_thread_repository.dart';
 import '../../domain/repository/credential_repository.dart';
+import '../../domain/service/session_expiry.dart';
 import '../mapper/chat_result_mapper.dart';
 import '../mapper/chat_rich_content_mapper.dart';
 import '../model/chat/chat_api_models.dart';
@@ -58,7 +59,7 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
         };
       }
     } on AgentRemoteException catch (error) {
-      await _handleRemoteError(error);
+      await _handleRemoteError(error, token);
     }
   }
 
@@ -84,7 +85,7 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
           })
           .toList(growable: false);
     } on AgentRemoteException catch (error) {
-      await _handleRemoteError(error);
+      await _handleRemoteError(error, token);
     } catch (error) {
       throw const ChatRepositoryException(
         'Đã xảy ra lỗi khi lấy danh sách hội thoại.',
@@ -148,7 +149,7 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
         pendingAction: pending == null ? null : _mapConfirmation(pending),
       );
     } on AgentRemoteException catch (error) {
-      await _handleRemoteError(error);
+      await _handleRemoteError(error, token);
     }
   }
 
@@ -167,12 +168,16 @@ class ApiChatRepository implements ChatRepository, ChatThreadRepository {
     throw ChatRepositoryException(
       error.message,
       sessionExpired: error.type == AgentRemoteErrorType.unauthorized,
+      network: error.type == AgentRemoteErrorType.network,
     );
   }
 
-  Future<Never> _handleRemoteError(AgentRemoteException error) async {
+  Future<Never> _handleRemoteError(
+    AgentRemoteException error,
+    String accessToken,
+  ) async {
     if (error.type == AgentRemoteErrorType.unauthorized) {
-      await _sessions.clear();
+      await expireSessionForToken(_sessions, accessToken);
     }
     _throwMapped(error);
   }

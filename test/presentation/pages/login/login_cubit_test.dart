@@ -214,6 +214,11 @@ class _CredentialRepository
   @override
   Future<void> setAutoLoginEnabled(bool enabled) async =>
       autoLoginEnabled = enabled;
+  @override
+  Future<bool> readAliceBubbleEnabled() async => false;
+
+  @override
+  Future<void> setAliceBubbleEnabled(bool enabled) async {}
 }
 
 const _session = AuthSession(

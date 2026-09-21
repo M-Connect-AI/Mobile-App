@@ -20,111 +20,144 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
-  static String m0(name) => "Message ${name}...";
+  static String m0(count) => "Approve ${count} requests";
 
-  static String m1(count) => "${count} Jira tasks";
+  static String m1(result) => "Approved ${result} requests.";
 
-  static String m2(remaining, total, sick) =>
+  static String m2(result, failed) =>
+      "Approved ${result} requests. ${failed} could not be processed.";
+
+  static String m3(name) => "Message ${name}...";
+
+  static String m4(count) => "${count} Jira tasks";
+
+  static String m5(remaining, total, sick) =>
       "Annual leave: ${remaining}/${total} days · Sick leave: ${sick} days";
 
-  static String m3(count) => "${count} leave requests";
+  static String m6(count) => "${count} leave requests";
 
-  static String m4(leaveCount, tripCount) =>
+  static String m7(leaveCount, tripCount) =>
       "Pending: ${leaveCount} leave requests · ${tripCount} business trips";
 
-  static String m5(count) => "${count} business trip requests";
+  static String m8(size) => "${size}";
 
-  static String m6(count) => "Processed ${count} requests";
+  static String m9(count) => "${count} business trip requests";
 
-  static String m7(fullName) => "Hello, ${fullName} 👋";
+  static String m10(count) => "Processed ${count} requests";
 
-  static String m8(key) => "Add ${key} to calendar";
+  static String m11(startDate, endDate) => "From ${startDate} to ${endDate}";
 
-  static String m9(count) => "Add ${count} tasks to calendar";
+  static String m12(date) => "End date: ${date}";
 
-  static String m10(issueType, assignee) =>
+  static String m13(reason) => "Reason: ${reason}";
+
+  static String m14(date) => "Start date: ${date}";
+
+  static String m15(fullName) => "Hello, ${fullName} 👋";
+
+  static String m16(key) => "Add ${key} to calendar";
+
+  static String m17(count) => "Add ${count} tasks to calendar";
+
+  static String m18(issueType, assignee) =>
       "${issueType} · Assigned to ${assignee}";
 
-  static String m11(key) => "Created ${key}";
+  static String m19(key) => "Created ${key}";
 
-  static String m12(date) => "Due: ${date}";
+  static String m20(date) => "Due: ${date}";
 
-  static String m13(days) => "Due in ${days} days";
+  static String m21(days) => "Due in ${days} days";
 
-  static String m14(count) => "I found ${count} matching tasks.";
+  static String m22(count) => "I found ${count} matching tasks.";
 
-  static String m15(status, priority) => "${status} · ${priority}";
+  static String m23(status, priority) => "${status} · ${priority}";
 
-  static String m16(count) => "${count} tasks match the filter";
+  static String m24(count) => "${count} tasks match the filter";
 
-  static String m17(count) => "And ${count} more tasks";
+  static String m25(count) => "And ${count} more tasks";
 
-  static String m18(days) => "${days} days overdue";
+  static String m26(days) => "${days} days overdue";
 
-  static String m19(count) => "No priority information · ${count} tasks";
+  static String m27(count) => "No priority information · ${count} tasks";
 
-  static String m20(count) => "${count} overdue";
+  static String m28(count) => "${count} overdue";
 
-  static String m21(count) => "${count} without due date";
+  static String m29(count) => "${count} without due date";
 
-  static String m22(total, toDo, inProgress, done) =>
+  static String m30(total, toDo, inProgress, done) =>
       "Total: ${total} · To do: ${toDo} · In progress: ${inProgress} · Done: ${done}";
 
-  static String m23(toDo, inProgress, done) =>
+  static String m31(toDo, inProgress, done) =>
       "To do: ${toDo}, in progress: ${inProgress}, done: ${done}.";
 
-  static String m24(key) => "Summarize ${key}";
+  static String m32(key) => "Summarize ${key}";
 
-  static String m25(key) => "Change status of ${key}";
+  static String m33(key) => "Change status of ${key}";
 
-  static String m26(count) => "View all ${count} tasks";
+  static String m34(count) => "View all ${count} tasks";
 
-  static String m27(count) => "View details for ${count} tasks";
+  static String m35(count) => "View details for ${count} tasks";
 
-  static String m28(toDo, inProgress, done) =>
+  static String m36(toDo, inProgress, done) =>
       "${toDo} to do · ${inProgress} in progress · ${done} completed";
 
-  static String m29(days) => "${days} days available";
+  static String m37(days) => "${days} days available";
 
-  static String m30(remaining, total) =>
+  static String m38(remaining, total) =>
       "${remaining} of ${total} leave days currently remain.";
-
-  static String m31(days) => "${days} days";
-
-  static String m32(remaining, total) =>
-      "${remaining} of ${total} leave days will remain after submitting this request.";
-
-  static String m33(days) => "${days} days left";
-
-  static String m34(type, days) => "${type} · ${days} days total";
-
-  static String m35(count) => "${count} days";
-
-  static String m36(appName) => "Sign in to continue with ${appName}";
-
-  static String m37(email) => "Reply sent from ${email}";
-
-  static String m38(remaining, total) => "${remaining}/${total} days";
 
   static String m39(days) => "${days} days";
 
-  static String m40(title) => "${title} details";
+  static String m40(remaining, total) =>
+      "${remaining} of ${total} leave days will remain after submitting this request.";
 
-  static String m41(preview, date) => "${preview} · ${date}";
+  static String m41(days) => "${days} days left";
 
-  static String m42(from, to) => "${from} – ${to}";
+  static String m42(type, days) => "${type} · ${days} days total";
+
+  static String m43(count) => "${count} days";
+
+  static String m44(appName) => "Sign in to continue with ${appName}";
+
+  static String m45(email) => "Reply sent from ${email}";
+
+  static String m46(remaining, total) => "${remaining}/${total} days";
+
+  static String m47(days) => "${days} days";
+
+  static String m48(title) => "${title} details";
+
+  static String m49(preview, date) => "${preview} · ${date}";
+
+  static String m50(from, to) => "${from} – ${to}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "agentApiUrlLabel": MessageLookupByLibrary.simpleMessage("Agent API URL"),
     "aiResponse": MessageLookupByLibrary.simpleMessage("AI response"),
-    "aliceInspectorButton": MessageLookupByLibrary.simpleMessage("Alice"),
+    "aliceInspectorButton": MessageLookupByLibrary.simpleMessage(
+      "Alice bubble",
+    ),
     "annualLeave": MessageLookupByLibrary.simpleMessage(
       "Annual remaining / total",
     ),
     "appName": MessageLookupByLibrary.simpleMessage("AI Assistant"),
+    "approveBatchCount": m0,
+    "approveConfirmBody": MessageLookupByLibrary.simpleMessage(
+      "Are you sure you want to approve this leave request?",
+    ),
+    "approveConfirmTitle": MessageLookupByLibrary.simpleMessage(
+      "Approve leave request?",
+    ),
     "approveLeavesSuccess": MessageLookupByLibrary.simpleMessage(
       "Leave request approved successfully",
+    ),
+    "approveRequest": MessageLookupByLibrary.simpleMessage("Approve"),
+    "approveTripConfirmBody": MessageLookupByLibrary.simpleMessage(
+      "Are you sure you want to approve this business trip?",
+    ),
+    "approveTripConfirmTitle": MessageLookupByLibrary.simpleMessage(
+      "Approve business trip?",
     ),
     "approveTripsSuccess": MessageLookupByLibrary.simpleMessage(
       "Business trip request approved successfully",
@@ -138,6 +171,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "Back to AI assistant",
     ),
     "backToHome": MessageLookupByLibrary.simpleMessage("Back to home"),
+    "batchResult": m1,
+    "batchResultPartial": m2,
     "brandMonogram": MessageLookupByLibrary.simpleMessage("AI"),
     "businessTrip": MessageLookupByLibrary.simpleMessage("Business trip"),
     "cancelAction": MessageLookupByLibrary.simpleMessage("Cancel"),
@@ -156,14 +191,27 @@ class MessageLookup extends MessageLookupByLibrary {
     "chatInputHint": MessageLookupByLibrary.simpleMessage(
       "Message AI Assistant...",
     ),
-    "chatInputHintName": m0,
-    "chatJiraListResult": m1,
-    "chatLeaveBalanceResult": m2,
-    "chatLeaveListResult": m3,
-    "chatPendingResult": m4,
-    "chatTripListResult": m5,
+    "chatInputHintName": m3,
+    "chatJiraListResult": m4,
+    "chatLeaveBalanceResult": m5,
+    "chatLeaveListResult": m6,
+    "chatPendingResult": m7,
+    "chatSettingsTitle": MessageLookupByLibrary.simpleMessage("Settings"),
+    "chatTextSizeDescription": MessageLookupByLibrary.simpleMessage(
+      "Drag the slider to choose a more comfortable text size.",
+    ),
+    "chatTextSizePreviewLabel": MessageLookupByLibrary.simpleMessage("Preview"),
+    "chatTextSizePreviewMessage": MessageLookupByLibrary.simpleMessage(
+      "Hello! I can help you find information and get things done today.",
+    ),
+    "chatTextSizeSaveError": MessageLookupByLibrary.simpleMessage(
+      "Could not save the text size. Please try again.",
+    ),
+    "chatTextSizeTitle": MessageLookupByLibrary.simpleMessage("Chat text size"),
+    "chatTextSizeValue": m8,
+    "chatTripListResult": m9,
     "closeAssistant": MessageLookupByLibrary.simpleMessage("Close assistant"),
-    "completedRequestCount": m6,
+    "completedRequestCount": m10,
     "confirmAction": MessageLookupByLibrary.simpleMessage("Confirm"),
     "confirmButton": MessageLookupByLibrary.simpleMessage("Confirm"),
     "confirmSubmitButton": MessageLookupByLibrary.simpleMessage("Submit"),
@@ -174,6 +222,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "createJiraTaskSuccess": MessageLookupByLibrary.simpleMessage(
       "Jira task created successfully",
     ),
+    "createLeaveIntentDateRange": m11,
+    "createLeaveIntentEndDate": m12,
+    "createLeaveIntentPrompt": MessageLookupByLibrary.simpleMessage(
+      "I want to create a leave request",
+    ),
+    "createLeaveIntentReason": m13,
+    "createLeaveIntentStartDate": m14,
     "createLeaveSuccess": MessageLookupByLibrary.simpleMessage(
       "Leave request created successfully",
     ),
@@ -198,6 +253,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Please enter a valid email",
     ),
     "employeeCode": MessageLookupByLibrary.simpleMessage("Employee code"),
+    "employeeName": MessageLookupByLibrary.simpleMessage("Employee name"),
     "events": MessageLookupByLibrary.simpleMessage("Events"),
     "featuredNews": MessageLookupByLibrary.simpleMessage("FEATURED NEWS"),
     "forgotPassword": MessageLookupByLibrary.simpleMessage("Forgot password?"),
@@ -242,7 +298,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "homeBannerTitle": MessageLookupByLibrary.simpleMessage("1 Click LÚC ÍCH"),
     "homeGreeting": MessageLookupByLibrary.simpleMessage("Hello, Minh 👋"),
-    "homeGreetingName": m7,
+    "homeGreetingName": m15,
     "homeInvalidResponse": MessageLookupByLibrary.simpleMessage(
       "The Home data is invalid. Please try again.",
     ),
@@ -275,8 +331,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "jiraAddAllToCalendar": MessageLookupByLibrary.simpleMessage(
       "Add all to calendar",
     ),
-    "jiraAddTaskToCalendar": m8,
-    "jiraAddTasksToCalendar": m9,
+    "jiraAddTaskToCalendar": m16,
+    "jiraAddTasksToCalendar": m17,
     "jiraAddToCalendar": MessageLookupByLibrary.simpleMessage(
       "Add to calendar",
     ),
@@ -325,12 +381,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "jiraContinueToCalendar": MessageLookupByLibrary.simpleMessage(
       "Continue to Calendar",
     ),
-    "jiraCreatedMeta": m10,
-    "jiraCreatedResult": m11,
-    "jiraDueDate": m12,
+    "jiraCreatedMeta": m18,
+    "jiraCreatedResult": m19,
+    "jiraDueDate": m20,
     "jiraDueDateLabel": MessageLookupByLibrary.simpleMessage("Due date"),
     "jiraDueMissing": MessageLookupByLibrary.simpleMessage("No due date"),
-    "jiraDueRemainingDays": m13,
+    "jiraDueRemainingDays": m21,
     "jiraDueToday": MessageLookupByLibrary.simpleMessage("Due today"),
     "jiraEmptyResult": MessageLookupByLibrary.simpleMessage(
       "No matching tasks were found.",
@@ -340,12 +396,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "jiraFilterWithoutDueDate": MessageLookupByLibrary.simpleMessage(
       "Without due date",
     ),
-    "jiraFoundMany": m14,
+    "jiraFoundMany": m22,
     "jiraFoundOne": MessageLookupByLibrary.simpleMessage(
       "I found 1 task matching your request.",
     ),
     "jiraIssueKeyLabel": MessageLookupByLibrary.simpleMessage("Jira key"),
-    "jiraIssueMeta": m15,
+    "jiraIssueMeta": m23,
     "jiraIssueTypeLabel": MessageLookupByLibrary.simpleMessage("Issue type"),
     "jiraLoadTasksFailed": MessageLookupByLibrary.simpleMessage(
       "Unable to load Jira tasks.",
@@ -353,12 +409,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "jiraLoadingTasks": MessageLookupByLibrary.simpleMessage(
       "Loading Jira tasks...",
     ),
-    "jiraMatchingWork": m16,
-    "jiraMoreIssues": m17,
+    "jiraMatchingWork": m24,
+    "jiraMoreIssues": m25,
     "jiraNoReminder": MessageLookupByLibrary.simpleMessage("No reminder"),
     "jiraOpenExternal": MessageLookupByLibrary.simpleMessage("Open Jira"),
     "jiraOpenIssue": MessageLookupByLibrary.simpleMessage("Open Jira task"),
-    "jiraOverdueDays": m18,
+    "jiraOverdueDays": m26,
     "jiraOverviewTitle": MessageLookupByLibrary.simpleMessage("Jira tasks"),
     "jiraPossiblyTruncated": MessageLookupByLibrary.simpleMessage(
       "Only the first 50 Jira tasks are shown.",
@@ -370,25 +426,25 @@ class MessageLookup extends MessageLookupByLibrary {
     "jiraPriorityMedium": MessageLookupByLibrary.simpleMessage("Medium"),
     "jiraPriorityMissing": MessageLookupByLibrary.simpleMessage("No priority"),
     "jiraPriorityTasks": MessageLookupByLibrary.simpleMessage("PRIORITY TASKS"),
-    "jiraPriorityUnavailable": m19,
+    "jiraPriorityUnavailable": m27,
     "jiraPriorityUnknown": MessageLookupByLibrary.simpleMessage("Unknown"),
     "jiraProject": MessageLookupByLibrary.simpleMessage("Project"),
     "jiraProjectLabel": MessageLookupByLibrary.simpleMessage("Project"),
     "jiraReminderOneDay": MessageLookupByLibrary.simpleMessage(
       "Remind one day before",
     ),
-    "jiraRiskOverdue": m20,
+    "jiraRiskOverdue": m28,
     "jiraRiskStaleLabel": MessageLookupByLibrary.simpleMessage("Stale"),
-    "jiraRiskWithoutDueDate": m21,
+    "jiraRiskWithoutDueDate": m29,
     "jiraShowAnalysis": MessageLookupByLibrary.simpleMessage("View analysis"),
-    "jiraStatsResult": m22,
+    "jiraStatsResult": m30,
     "jiraStatusCompletedShort": MessageLookupByLibrary.simpleMessage("Done"),
-    "jiraStatusDistribution": m23,
+    "jiraStatusDistribution": m31,
     "jiraStatusDone": MessageLookupByLibrary.simpleMessage("Done"),
     "jiraStatusInProgress": MessageLookupByLibrary.simpleMessage("In progress"),
     "jiraStatusTodo": MessageLookupByLibrary.simpleMessage("To do"),
     "jiraStatusUnknown": MessageLookupByLibrary.simpleMessage("Unknown"),
-    "jiraSummarizeTask": m24,
+    "jiraSummarizeTask": m32,
     "jiraSummaryLabel": MessageLookupByLibrary.simpleMessage("Summary"),
     "jiraTaskDetails": MessageLookupByLibrary.simpleMessage("Task details"),
     "jiraTaskListTitle": MessageLookupByLibrary.simpleMessage("Jira task list"),
@@ -397,10 +453,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "This task has no deadline.",
     ),
     "jiraTimedEvent": MessageLookupByLibrary.simpleMessage("Timed event"),
-    "jiraTransitionTask": m25,
-    "jiraViewAllWork": m26,
-    "jiraViewDetailsCount": m27,
-    "jiraWorkflowSummary": m28,
+    "jiraTransitionTask": m33,
+    "jiraViewAllWork": m34,
+    "jiraViewDetailsCount": m35,
+    "jiraWorkflowSummary": m36,
     "leaveAnnualType": MessageLookupByLibrary.simpleMessage("Annual leave"),
     "leaveBalance": MessageLookupByLibrary.simpleMessage("Leave balance"),
     "leaveBalanceAfterSubmission": MessageLookupByLibrary.simpleMessage(
@@ -415,15 +471,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "leaveBalanceContinue": MessageLookupByLibrary.simpleMessage(
       "Continue creating request",
     ),
-    "leaveBalanceCurrentAvailable": m29,
+    "leaveBalanceCurrentAvailable": m37,
     "leaveBalanceCurrentLabel": MessageLookupByLibrary.simpleMessage(
       "Current balance",
     ),
-    "leaveBalanceCurrentSemantics": m30,
+    "leaveBalanceCurrentSemantics": m38,
     "leaveBalanceCurrentTitle": MessageLookupByLibrary.simpleMessage(
       "Current balance",
     ),
-    "leaveBalanceDays": m31,
+    "leaveBalanceDays": m39,
     "leaveBalanceDaysRemaining": MessageLookupByLibrary.simpleMessage(
       "days left",
     ),
@@ -436,8 +492,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "leaveBalanceProjectedLabel": MessageLookupByLibrary.simpleMessage(
       "Balance after leave",
     ),
-    "leaveBalanceProjectedSemantics": m32,
-    "leaveBalanceProjectedTitle": m33,
+    "leaveBalanceProjectedSemantics": m40,
+    "leaveBalanceProjectedTitle": m41,
     "leaveBalanceRequestedLabel": MessageLookupByLibrary.simpleMessage(
       "Requested leave",
     ),
@@ -447,12 +503,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "leaveBalanceSuggestion": MessageLookupByLibrary.simpleMessage(
       "How many leave days do I have left?",
     ),
-    "leaveBalanceTypeTotal": m34,
+    "leaveBalanceTypeTotal": m42,
     "leaveCancelSuggestion": MessageLookupByLibrary.simpleMessage(
       "Cancel my latest leave request",
     ),
-    "leaveDayCount": m35,
+    "leaveDayCount": m43,
     "leaveDays": MessageLookupByLibrary.simpleMessage("Days"),
+    "leaveDetailTitle": MessageLookupByLibrary.simpleMessage(
+      "Leave request details",
+    ),
     "leaveListEmpty": MessageLookupByLibrary.simpleMessage(
       "You have no leave requests.",
     ),
@@ -491,7 +550,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "loginServerError": MessageLookupByLibrary.simpleMessage(
       "The server is unavailable. Please try again later.",
     ),
-    "loginSubtitle": m36,
+    "loginSubtitle": m44,
     "loginValidationError": MessageLookupByLibrary.simpleMessage(
       "The sign-in details are invalid.",
     ),
@@ -592,7 +651,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Open Outlook event",
     ),
     "outlookReply": MessageLookupByLibrary.simpleMessage("Reply"),
-    "outlookReplySentTo": m37,
+    "outlookReplySentTo": m45,
     "outlookSearchMail": MessageLookupByLibrary.simpleMessage(
       "Search by subject or sender",
     ),
@@ -611,11 +670,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "Preparing response...",
     ),
     "processing": MessageLookupByLibrary.simpleMessage("Processing..."),
-    "profileAnnualDays": m38,
+    "profileAnnualDays": m46,
     "profileDepartment": MessageLookupByLibrary.simpleMessage("Department"),
     "profileManagerCode": MessageLookupByLibrary.simpleMessage("Manager code"),
     "profileManagerRole": MessageLookupByLibrary.simpleMessage("Manager"),
-    "profileSickDays": m39,
+    "profileSickDays": m47,
     "profileStaffRole": MessageLookupByLibrary.simpleMessage("Staff"),
     "quickAccess": MessageLookupByLibrary.simpleMessage("Quick access"),
     "recordVoice": MessageLookupByLibrary.simpleMessage("Record voice"),
@@ -634,8 +693,21 @@ class MessageLookup extends MessageLookupByLibrary {
       "The registration details are invalid",
     ),
     "registering": MessageLookupByLibrary.simpleMessage("Registering..."),
+    "rejectConfirmBody": MessageLookupByLibrary.simpleMessage(
+      "Are you sure you want to reject this leave request?",
+    ),
+    "rejectConfirmTitle": MessageLookupByLibrary.simpleMessage(
+      "Reject leave request?",
+    ),
     "rejectLeavesSuccess": MessageLookupByLibrary.simpleMessage(
       "Leave request rejected successfully",
+    ),
+    "rejectRequest": MessageLookupByLibrary.simpleMessage("Reject"),
+    "rejectTripConfirmBody": MessageLookupByLibrary.simpleMessage(
+      "Are you sure you want to reject this business trip?",
+    ),
+    "rejectTripConfirmTitle": MessageLookupByLibrary.simpleMessage(
+      "Reject business trip?",
     ),
     "rejectTripsSuccess": MessageLookupByLibrary.simpleMessage(
       "Business trip request rejected successfully",
@@ -650,8 +722,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "Action cancelled",
     ),
     "requestCode": MessageLookupByLibrary.simpleMessage("Request ID"),
+    "requestCodeCopied": MessageLookupByLibrary.simpleMessage(
+      "Request ID copied",
+    ),
     "requestCreatedAt": MessageLookupByLibrary.simpleMessage("Created on"),
-    "requestDetailTitle": m40,
+    "requestDetailTitle": m48,
     "requestFailed": MessageLookupByLibrary.simpleMessage(
       "Unable to submit the request. Please try again.",
     ),
@@ -715,6 +790,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "statusApproved": MessageLookupByLibrary.simpleMessage("Approved"),
     "statusCancelled": MessageLookupByLibrary.simpleMessage("Cancelled"),
     "statusPending": MessageLookupByLibrary.simpleMessage("Pending approval"),
+    "statusPendingShort": MessageLookupByLibrary.simpleMessage("Pending"),
     "statusRejected": MessageLookupByLibrary.simpleMessage("Rejected"),
     "submittingRequest": MessageLookupByLibrary.simpleMessage(
       "Submitting request...",
@@ -723,9 +799,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "taskThreeCount": MessageLookupByLibrary.simpleMessage("03"),
     "taskTwelveCount": MessageLookupByLibrary.simpleMessage("12"),
     "thinking": MessageLookupByLibrary.simpleMessage("Thinking..."),
-    "threadPreviewWithDate": m41,
+    "threadPreviewWithDate": m49,
     "timeManagement": MessageLookupByLibrary.simpleMessage("Time management"),
-    "tripDateRange": m42,
+    "tripDateRange": m50,
     "tripDestination": MessageLookupByLibrary.simpleMessage("Destination"),
     "tripListEmpty": MessageLookupByLibrary.simpleMessage(
       "You have no business trips.",
@@ -742,6 +818,74 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "updateLeaveSuccess": MessageLookupByLibrary.simpleMessage(
       "Leave request updated successfully",
+    ),
+    "valueUnavailable": MessageLookupByLibrary.simpleMessage("—"),
+    "voiceAssistantAllowMicrophone": MessageLookupByLibrary.simpleMessage(
+      "Allow microphone",
+    ),
+    "voiceAssistantChatError": MessageLookupByLibrary.simpleMessage(
+      "The assistant could not respond. Please try again.",
+    ),
+    "voiceAssistantClose": MessageLookupByLibrary.simpleMessage(
+      "Close voice assistant",
+    ),
+    "voiceAssistantInitializing": MessageLookupByLibrary.simpleMessage(
+      "Getting ready...",
+    ),
+    "voiceAssistantListening": MessageLookupByLibrary.simpleMessage(
+      "I\'m listening...",
+    ),
+    "voiceAssistantNetworkError": MessageLookupByLibrary.simpleMessage(
+      "Connection lost. Check your network and try again.",
+    ),
+    "voiceAssistantNoSpeech": MessageLookupByLibrary.simpleMessage(
+      "I didn\'t hear anything. Please try again.",
+    ),
+    "voiceAssistantOpenSettings": MessageLookupByLibrary.simpleMessage(
+      "Open Settings",
+    ),
+    "voiceAssistantPause": MessageLookupByLibrary.simpleMessage(
+      "Pause recording",
+    ),
+    "voiceAssistantPaused": MessageLookupByLibrary.simpleMessage(
+      "Paused — review your words",
+    ),
+    "voiceAssistantPermissionDenied": MessageLookupByLibrary.simpleMessage(
+      "Microphone access is needed for speech recognition. You can allow it in Settings.",
+    ),
+    "voiceAssistantPermissionDescription": MessageLookupByLibrary.simpleMessage(
+      "MConnect needs microphone access to recognize what you say.",
+    ),
+    "voiceAssistantPermissionTitle": MessageLookupByLibrary.simpleMessage(
+      "Allow microphone access",
+    ),
+    "voiceAssistantPlaceholder": MessageLookupByLibrary.simpleMessage(
+      "Say what you want MConnect to do",
+    ),
+    "voiceAssistantPreviewReply": MessageLookupByLibrary.simpleMessage(
+      "This is a sample reply for testing the interface. Your speech has not been sent to the chatbot.",
+    ),
+    "voiceAssistantProcessing": MessageLookupByLibrary.simpleMessage(
+      "Processing...",
+    ),
+    "voiceAssistantReset": MessageLookupByLibrary.simpleMessage("Start over"),
+    "voiceAssistantResume": MessageLookupByLibrary.simpleMessage(
+      "Resume recording",
+    ),
+    "voiceAssistantRetry": MessageLookupByLibrary.simpleMessage("Try again"),
+    "voiceAssistantReviewBeforeSend": MessageLookupByLibrary.simpleMessage(
+      "Review your message before sending",
+    ),
+    "voiceAssistantSend": MessageLookupByLibrary.simpleMessage("Send"),
+    "voiceAssistantSent": MessageLookupByLibrary.simpleMessage("Sent"),
+    "voiceAssistantTapToStart": MessageLookupByLibrary.simpleMessage(
+      "Tap the microphone to start",
+    ),
+    "voiceAssistantTitle": MessageLookupByLibrary.simpleMessage(
+      "MConnect Assistant",
+    ),
+    "voiceAssistantTypeInstead": MessageLookupByLibrary.simpleMessage(
+      "Switch to typing",
     ),
     "voiceListening": MessageLookupByLibrary.simpleMessage("Listening..."),
     "voiceStopAndSend": MessageLookupByLibrary.simpleMessage("Stop and send"),

@@ -40,17 +40,13 @@ class IrhButton extends StatelessWidget {
         disabledColor: colors.borderPrimary,
         borderRadius: BorderRadius.circular(16),
         child: loading
-            ? CupertinoActivityIndicator(
-                color: secondary ? colors.iconBrand : colors.surfaceSecondary,
-              )
+            ? CupertinoActivityIndicator(color: secondary ? colors.iconBrand : colors.surfaceSecondary)
             : Text(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: AppTextStyle.b16.copyWith(
-                  color: secondary ? colors.textBrand : colors.surfaceSecondary,
-                ),
+                style: AppTextStyle.b16.copyWith(color: secondary ? colors.textBrand : colors.surfaceSecondary),
               ),
       ),
     );
@@ -58,11 +54,7 @@ class IrhButton extends StatelessWidget {
 }
 
 class IrhTextButton extends StatelessWidget {
-  const IrhTextButton({
-    super.key,
-    required this.label,
-    required this.onPressed,
-  });
+  const IrhTextButton({super.key, required this.label, required this.onPressed});
 
   final String label;
   final VoidCallback? onPressed;
@@ -72,23 +64,13 @@ class IrhTextButton extends StatelessWidget {
     return CupertinoButton(
       padding: EdgeInsets.zero,
       onPressed: onPressed,
-      child: Text(
-        label,
-        style: AppTextStyle.m14.copyWith(
-          color: context.appColorScheme.textBrand,
-        ),
-      ),
+      child: Text(label, style: AppTextStyle.m14.copyWith(color: context.appColorScheme.textBrand)),
     );
   }
 }
 
 class IrhOptionChip extends StatelessWidget {
-  const IrhOptionChip({
-    super.key,
-    required this.label,
-    required this.onPressed,
-    this.selected = false,
-  });
+  const IrhOptionChip({super.key, required this.label, required this.onPressed, this.selected = false});
 
   final String label;
   final VoidCallback? onPressed;
@@ -98,21 +80,20 @@ class IrhOptionChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
     return Container(
-      constraints: BoxConstraints(minHeight: 44.height),
+      constraints: BoxConstraints(minHeight: 36.height),
       decoration: BoxDecoration(
         color: selected ? colors.iconBrand : colors.surfaceSecondary,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: colors.iconBrand),
       ),
       child: CupertinoButton(
-        padding: EdgeInsets.symmetric(horizontal: 16.width, vertical: 8.height),
+        minimumSize: Size.zero,
+        padding: EdgeInsets.symmetric(horizontal: 12.width, vertical: 8.height),
         borderRadius: BorderRadius.circular(24),
         onPressed: onPressed,
         child: Text(
           label,
-          style: AppTextStyle.m14.copyWith(
-            color: selected ? colors.surfaceSecondary : colors.textBrand,
-          ),
+          style: AppTextStyle.m14.copyWith(color: selected ? colors.surfaceSecondary : colors.textBrand),
         ),
       ),
     );
@@ -168,7 +149,7 @@ class IrhIconTextButton extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyle.m14.copyWith(color: contentColor),
-                  ).expanded(),
+                  ).flexible(),
                 ],
               ),
       ),
@@ -177,12 +158,7 @@ class IrhIconTextButton extends StatelessWidget {
 }
 
 class IrhRichTextButton extends StatelessWidget {
-  const IrhRichTextButton({
-    super.key,
-    required this.text,
-    required this.actionText,
-    required this.onPressed,
-  });
+  const IrhRichTextButton({super.key, required this.text, required this.actionText, required this.onPressed});
 
   final String text;
   final String actionText;
@@ -196,15 +172,11 @@ class IrhRichTextButton extends StatelessWidget {
       child: Text.rich(
         TextSpan(
           text: text,
-          style: AppTextStyle.r12.copyWith(
-            color: context.appColorScheme.textSecondary,
-          ),
+          style: AppTextStyle.r12.copyWith(color: context.appColorScheme.textSecondary),
           children: [
             TextSpan(
               text: actionText,
-              style: AppTextStyle.sm12.copyWith(
-                color: context.appColorScheme.textBrand,
-              ),
+              style: AppTextStyle.sm12.copyWith(color: context.appColorScheme.textBrand),
             ),
           ],
         ),

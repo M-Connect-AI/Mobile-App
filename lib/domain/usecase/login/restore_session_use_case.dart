@@ -1,6 +1,7 @@
 import '../../model/auth_session.dart';
 import '../../repository/auth_repository.dart';
 import '../../repository/credential_repository.dart';
+import '../../service/session_expiry.dart';
 
 class RestoreSessionUseCase {
   const RestoreSessionUseCase(this._authRepository, this._credentials);
@@ -23,7 +24,7 @@ class RestoreSessionUseCase {
       return refreshedSession;
     } on AuthException catch (error) {
       if (error.type == AuthFailureType.invalidCredentials) {
-        await _credentials.clear();
+        await expireSessionForToken(_credentials, savedSession.accessToken);
       }
       rethrow;
     }

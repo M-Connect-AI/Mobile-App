@@ -6,7 +6,8 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../../domain/repository/speech_to_text_repository.dart';
 
-class DeviceSpeechToTextRepository implements SpeechToTextRepository {
+class DeviceSpeechToTextRepository
+    implements SpeechToTextRepository, SpeechInputLevel {
   DeviceSpeechToTextRepository({stt.SpeechToText? speechToText})
     : _speech = speechToText ?? stt.SpeechToText();
 
@@ -14,6 +15,7 @@ class DeviceSpeechToTextRepository implements SpeechToTextRepository {
   final _transcriptController = StreamController<SpeechTranscript>.broadcast();
   final _statusController = StreamController<SpeechSessionStatus>.broadcast();
   final _errorController = StreamController<String>.broadcast();
+  final _levelController = StreamController<double>.broadcast();
 
   bool _initialized = false;
   bool _isStopping = false;
@@ -27,6 +29,9 @@ class DeviceSpeechToTextRepository implements SpeechToTextRepository {
 
   @override
   Stream<String> get errors => _errorController.stream;
+
+  @override
+  Stream<double> get inputLevels => _levelController.stream;
 
   @override
   Future<bool> hasPermission() => _speech.hasPermission;
@@ -53,6 +58,11 @@ class DeviceSpeechToTextRepository implements SpeechToTextRepository {
     final localeId = await _vietnameseLocaleId();
     await _speech.listen(
       onResult: _handleResult,
+      onSoundLevelChange: (level) {
+        if (!_levelController.isClosed) {
+          _levelController.add(((level + 2) / 12).clamp(0.0, 1.0));
+        }
+      },
       listenOptions: stt.SpeechListenOptions(
         localeId: localeId,
         listenFor: const Duration(minutes: 1),
@@ -129,6 +139,7 @@ class DeviceSpeechToTextRepository implements SpeechToTextRepository {
     await _transcriptController.close();
     await _statusController.close();
     await _errorController.close();
+    await _levelController.close();
   }
 }
 

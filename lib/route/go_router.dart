@@ -3,13 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../common/navigation/root_navigator_key.dart';
+import '../common/navigation/external_chat_launch.dart';
 import '../domain/repository/chat_repository.dart';
 import '../domain/repository/speech_to_text_repository.dart';
 import '../domain/service/data_refresh_coordinator.dart';
 import '../domain/service/device_calendar_service.dart';
 import '../domain/model/chat_result.dart';
+import '../domain/model/hr_request.dart';
 import '../presentation/pages/chat/bloc/chat_bloc.dart';
 import '../presentation/pages/chat/chat_page.dart';
+import '../presentation/pages/chat/chat_settings_page.dart';
 import '../presentation/pages/home/chat_history_page.dart';
 import '../presentation/pages/home/home_chat_ai_page.dart';
 import '../presentation/pages/home/home_page.dart';
@@ -19,6 +22,7 @@ import '../presentation/pages/hr/bloc/hr_request_cubit.dart';
 import '../presentation/pages/hr/hr_request_pages.dart';
 import '../presentation/pages/jira/jira_pages.dart';
 import '../presentation/pages/outlook/outlook_pages.dart';
+import '../presentation/pages/voice_assistant/voice_assistant_page.dart';
 
 part 'go_router.g.dart';
 
@@ -39,6 +43,10 @@ final List<RouteBase> appRoutes = [
     builder: (context, state) => const ChatHistoryPage(),
   ),
   GoRoute(
+    path: VoiceAssistantRoute.path,
+    builder: (context, state) => const VoiceAssistantPage(),
+  ),
+  GoRoute(
     path: JiraTaskOverviewRoute.path,
     redirect: (context, state) =>
         state.extra is JiraIssueList ? null : const HomeRoute().location,
@@ -56,10 +64,20 @@ final List<RouteBase> appRoutes = [
   GoRoute(
     path: ChatRoute.path,
     pageBuilder: (context, state) => ChatRoute(
+      voiceResult: state.extra is VoiceChatResult
+          ? state.extra! as VoiceChatResult
+          : null,
       threadId: state.uri.queryParameters['threadId'],
       title: state.uri.queryParameters['title'],
-      initialMessage: state.uri.queryParameters['initialMessage'],
+      initialMessage: switch (state.extra) {
+        ExternalChatLaunch(:final message) => message,
+        VoiceChatDraft(:final draft) => draft,
+        String message => message,
+        _ => state.uri.queryParameters['initialMessage'],
+      },
       autoSendInitialMessage:
+          state.extra is ExternalChatLaunch ||
+          state.extra is String ||
           state.uri.queryParameters['autoSendInitialMessage'] == 'true',
       startRecording: state.uri.queryParameters['startRecording'] == 'true',
     ).buildPage(context, state),
@@ -91,6 +109,15 @@ class HomeRoute extends GoRouteData with $HomeRoute {
   Widget build(BuildContext context, GoRouterState state) => const HomePage();
 }
 
+@TypedGoRoute<ChatSettingsRoute>(path: '/chat-settings')
+class ChatSettingsRoute extends GoRouteData with $ChatSettingsRoute {
+  const ChatSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const ChatSettingsPage();
+}
+
 @TypedGoRoute<LeaveListRoute>(path: '/leaves')
 class LeaveListRoute extends GoRouteData with $LeaveListRoute {
   const LeaveListRoute();
@@ -102,13 +129,18 @@ class LeaveListRoute extends GoRouteData with $LeaveListRoute {
 
 @TypedGoRoute<LeaveDetailRoute>(path: '/leaves/:id')
 class LeaveDetailRoute extends GoRouteData with $LeaveDetailRoute {
-  const LeaveDetailRoute(this.id);
+  const LeaveDetailRoute(this.id, {this.$extra});
 
   final String id;
+  final String? $extra;
 
   @override
   Widget build(BuildContext context, GoRouterState state) =>
-      HrRequestDetailPage(kind: HrRequestKind.leave, id: id);
+      HrRequestDetailPage(
+        kind: HrRequestKind.leave,
+        id: id,
+        employeeName: $extra,
+      );
 }
 
 @TypedGoRoute<TripListRoute>(path: '/trips')
@@ -122,13 +154,18 @@ class TripListRoute extends GoRouteData with $TripListRoute {
 
 @TypedGoRoute<TripDetailRoute>(path: '/trips/:id')
 class TripDetailRoute extends GoRouteData with $TripDetailRoute {
-  const TripDetailRoute(this.id);
+  const TripDetailRoute(this.id, {this.$extra});
 
   final String id;
+  final TripRequest? $extra;
 
   @override
   Widget build(BuildContext context, GoRouterState state) =>
-      HrRequestDetailPage(kind: HrRequestKind.trip, id: id);
+      HrRequestDetailPage(
+        kind: HrRequestKind.trip,
+        id: id,
+        initialTrip: $extra,
+      );
 }
 
 @TypedGoRoute<OutlookConnectionRoute>(path: '/outlook')
@@ -202,6 +239,18 @@ class ChatHistoryRoute extends GoRouteData {
   Future<T?> push<T>(BuildContext context) => context.push<T>(path);
 }
 
+class VoiceAssistantRoute extends GoRouteData {
+  const VoiceAssistantRoute();
+
+  static const path = '/voice-assistant';
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const VoiceAssistantPage();
+
+  Future<T?> push<T>(BuildContext context) => context.push<T>(path);
+}
+
 class JiraTaskOverviewRoute extends GoRouteData {
   const JiraTaskOverviewRoute(this.data);
 
@@ -235,6 +284,9 @@ class JiraTaskDetailRoute extends GoRouteData {
   );
 }
 
+typedef VoiceChatResult = ({String message, String reply});
+typedef VoiceChatDraft = ({String draft});
+
 class ChatRoute extends GoRouteData {
   const ChatRoute({
     this.threadId,
@@ -242,6 +294,7 @@ class ChatRoute extends GoRouteData {
     this.initialMessage,
     this.autoSendInitialMessage = false,
     this.startRecording = false,
+    this.voiceResult,
   });
 
   static const path = '/chat';
@@ -251,25 +304,34 @@ class ChatRoute extends GoRouteData {
   final String? initialMessage;
   final bool autoSendInitialMessage;
   final bool startRecording;
+  final VoiceChatResult? voiceResult;
 
-  Future<T?> push<T>(BuildContext context) {
-    final uri = Uri(
-      path: path,
-      queryParameters: {
-        if (threadId != null) 'threadId': threadId,
-        if (title?.trim().isNotEmpty == true) 'title': title!.trim(),
-        if (initialMessage != null) 'initialMessage': initialMessage,
-        if (autoSendInitialMessage) 'autoSendInitialMessage': 'true',
-        if (startRecording) 'startRecording': 'true',
-      },
-    );
-    return context.push<T>(uri.toString());
-  }
+  Uri get _uri => Uri(
+    path: path,
+    queryParameters: {
+      if (threadId != null) 'threadId': threadId,
+      if (title?.trim().isNotEmpty == true) 'title': title!.trim(),
+      if (initialMessage != null) 'initialMessage': initialMessage,
+      if (autoSendInitialMessage) 'autoSendInitialMessage': 'true',
+      if (startRecording) 'startRecording': 'true',
+    },
+  );
+
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(_uri.toString(), extra: voiceResult);
+
+  void go(BuildContext context) =>
+      context.go(_uri.toString(), extra: voiceResult);
+
+  void goWithDraft(BuildContext context, String draft) =>
+      context.go(path, extra: (draft: draft));
 
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) {
     return CustomTransitionPage<void>(
-      key: state.pageKey,
+      key: state.extra is ExternalChatLaunch
+          ? ObjectKey(state.extra)
+          : state.pageKey,
       transitionDuration: const Duration(milliseconds: 360),
       reverseTransitionDuration: const Duration(milliseconds: 260),
       child: BlocProvider(
@@ -284,13 +346,17 @@ class ChatRoute extends GoRouteData {
                 initialMessage: initialMessage,
                 autoSendInitialMessage: autoSendInitialMessage,
                 startRecording: startRecording,
+                voiceMessage: voiceResult?.message,
+                voiceReply: voiceResult?.reply,
               ),
             ),
         child: ChatPage(
           title: title,
-          showCloseButton: true,
           autofocusInput:
-              threadId == null && !autoSendInitialMessage && !startRecording,
+              threadId == null &&
+              voiceResult == null &&
+              !autoSendInitialMessage &&
+              !startRecording,
         ),
       ),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {

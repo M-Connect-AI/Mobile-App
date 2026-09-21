@@ -404,10 +404,10 @@ class S {
     return Intl.message('Đăng xuất', name: 'logout', desc: '', args: []);
   }
 
-  /// `Alice`
+  /// `Bong bóng Alice`
   String get aliceInspectorButton {
     return Intl.message(
-      'Alice',
+      'Bong bóng Alice',
       name: 'aliceInspectorButton',
       desc: '',
       args: [],
@@ -794,6 +794,166 @@ class S {
     );
   }
 
+  /// `Chi tiết nghỉ phép`
+  String get leaveDetailTitle {
+    return Intl.message(
+      'Chi tiết nghỉ phép',
+      name: 'leaveDetailTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Đã sao chép mã yêu cầu`
+  String get requestCodeCopied {
+    return Intl.message(
+      'Đã sao chép mã yêu cầu',
+      name: 'requestCodeCopied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `—`
+  String get valueUnavailable {
+    return Intl.message('—', name: 'valueUnavailable', desc: '', args: []);
+  }
+
+  /// `Tên nhân viên`
+  String get employeeName {
+    return Intl.message(
+      'Tên nhân viên',
+      name: 'employeeName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Duyệt đơn`
+  String get approveRequest {
+    return Intl.message(
+      'Duyệt đơn',
+      name: 'approveRequest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Từ chối`
+  String get rejectRequest {
+    return Intl.message('Từ chối', name: 'rejectRequest', desc: '', args: []);
+  }
+
+  /// `Duyệt đơn nghỉ phép?`
+  String get approveConfirmTitle {
+    return Intl.message(
+      'Duyệt đơn nghỉ phép?',
+      name: 'approveConfirmTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bạn có chắc muốn duyệt đơn nghỉ phép này không?`
+  String get approveConfirmBody {
+    return Intl.message(
+      'Bạn có chắc muốn duyệt đơn nghỉ phép này không?',
+      name: 'approveConfirmBody',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Từ chối đơn nghỉ phép?`
+  String get rejectConfirmTitle {
+    return Intl.message(
+      'Từ chối đơn nghỉ phép?',
+      name: 'rejectConfirmTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bạn có chắc muốn từ chối đơn nghỉ phép này không?`
+  String get rejectConfirmBody {
+    return Intl.message(
+      'Bạn có chắc muốn từ chối đơn nghỉ phép này không?',
+      name: 'rejectConfirmBody',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Duyệt đơn công tác?`
+  String get approveTripConfirmTitle {
+    return Intl.message(
+      'Duyệt đơn công tác?',
+      name: 'approveTripConfirmTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bạn có chắc muốn duyệt đơn công tác này không?`
+  String get approveTripConfirmBody {
+    return Intl.message(
+      'Bạn có chắc muốn duyệt đơn công tác này không?',
+      name: 'approveTripConfirmBody',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Từ chối đơn công tác?`
+  String get rejectTripConfirmTitle {
+    return Intl.message(
+      'Từ chối đơn công tác?',
+      name: 'rejectTripConfirmTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bạn có chắc muốn từ chối đơn công tác này không?`
+  String get rejectTripConfirmBody {
+    return Intl.message(
+      'Bạn có chắc muốn từ chối đơn công tác này không?',
+      name: 'rejectTripConfirmBody',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Duyệt {count} đơn`
+  String approveBatchCount(int count) {
+    return Intl.message(
+      'Duyệt $count đơn',
+      name: 'approveBatchCount',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Đã duyệt {result} đơn.`
+  String batchResult(String result) {
+    return Intl.message(
+      'Đã duyệt $result đơn.',
+      name: 'batchResult',
+      desc: '',
+      args: [result],
+    );
+  }
+
+  /// `Đã duyệt {result} đơn. Có {failed} đơn không thể xử lý.`
+  String batchResultPartial(String result, int failed) {
+    return Intl.message(
+      'Đã duyệt $result đơn. Có $failed đơn không thể xử lý.',
+      name: 'batchResultPartial',
+      desc: '',
+      args: [result, failed],
+    );
+  }
+
   /// `Bạn chưa có đơn nghỉ phép.`
   String get leaveListEmpty {
     return Intl.message(
@@ -1154,6 +1314,16 @@ class S {
     );
   }
 
+  /// `Chờ duyệt`
+  String get statusPendingShort {
+    return Intl.message(
+      'Chờ duyệt',
+      name: 'statusPendingShort',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Đã duyệt`
   String get statusApproved {
     return Intl.message('Đã duyệt', name: 'statusApproved', desc: '', args: []);
@@ -1257,6 +1427,76 @@ class S {
   /// `Tùy chọn`
   String get options {
     return Intl.message('Tùy chọn', name: 'options', desc: '', args: []);
+  }
+
+  /// `Cài đặt`
+  String get chatSettingsTitle {
+    return Intl.message(
+      'Cài đặt',
+      name: 'chatSettingsTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cỡ chữ hội thoại`
+  String get chatTextSizeTitle {
+    return Intl.message(
+      'Cỡ chữ hội thoại',
+      name: 'chatTextSizeTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Kéo thanh trượt để chọn cỡ chữ dễ đọc hơn.`
+  String get chatTextSizeDescription {
+    return Intl.message(
+      'Kéo thanh trượt để chọn cỡ chữ dễ đọc hơn.',
+      name: 'chatTextSizeDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{size}`
+  String chatTextSizeValue(int size) {
+    return Intl.message(
+      '$size',
+      name: 'chatTextSizeValue',
+      desc: '',
+      args: [size],
+    );
+  }
+
+  /// `Xem trước`
+  String get chatTextSizePreviewLabel {
+    return Intl.message(
+      'Xem trước',
+      name: 'chatTextSizePreviewLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Xin chào! Tôi có thể giúp bạn tìm thông tin và xử lý công việc hôm nay.`
+  String get chatTextSizePreviewMessage {
+    return Intl.message(
+      'Xin chào! Tôi có thể giúp bạn tìm thông tin và xử lý công việc hôm nay.',
+      name: 'chatTextSizePreviewMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Không thể lưu cỡ chữ. Vui lòng thử lại.`
+  String get chatTextSizeSaveError {
+    return Intl.message(
+      'Không thể lưu cỡ chữ. Vui lòng thử lại.',
+      name: 'chatTextSizeSaveError',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Trực tuyến`
@@ -1426,6 +1666,56 @@ class S {
       name: 'leaveRequestSuggestion',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Tôi muốn tạo đơn nghỉ phép`
+  String get createLeaveIntentPrompt {
+    return Intl.message(
+      'Tôi muốn tạo đơn nghỉ phép',
+      name: 'createLeaveIntentPrompt',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ngày bắt đầu: {date}`
+  String createLeaveIntentStartDate(Object date) {
+    return Intl.message(
+      'Ngày bắt đầu: $date',
+      name: 'createLeaveIntentStartDate',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `Ngày kết thúc: {date}`
+  String createLeaveIntentEndDate(Object date) {
+    return Intl.message(
+      'Ngày kết thúc: $date',
+      name: 'createLeaveIntentEndDate',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `Từ ngày {startDate} đến ngày {endDate}`
+  String createLeaveIntentDateRange(Object startDate, Object endDate) {
+    return Intl.message(
+      'Từ ngày $startDate đến ngày $endDate',
+      name: 'createLeaveIntentDateRange',
+      desc: '',
+      args: [startDate, endDate],
+    );
+  }
+
+  /// `Lý do: {reason}`
+  String createLeaveIntentReason(Object reason) {
+    return Intl.message(
+      'Lý do: $reason',
+      name: 'createLeaveIntentReason',
+      desc: '',
+      args: [reason],
     );
   }
 
@@ -2069,20 +2359,20 @@ class S {
     );
   }
 
-  /// `Phê duyệt đơn nghỉ phép thành công`
+  /// `Đã duyệt đơn nghỉ phép`
   String get approveLeavesSuccess {
     return Intl.message(
-      'Phê duyệt đơn nghỉ phép thành công',
+      'Đã duyệt đơn nghỉ phép',
       name: 'approveLeavesSuccess',
       desc: '',
       args: [],
     );
   }
 
-  /// `Từ chối đơn nghỉ phép thành công`
+  /// `Đã từ chối đơn nghỉ phép`
   String get rejectLeavesSuccess {
     return Intl.message(
-      'Từ chối đơn nghỉ phép thành công',
+      'Đã từ chối đơn nghỉ phép',
       name: 'rejectLeavesSuccess',
       desc: '',
       args: [],
@@ -3214,6 +3504,251 @@ class S {
     return Intl.message(
       'Kết nối bị gián đoạn trước khi hoàn tất.',
       name: 'connectionInterrupted',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Trợ lý MConnect`
+  String get voiceAssistantTitle {
+    return Intl.message(
+      'Trợ lý MConnect',
+      name: 'voiceAssistantTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tôi đang nghe...`
+  String get voiceAssistantListening {
+    return Intl.message(
+      'Tôi đang nghe...',
+      name: 'voiceAssistantListening',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Đang xử lý...`
+  String get voiceAssistantProcessing {
+    return Intl.message(
+      'Đang xử lý...',
+      name: 'voiceAssistantProcessing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Chạm micro để bắt đầu`
+  String get voiceAssistantTapToStart {
+    return Intl.message(
+      'Chạm micro để bắt đầu',
+      name: 'voiceAssistantTapToStart',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Đóng trợ lý giọng nói`
+  String get voiceAssistantClose {
+    return Intl.message(
+      'Đóng trợ lý giọng nói',
+      name: 'voiceAssistantClose',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Thử lại`
+  String get voiceAssistantRetry {
+    return Intl.message(
+      'Thử lại',
+      name: 'voiceAssistantRetry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cần quyền micro để nhận dạng giọng nói. Bạn có thể cấp quyền trong Cài đặt.`
+  String get voiceAssistantPermissionDenied {
+    return Intl.message(
+      'Cần quyền micro để nhận dạng giọng nói. Bạn có thể cấp quyền trong Cài đặt.',
+      name: 'voiceAssistantPermissionDenied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Chưa nghe thấy giọng nói. Hãy thử lại.`
+  String get voiceAssistantNoSpeech {
+    return Intl.message(
+      'Chưa nghe thấy giọng nói. Hãy thử lại.',
+      name: 'voiceAssistantNoSpeech',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mất kết nối. Hãy kiểm tra mạng và thử lại.`
+  String get voiceAssistantNetworkError {
+    return Intl.message(
+      'Mất kết nối. Hãy kiểm tra mạng và thử lại.',
+      name: 'voiceAssistantNetworkError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Trợ lý chưa thể trả lời. Hãy thử lại.`
+  String get voiceAssistantChatError {
+    return Intl.message(
+      'Trợ lý chưa thể trả lời. Hãy thử lại.',
+      name: 'voiceAssistantChatError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mở cài đặt`
+  String get voiceAssistantOpenSettings {
+    return Intl.message(
+      'Mở cài đặt',
+      name: 'voiceAssistantOpenSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Đây là phản hồi mô phỏng để bạn kiểm tra giao diện. Nội dung giọng nói chưa được gửi tới chatbot.`
+  String get voiceAssistantPreviewReply {
+    return Intl.message(
+      'Đây là phản hồi mô phỏng để bạn kiểm tra giao diện. Nội dung giọng nói chưa được gửi tới chatbot.',
+      name: 'voiceAssistantPreviewReply',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Đang chuẩn bị...`
+  String get voiceAssistantInitializing {
+    return Intl.message(
+      'Đang chuẩn bị...',
+      name: 'voiceAssistantInitializing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Đã dừng — hãy kiểm tra nội dung`
+  String get voiceAssistantPaused {
+    return Intl.message(
+      'Đã dừng — hãy kiểm tra nội dung',
+      name: 'voiceAssistantPaused',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Đã gửi`
+  String get voiceAssistantSent {
+    return Intl.message(
+      'Đã gửi',
+      name: 'voiceAssistantSent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Kiểm tra nội dung trước khi gửi`
+  String get voiceAssistantReviewBeforeSend {
+    return Intl.message(
+      'Kiểm tra nội dung trước khi gửi',
+      name: 'voiceAssistantReviewBeforeSend',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nói lại`
+  String get voiceAssistantReset {
+    return Intl.message(
+      'Nói lại',
+      name: 'voiceAssistantReset',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Dừng ghi âm`
+  String get voiceAssistantPause {
+    return Intl.message(
+      'Dừng ghi âm',
+      name: 'voiceAssistantPause',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tiếp tục ghi âm`
+  String get voiceAssistantResume {
+    return Intl.message(
+      'Tiếp tục ghi âm',
+      name: 'voiceAssistantResume',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Gửi`
+  String get voiceAssistantSend {
+    return Intl.message('Gửi', name: 'voiceAssistantSend', desc: '', args: []);
+  }
+
+  /// `Cho phép sử dụng micro`
+  String get voiceAssistantPermissionTitle {
+    return Intl.message(
+      'Cho phép sử dụng micro',
+      name: 'voiceAssistantPermissionTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `MConnect cần quyền micro để nhận nội dung bạn nói.`
+  String get voiceAssistantPermissionDescription {
+    return Intl.message(
+      'MConnect cần quyền micro để nhận nội dung bạn nói.',
+      name: 'voiceAssistantPermissionDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cho phép micro`
+  String get voiceAssistantAllowMicrophone {
+    return Intl.message(
+      'Cho phép micro',
+      name: 'voiceAssistantAllowMicrophone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Chuyển sang nhập bằng bàn phím`
+  String get voiceAssistantTypeInstead {
+    return Intl.message(
+      'Chuyển sang nhập bằng bàn phím',
+      name: 'voiceAssistantTypeInstead',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hãy nói nội dung bạn muốn MConnect thực hiện`
+  String get voiceAssistantPlaceholder {
+    return Intl.message(
+      'Hãy nói nội dung bạn muốn MConnect thực hiện',
+      name: 'voiceAssistantPlaceholder',
       desc: '',
       args: [],
     );

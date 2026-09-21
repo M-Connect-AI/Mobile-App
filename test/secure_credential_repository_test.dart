@@ -81,6 +81,30 @@ void main() {
 
     expect(await repository.readAutoLoginEnabled(), isTrue);
   });
+
+  test('401 invalidates the matching token and emits session expiry', () async {
+    FlutterSecureStorage.setMockInitialValues({});
+    final repository = SecureCredentialRepository();
+    final events = <void>[];
+    final subscription = repository.onSessionExpired.listen(events.add);
+    await repository.save(_session, persist: true);
+
+    await repository.expireSession('other-token');
+    expect(await repository.read(), _session);
+    expect(events, isEmpty);
+
+    await repository.save(_session.copyWith(accessToken: 'new-token'), persist: true);
+    await repository.expireSession(_session.accessToken);
+    expect((await repository.read())?.accessToken, 'new-token');
+    expect(events, isEmpty);
+
+    await repository.save(_session, persist: true);
+    await repository.expireSession(_session.accessToken);
+    await Future<void>.delayed(Duration.zero);
+    expect(await repository.read(), isNull);
+    expect(events, hasLength(1));
+    await subscription.cancel();
+  });
 }
 
 const _session = AuthSession(

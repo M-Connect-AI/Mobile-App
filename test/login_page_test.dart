@@ -139,6 +139,11 @@ class _MemoryAuthPreferenceRepository implements AuthPreferenceRepository {
 
   @override
   Future<void> setAutoLoginEnabled(bool enabled) async {}
+  @override
+  Future<bool> readAliceBubbleEnabled() async => false;
+
+  @override
+  Future<void> setAliceBubbleEnabled(bool enabled) async {}
 }
 
 class _SuccessfulAuthRepository implements AuthRepository {

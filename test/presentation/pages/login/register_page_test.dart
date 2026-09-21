@@ -111,4 +111,9 @@ class _Storage implements CredentialRepository, AuthPreferenceRepository {
 
   @override
   Future<void> setAutoLoginEnabled(bool enabled) async {}
+  @override
+  Future<bool> readAliceBubbleEnabled() async => false;
+
+  @override
+  Future<void> setAliceBubbleEnabled(bool enabled) async {}
 }

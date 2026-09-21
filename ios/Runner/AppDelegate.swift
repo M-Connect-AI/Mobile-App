@@ -1,4 +1,5 @@
 import Flutter
+import AppIntents
 import EventKit
 import EventKitUI
 import UIKit
@@ -11,6 +12,9 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    if #available(iOS 16.0, *) {
+      MConnectShortcuts.updateAppShortcutParameters()
+    }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
@@ -20,6 +24,23 @@ import UIKit
       forPlugin: "DeviceCalendarPlugin"
     ) else { return }
     deviceCalendarPlugin = DeviceCalendarPlugin(messenger: registrar.messenger())
+    ExternalActions.install(messenger: registrar.messenger())
+    FlutterMethodChannel(
+      name: "com.irohasu.mconnect/app_settings",
+      binaryMessenger: registrar.messenger()
+    ).setMethodCallHandler { call, result in
+      guard call.method == "open" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      guard let url = URL(string: UIApplication.openSettingsURLString) else {
+        result(false)
+        return
+      }
+      UIApplication.shared.open(url, options: [:]) { opened in
+        result(opened)
+      }
+    }
   }
 }
 

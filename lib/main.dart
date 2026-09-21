@@ -8,6 +8,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:overlay_support/overlay_support.dart';
 
 import 'common/theme/app_theme.dart';
+import 'common/navigation/external_action_handler.dart';
+import 'data/repository/pending_action_store.dart';
+import 'data/source/remote/client/dio_client_factory.dart';
 import 'common/server_config/server_config_scope.dart';
 import 'di/app_dependencies.dart';
 import 'domain/model/server_config.dart';
@@ -20,12 +23,16 @@ import 'domain/repository/home_repository.dart';
 import 'domain/repository/hr_request_repository.dart';
 import 'domain/repository/outlook_repository.dart';
 import 'domain/repository/speech_to_text_repository.dart';
+import 'domain/repository/text_to_speech_repository.dart';
+import 'domain/repository/voice_assistant_chat_repository.dart';
 import 'domain/repository/server_config_repository.dart';
 import 'domain/service/data_refresh_coordinator.dart';
 import 'domain/service/device_calendar_service.dart';
+import 'domain/service/session_expiry.dart';
 import 'generated/l10n.dart';
 import 'resources/app_constants.dart';
 import 'route/go_router.dart';
+import 'presentation/pages/chat/bloc/chat_text_size_cubit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,9 +51,59 @@ class AiAssistantApp extends StatefulWidget {
   State<AiAssistantApp> createState() => _AiAssistantAppState();
 }
 
-class _AiAssistantAppState extends State<AiAssistantApp> {
+class _AiAssistantAppState extends State<AiAssistantApp>
+    with WidgetsBindingObserver {
   late AppDependencies _dependencies = widget.dependencies;
+  late ExternalActionHandler _externalActions = _makeExternalActions(
+    _dependencies,
+  );
   var _configurationRevision = 0;
+  StreamSubscription<void>? _sessionExpirySubscription;
+
+  void _listenForSessionExpiry(CredentialRepository credentials) {
+    _sessionExpirySubscription?.cancel();
+    if (credentials case SessionExpiry expiry) {
+      _sessionExpirySubscription = expiry.onSessionExpired.listen((_) {
+        if (!mounted) return;
+        if (appRouter.routeInformationProvider.value.uri.path !=
+            const LoginRoute().location) {
+          appRouter.go(const LoginRoute().location);
+        }
+      });
+    }
+  }
+
+  ExternalActionHandler _makeExternalActions(AppDependencies dependencies) =>
+      ExternalActionHandler(
+        credentials: dependencies.credentialRepository,
+        auth: dependencies.authRepository,
+        pending: PendingActionStore(),
+      );
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _listenForSessionExpiry(_dependencies.credentialRepository);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        DioClientFactory.showBubbleIfEnabled();
+        unawaited(_externalActions.start());
+      }
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) unawaited(_externalActions.drain());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _sessionExpirySubscription?.cancel();
+    super.dispose();
+  }
 
   Future<void> _applyServerConfig(ServerConfig config) async {
     final configRepository = _dependencies.serverConfigRepository;
@@ -68,8 +125,11 @@ class _AiAssistantAppState extends State<AiAssistantApp> {
     appRouter.go(const LoginRoute().location);
     setState(() {
       _dependencies = replacement;
+      _externalActions = _makeExternalActions(replacement);
       _configurationRevision++;
     });
+    _listenForSessionExpiry(replacement.credentialRepository);
+    unawaited(_externalActions.start());
   }
 
   @override
@@ -80,6 +140,9 @@ class _AiAssistantAppState extends State<AiAssistantApp> {
       child: MultiRepositoryProvider(
         key: ValueKey(_configurationRevision),
         providers: [
+          RepositoryProvider<ExternalActionHandler>.value(
+            value: _externalActions,
+          ),
           RepositoryProvider<AuthRepository>(
             create: (_) => dependencies.authRepository,
           ),
@@ -109,6 +172,12 @@ class _AiAssistantAppState extends State<AiAssistantApp> {
             create: (_) => dependencies.speechToTextRepository,
             dispose: (repository) => unawaited(repository.close()),
           ),
+          RepositoryProvider<TextToSpeechRepository>.value(
+            value: dependencies.textToSpeechRepository,
+          ),
+          RepositoryProvider<VoiceAssistantChatRepository>.value(
+            value: dependencies.voiceAssistantChatRepository,
+          ),
           RepositoryProvider<ServerConfigRepository>.value(
             value: dependencies.serverConfigRepository,
           ),
@@ -124,23 +193,28 @@ class _AiAssistantAppState extends State<AiAssistantApp> {
           designSize: const Size(390, 844),
           minTextAdapt: true,
           splitScreenMode: true,
-          builder: (context, child) => OverlaySupport(
-            child: MaterialApp.router(
-              title: AppConstants.chatbotName,
-              debugShowCheckedModeBanner: false,
-              themeMode: ThemeMode.light,
-              theme: AppTheme.light,
-              darkTheme: AppTheme.dark,
-              routerConfig: appRouter,
-              builder: (context, child) => child ?? const SizedBox.shrink(),
-              locale: const Locale('vi'),
-              supportedLocales: S.delegate.supportedLocales,
-              localizationsDelegates: const [
-                S.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
+          builder: (context, child) => BlocProvider(
+            create: (_) =>
+                ChatTextSizeCubit(dependencies.chatTextSizeRepository)..load(),
+            child: OverlaySupport(
+              child: MaterialApp.router(
+                title: AppConstants.chatbotName,
+                debugShowCheckedModeBanner: false,
+                themeMode: ThemeMode.light,
+                theme: AppTheme.light,
+                darkTheme: AppTheme.dark,
+                routerConfig: appRouter,
+                builder: (context, child) =>
+                    child ?? const SizedBox.shrink(),
+                locale: const Locale('vi'),
+                supportedLocales: S.delegate.supportedLocales,
+                localizationsDelegates: const [
+                  S.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+              ),
             ),
           ),
         ),

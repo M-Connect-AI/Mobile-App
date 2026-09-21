@@ -2,6 +2,7 @@ import '../../../domain/model/auth_session.dart';
 import '../../../domain/model/home_data.dart';
 import '../../../domain/repository/credential_repository.dart';
 import '../../../domain/repository/home_repository.dart';
+import '../../../domain/service/session_expiry.dart';
 import '../../model/auth/login_models.dart';
 import '../../model/home/home_models.dart';
 import '../../source/remote/home_remote_data_source.dart';
@@ -43,7 +44,7 @@ class ApiHomeRepository implements HomeRepository {
       return HomeData(user: user, leaveBalance: balance, upcomingTrips: trips);
     } on HomeRemoteException catch (error) {
       if (error.type == HomeRemoteErrorType.unauthorized) {
-        await _sessions.clear();
+        await expireSessionForToken(_sessions, session.accessToken);
       }
       throw HomeException(
         type: switch (error.type) {

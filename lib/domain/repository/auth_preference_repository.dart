@@ -6,4 +6,8 @@ abstract interface class AuthPreferenceRepository {
   Future<bool> readAutoLoginEnabled();
 
   Future<void> setAutoLoginEnabled(bool enabled);
+
+  Future<bool> readAliceBubbleEnabled();
+
+  Future<void> setAliceBubbleEnabled(bool enabled);
 }

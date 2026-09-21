@@ -12,12 +12,16 @@ final class ChatStarted extends ChatEvent {
     this.initialMessage,
     this.autoSendInitialMessage = false,
     this.startRecording = false,
+    this.voiceMessage,
+    this.voiceReply,
   });
 
   final String? threadId;
   final String? initialMessage;
   final bool autoSendInitialMessage;
   final bool startRecording;
+  final String? voiceMessage;
+  final String? voiceReply;
 
   @override
   List<Object?> get props => [
@@ -25,6 +29,8 @@ final class ChatStarted extends ChatEvent {
     initialMessage,
     autoSendInitialMessage,
     startRecording,
+    voiceMessage,
+    voiceReply,
   ];
 }
 

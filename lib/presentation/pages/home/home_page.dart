@@ -2,6 +2,7 @@ import 'package:awesome_extensions/awesome_extensions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../common/components/irh_button.dart';
 import '../../../common/components/irh_text.dart';
@@ -44,10 +45,8 @@ class _HomeView extends StatelessWidget {
     final colors = context.appColorScheme;
     return BlocListener<HomeCubit, HomeState>(
       listenWhen: (previous, current) =>
-          (previous.failureType != current.failureType &&
-              current.failureType == HomeFailureType.sessionExpired) ||
-          (previous.status != current.status &&
-              current.status == HomeStatus.loggedOut),
+          (previous.failureType != current.failureType && current.failureType == HomeFailureType.sessionExpired) ||
+          (previous.status != current.status && current.status == HomeStatus.loggedOut),
       listener: (context, state) => const LoginRoute().go(context),
       child: Scaffold(
         backgroundColor: colors.surfacePrimary,
@@ -59,19 +58,14 @@ class _HomeView extends StatelessWidget {
                 HomeTab.utilities => _UtilitiesContent(user: state.data!.user),
               };
             }
-            if (state.status == HomeStatus.failure &&
-                state.failureType != HomeFailureType.sessionExpired) {
+            if (state.status == HomeStatus.failure && state.failureType != HomeFailureType.sessionExpired) {
               return _HomeError(state: state);
             }
-            return Center(
-              child: CircularProgressIndicator(color: colors.iconBrand),
-            );
+            return Center(child: CircularProgressIndicator(color: colors.iconBrand));
           },
         ),
         floatingActionButtonLocation: const _AssistantLauncherLocation(),
-        floatingActionButton: _AssistantLauncher(
-          onPressed: () => const HomeChatAiRoute().push(context),
-        ),
+        floatingActionButton: _AssistantLauncher(onPressed: () => const HomeChatAiRoute().push(context)),
         bottomNavigationBar: BlocBuilder<HomeCubit, HomeState>(
           buildWhen: (previous, current) => previous.tab != current.tab,
           builder: (context, state) => _HomeBottomAppBar(activeTab: state.tab),
@@ -86,9 +80,7 @@ class _AssistantLauncherLocation extends FloatingActionButtonLocation {
 
   @override
   Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-    final docked = FloatingActionButtonLocation.centerDocked.getOffset(
-      scaffoldGeometry,
-    );
+    final docked = FloatingActionButtonLocation.centerDocked.getOffset(scaffoldGeometry);
     final groupHeight = scaffoldGeometry.floatingActionButtonSize.height;
     return Offset(docked.dx, docked.dy + groupHeight / 2 - 16.height);
   }
@@ -103,9 +95,11 @@ class _HomeBottomAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = S.of(context);
     final colors = context.appColorScheme;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final extraBottomPadding = bottomInset == 0 ? 16.height : 0.0;
     return BottomAppBar(
       key: const Key('home-bottom-bar'),
-      height: 64.height + MediaQuery.paddingOf(context).bottom,
+      height: 64.height + bottomInset + extraBottomPadding,
       padding: EdgeInsets.zero,
       color: colors.surfaceSecondary,
       surfaceTintColor: colors.surfaceSecondary,
@@ -113,6 +107,7 @@ class _HomeBottomAppBar extends StatelessWidget {
       elevation: 2,
       child: SafeArea(
         top: false,
+        minimum: EdgeInsets.only(bottom: extraBottomPadding),
         child: Row(
           children: [
             _NavigationItem(
@@ -120,27 +115,17 @@ class _HomeBottomAppBar extends StatelessWidget {
               icon: Icons.home_rounded,
               label: strings.navigationHome,
               isSelected: activeTab == HomeTab.home,
-              onPressed: () =>
-                  context.read<HomeCubit>().selectTab(HomeTab.home),
+              onPressed: () => context.read<HomeCubit>().selectTab(HomeTab.home),
             ).expanded(),
-            _NavigationItem(
-              icon: Icons.person_rounded,
-              label: strings.navigationHris,
-              onPressed: () {},
-            ).expanded(),
+            _NavigationItem(icon: Icons.person_rounded, label: strings.navigationHris, onPressed: () {}).expanded(),
             SizedBox(width: 72.width),
-            _NavigationItem(
-              icon: Icons.article_rounded,
-              label: strings.navigationFeed,
-              onPressed: () {},
-            ).expanded(),
+            _NavigationItem(icon: Icons.article_rounded, label: strings.navigationFeed, onPressed: () {}).expanded(),
             _NavigationItem(
               key: const Key('utilities-navigation-item'),
               icon: Icons.grid_view_rounded,
               label: strings.navigationUtilities,
               isSelected: activeTab == HomeTab.utilities,
-              onPressed: () =>
-                  context.read<HomeCubit>().selectTab(HomeTab.utilities),
+              onPressed: () => context.read<HomeCubit>().selectTab(HomeTab.utilities),
             ).expanded(),
           ],
         ),
@@ -221,16 +206,10 @@ class _AssistantLauncher extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Color.lerp(colors.iconBrand, colors.surfaceSecondary, .08)!,
-                    colors.iconBrand,
-                  ],
+                  colors: [Color.lerp(colors.iconBrand, colors.surfaceSecondary, .08)!, colors.iconBrand],
                 ),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: colors.surfaceSecondary,
-                  width: 3.width,
-                ),
+                border: Border.all(color: colors.surfaceSecondary, width: 3.width),
                 boxShadow: [
                   BoxShadow(
                     color: colors.iconBrand.withValues(alpha: .14),
@@ -239,17 +218,10 @@ class _AssistantLauncher extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Icon(
-                Icons.auto_awesome_rounded,
-                color: colors.surfaceSecondary,
-                size: 28.sp,
-              ),
+              child: Icon(Icons.auto_awesome_rounded, color: colors.surfaceSecondary, size: 28.sp),
             ),
             4.height.heightBox,
-            IrhText.medium(
-              S.of(context).navigationAssistant,
-              color: colors.textBrand,
-            ),
+            IrhText.medium(S.of(context).navigationAssistant, color: colors.textBrand),
           ],
         ),
       ),
@@ -273,30 +245,16 @@ class _UtilitiesContent extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(
-              16.width,
-              24.height,
-              16.width,
-              48.height,
-            ),
+            padding: EdgeInsets.fromLTRB(16.width, 24.height, 16.width, 48.height),
             sliver: SliverList.list(
               children: [
-                IrhText.title(
-                  strings.navigationUtilities,
-                  color: colors.textPrimary,
-                ),
+                IrhText.title(strings.navigationUtilities, color: colors.textPrimary),
                 16.height.heightBox,
                 _ProfileCard(user: user),
                 24.height.heightBox,
-                _HrUtilityItem(
-                  label: strings.leaveRequest,
-                  onPressed: () => const LeaveListRoute().push(context),
-                ),
+                _HrUtilityItem(label: strings.leaveRequest, onPressed: () => const LeaveListRoute().push(context)),
                 12.height.heightBox,
-                _HrUtilityItem(
-                  label: strings.businessTrip,
-                  onPressed: () => const TripListRoute().push(context),
-                ),
+                _HrUtilityItem(label: strings.businessTrip, onPressed: () => const TripListRoute().push(context)),
                 12.height.heightBox,
                 _HrUtilityItem(
                   label: strings.outlookTitle,
@@ -307,6 +265,7 @@ class _UtilitiesContent extends StatelessWidget {
                 12.height.heightBox,
                 const _AutoLoginUtilityItem(),
                 12.height.heightBox,
+                if (kDebugMode) ...[const _AliceUtilityItem(), 12.height.heightBox],
                 const _LogoutUtilityItem(),
               ],
             ),
@@ -346,10 +305,7 @@ class _ProfileCard extends StatelessWidget {
                 width: 56.width,
                 height: 56.height,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: colors.surfaceTemary,
-                  shape: BoxShape.circle,
-                ),
+                decoration: BoxDecoration(color: colors.surfaceTemary, shape: BoxShape.circle),
                 child: IrhText.title(initial, color: colors.textBrand),
               ),
               12.width.widthBox,
@@ -359,9 +315,7 @@ class _ProfileCard extends StatelessWidget {
                   IrhText.medium(user.fullName, maxLines: 2),
                   4.height.heightBox,
                   IrhText.small(
-                    user.role == UserRole.manager
-                        ? strings.profileManagerRole
-                        : strings.profileStaffRole,
+                    user.role == UserRole.manager ? strings.profileManagerRole : strings.profileStaffRole,
                     color: colors.textBrand,
                   ),
                 ],
@@ -375,16 +329,10 @@ class _ProfileCard extends StatelessWidget {
           12.height.heightBox,
           _ProfileField(label: strings.employeeCode, value: user.employeeCode),
           12.height.heightBox,
-          _ProfileField(
-            label: strings.profileDepartment,
-            value: user.department,
-          ),
+          _ProfileField(label: strings.profileDepartment, value: user.department),
           if (managerCode != null && managerCode.isNotEmpty) ...[
             12.height.heightBox,
-            _ProfileField(
-              label: strings.profileManagerCode,
-              value: managerCode,
-            ),
+            _ProfileField(label: strings.profileManagerCode, value: managerCode),
           ],
           16.height.heightBox,
           Divider(height: 16.height, color: colors.borderSecondary),
@@ -393,16 +341,10 @@ class _ProfileCard extends StatelessWidget {
           12.height.heightBox,
           _ProfileField(
             label: strings.annualLeave,
-            value: strings.profileAnnualDays(
-              user.annualRemaining,
-              user.annualTotal,
-            ),
+            value: strings.profileAnnualDays(user.annualRemaining, user.annualTotal),
           ),
           12.height.heightBox,
-          _ProfileField(
-            label: strings.sickLeave,
-            value: strings.profileSickDays(user.sickRemaining),
-          ),
+          _ProfileField(label: strings.sickLeave, value: strings.profileSickDays(user.sickRemaining)),
         ],
       ).paddingAll(16.width),
     );
@@ -418,11 +360,7 @@ class _ProfileField extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      IrhText.small(label),
-      4.height.heightBox,
-      IrhText.regular(value),
-    ],
+    children: [IrhText.small(label), 4.height.heightBox, IrhText.regular(value)],
   );
 }
 
@@ -440,10 +378,7 @@ class _HrUtilityItem extends StatelessWidget {
       onPressed: onPressed,
       child: Container(
         height: 64.height,
-        decoration: BoxDecoration(
-          color: colors.surfaceSecondary,
-          borderRadius: BorderRadius.circular(16),
-        ),
+        decoration: BoxDecoration(color: colors.surfaceSecondary, borderRadius: BorderRadius.circular(16)),
         child: Align(
           alignment: Alignment.centerLeft,
           child: IrhText.regular(label).paddingSymmetric(horizontal: 16.width),
@@ -461,16 +396,10 @@ class _ServerConfigUtilityItem extends StatelessWidget {
     final colors = context.appColorScheme;
     return Container(
       height: 64.height,
-      decoration: BoxDecoration(
-        color: colors.surfaceSecondary,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: BoxDecoration(color: colors.surfaceSecondary, borderRadius: BorderRadius.circular(16)),
       child: Row(
         children: [
-          IrhText.regular(
-            S.of(context).serverConfigButton,
-            color: colors.textPrimary,
-          ).expanded(),
+          IrhText.regular(S.of(context).serverConfigButton, color: colors.textPrimary).expanded(),
           const ServerConfigButton(),
         ],
       ).paddingOnly(left: 16.width, right: 8.width),
@@ -488,30 +417,55 @@ class _AutoLoginUtilityItem extends StatelessWidget {
     return Container(
       key: const Key('auto-login-utility-item'),
       height: 64.height,
-      decoration: BoxDecoration(
-        color: colors.surfaceSecondary,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: BoxDecoration(color: colors.surfaceSecondary, borderRadius: BorderRadius.circular(16)),
       child: BlocBuilder<HomeCubit, HomeState>(
         buildWhen: (previous, current) =>
             previous.autoLoginEnabled != current.autoLoginEnabled ||
-            previous.autoLoginPreferenceLoaded !=
-                current.autoLoginPreferenceLoaded ||
+            previous.autoLoginPreferenceLoaded != current.autoLoginPreferenceLoaded ||
             previous.isUpdatingAutoLogin != current.isUpdatingAutoLogin,
         builder: (context, state) => Row(
           children: [
-            IrhText.regular(
-              strings.autoLogin,
-              color: colors.textPrimary,
-            ).expanded(),
+            IrhText.regular(strings.autoLogin, color: colors.textPrimary).expanded(),
             CupertinoSwitch(
               key: const Key('auto-login-switch'),
               value: state.autoLoginEnabled,
               activeTrackColor: colors.iconBrand,
-              onChanged:
-                  !state.autoLoginPreferenceLoaded || state.isUpdatingAutoLogin
+              onChanged: !state.autoLoginPreferenceLoaded || state.isUpdatingAutoLogin
                   ? null
                   : context.read<HomeCubit>().setAutoLoginEnabled,
+            ),
+          ],
+        ).paddingSymmetric(horizontal: 16.width),
+      ),
+    );
+  }
+}
+
+class _AliceUtilityItem extends StatelessWidget {
+  const _AliceUtilityItem();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColorScheme;
+    return Container(
+      key: const Key('alice-utility-item'),
+      height: 64.height,
+      decoration: BoxDecoration(color: colors.surfaceSecondary, borderRadius: BorderRadius.circular(16)),
+      child: BlocBuilder<HomeCubit, HomeState>(
+        buildWhen: (previous, current) =>
+            previous.aliceBubbleEnabled != current.aliceBubbleEnabled ||
+            previous.aliceBubblePreferenceLoaded != current.aliceBubblePreferenceLoaded ||
+            previous.isUpdatingAliceBubble != current.isUpdatingAliceBubble,
+        builder: (context, state) => Row(
+          children: [
+            IrhText.regular(S.of(context).aliceInspectorButton, color: colors.textPrimary).expanded(),
+            CupertinoSwitch(
+              key: const Key('alice-switch'),
+              value: state.aliceBubbleEnabled,
+              activeTrackColor: colors.iconBrand,
+              onChanged: !state.aliceBubblePreferenceLoaded || state.isUpdatingAliceBubble
+                  ? null
+                  : context.read<HomeCubit>().setAliceBubbleEnabled,
             ),
           ],
         ).paddingSymmetric(horizontal: 16.width),
@@ -529,10 +483,7 @@ class _LogoutUtilityItem extends StatelessWidget {
     final strings = S.of(context);
     return Container(
       height: 64.height,
-      decoration: BoxDecoration(
-        color: colors.surfaceSecondary,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: BoxDecoration(color: colors.surfaceSecondary, borderRadius: BorderRadius.circular(16)),
       child: BlocBuilder<HomeCubit, HomeState>(
         buildWhen: (previous, current) => previous.status != current.status,
         builder: (context, state) => Semantics(
@@ -541,30 +492,15 @@ class _LogoutUtilityItem extends StatelessWidget {
           child: CupertinoButton(
             key: const Key('logout-button'),
             minimumSize: Size.zero,
-            padding: EdgeInsets.symmetric(
-              horizontal: 16.width,
-              vertical: 12.height,
-            ),
-            onPressed: state.status == HomeStatus.loggingOut
-                ? null
-                : context.read<HomeCubit>().logout,
+            padding: EdgeInsets.symmetric(horizontal: 16.width, vertical: 12.height),
+            onPressed: state.status == HomeStatus.loggingOut ? null : context.read<HomeCubit>().logout,
             child: Row(
               children: [
-                IrhText.regular(
-                  strings.logout,
-                  color: colors.textError,
-                ).expanded(),
+                IrhText.regular(strings.logout, color: colors.textError).expanded(),
                 if (state.status == HomeStatus.loggingOut)
-                  CupertinoActivityIndicator(
-                    radius: 12.width,
-                    color: colors.iconSecondary,
-                  )
+                  CupertinoActivityIndicator(radius: 12.width, color: colors.iconSecondary)
                 else
-                  Icon(
-                    CupertinoIcons.square_arrow_right,
-                    size: 24.sp,
-                    color: colors.textError,
-                  ),
+                  Icon(CupertinoIcons.square_arrow_right, size: 24.sp, color: colors.textError),
               ],
             ),
           ),
@@ -590,17 +526,10 @@ class _HomeContent extends StatelessWidget {
           SliverToBoxAdapter(child: _HomeHeader(user: data.user)),
           SliverPadding(
             padding: EdgeInsets.only(top: 16.height),
-            sliver: SliverToBoxAdapter(
-              child: _TaskSummary(role: data.user.role),
-            ),
+            sliver: SliverToBoxAdapter(child: _TaskSummary(role: data.user.role)),
           ),
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(
-              16.width,
-              24.height,
-              16.width,
-              48.height,
-            ),
+            padding: EdgeInsets.fromLTRB(16.width, 24.height, 16.width, 48.height),
             sliver: SliverList.list(
               children: [
                 _HomeSectionTitle(title: S.of(context).homeUtilities),
@@ -640,25 +569,16 @@ class _HomeHeader extends StatelessWidget {
           width: 44.width,
           height: 44.width,
           alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: colors.surfaceTemary,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: colors.surfaceTemary, shape: BoxShape.circle),
           child: IrhText.medium(initial, color: colors.textBrand),
         ),
         12.width.widthBox,
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            IrhText.medium(
-              strings.homeGreetingName(user.fullName),
-              color: colors.textPrimary,
-            ),
+            IrhText.medium(strings.homeGreetingName(user.fullName), color: colors.textPrimary),
             4.height.heightBox,
-            IrhText.small(
-              strings.homeMorningGreeting,
-              color: colors.textSecondary,
-            ),
+            IrhText.small(strings.homeMorningGreeting, color: colors.textSecondary),
           ],
         ).expanded(),
         const _NotificationButton(),
@@ -680,11 +600,7 @@ class _NotificationButton extends StatelessWidget {
           minimumSize: Size(40.width, 40.height),
           padding: EdgeInsets.zero,
           onPressed: () {},
-          child: Icon(
-            CupertinoIcons.bell,
-            size: 24.sp,
-            color: colors.iconPrimary,
-          ),
+          child: Icon(CupertinoIcons.bell, size: 24.sp, color: colors.iconPrimary),
         ),
         Positioned(
           top: 0,
@@ -693,14 +609,8 @@ class _NotificationButton extends StatelessWidget {
             width: 16.width,
             height: 16.width,
             alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: colors.iconBrand,
-              shape: BoxShape.circle,
-            ),
-            child: IrhText.small(
-              S.of(context).notificationCount,
-              color: colors.surfaceSecondary,
-            ),
+            decoration: BoxDecoration(color: colors.iconBrand, shape: BoxShape.circle),
+            child: IrhText.small(S.of(context).notificationCount, color: colors.surfaceSecondary),
           ),
         ),
       ],
@@ -718,9 +628,7 @@ class _TaskSummary extends StatelessWidget {
     final strings = S.of(context);
     final colors = context.appColorScheme;
     final cardWidth = MediaQuery.sizeOf(context).width * 2 / 3;
-    final needsAttentionCount = role == UserRole.manager
-        ? strings.taskThreeCount
-        : null;
+    final needsAttentionCount = role == UserRole.manager ? strings.taskThreeCount : null;
     final cards = <Widget>[
       _TaskCard(
         key: const Key('leave-summary-card'),
@@ -729,10 +637,7 @@ class _TaskSummary extends StatelessWidget {
           width: 28.width,
           height: 28.width,
           excludeFromSemantics: true,
-          colorFilter: ColorFilter.mode(
-            colors.surfaceSecondary,
-            BlendMode.srcIn,
-          ),
+          colorFilter: ColorFilter.mode(colors.surfaceSecondary, BlendMode.srcIn),
         ),
         title: strings.leaveRequest,
         waitingCount: strings.taskTwelveCount,
@@ -741,11 +646,7 @@ class _TaskSummary extends StatelessWidget {
       _TaskCard(
         key: const Key('supplement-summary-card'),
         background: Assets.image.bgCardPurple,
-        icon: Icon(
-          Icons.fingerprint_rounded,
-          size: 28.sp,
-          color: colors.surfaceSecondary,
-        ),
+        icon: Icon(Icons.fingerprint_rounded, size: 28.sp, color: colors.surfaceSecondary),
         title: strings.attendanceSupplement,
         waitingCount: strings.taskTwelveCount,
         needsAttentionCount: needsAttentionCount,
@@ -757,10 +658,7 @@ class _TaskSummary extends StatelessWidget {
           width: 28.width,
           height: 28.width,
           excludeFromSemantics: true,
-          colorFilter: ColorFilter.mode(
-            colors.surfaceSecondary,
-            BlendMode.srcIn,
-          ),
+          colorFilter: ColorFilter.mode(colors.surfaceSecondary, BlendMode.srcIn),
         ),
         title: strings.edocman,
         waitingCount: strings.taskTwelveCount,
@@ -773,10 +671,7 @@ class _TaskSummary extends StatelessWidget {
           width: 28.width,
           height: 28.width,
           excludeFromSemantics: true,
-          colorFilter: ColorFilter.mode(
-            colors.surfaceSecondary,
-            BlendMode.srcIn,
-          ),
+          colorFilter: ColorFilter.mode(colors.surfaceSecondary, BlendMode.srcIn),
         ),
         title: strings.eis,
         waitingCount: strings.taskTwelveCount,
@@ -839,11 +734,7 @@ class _TaskCard extends StatelessWidget {
                 children: [
                   icon,
                   8.width.widthBox,
-                  IrhText.medium(
-                    title,
-                    color: colors.surfaceSecondary,
-                    maxLines: 1,
-                  ).expanded(),
+                  IrhText.medium(title, color: colors.surfaceSecondary, maxLines: 1).expanded(),
                 ],
               ),
               const Spacer(),
@@ -851,16 +742,10 @@ class _TaskCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   if (needsAttentionCount != null) ...[
-                    _TaskMetric(
-                      count: needsAttentionCount!,
-                      label: strings.homeNeedsAttention,
-                    ).expanded(),
+                    _TaskMetric(count: needsAttentionCount!, label: strings.homeNeedsAttention).expanded(),
                     8.width.widthBox,
                   ],
-                  _TaskMetric(
-                    count: waitingCount,
-                    label: strings.homeWaitingApproval,
-                  ).expanded(),
+                  _TaskMetric(count: waitingCount, label: strings.homeWaitingApproval).expanded(),
                   Container(
                     width: 24.width,
                     height: 24.width,
@@ -869,11 +754,7 @@ class _TaskCard extends StatelessWidget {
                       color: colors.surfaceSecondary.withValues(alpha: .24),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      CupertinoIcons.chevron_right,
-                      size: 12.sp,
-                      color: colors.surfaceSecondary,
-                    ),
+                    child: Icon(CupertinoIcons.chevron_right, size: 12.sp, color: colors.surfaceSecondary),
                   ),
                 ],
               ),
@@ -917,11 +798,7 @@ class _HomeSectionTitle extends StatelessWidget {
       children: [
         IrhText.medium(title, color: colors.textSecondary),
         8.width.widthBox,
-        Icon(
-          CupertinoIcons.chevron_right_circle_fill,
-          size: 16.sp,
-          color: colors.iconSecondary,
-        ),
+        Icon(CupertinoIcons.chevron_right_circle_fill, size: 16.sp, color: colors.iconSecondary),
       ],
     );
   }
@@ -936,22 +813,10 @@ class _UtilityActions extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _UtilityItem(
-          icon: Icons.access_time_filled_rounded,
-          label: strings.timeManagement,
-        ).expanded(),
-        _UtilityItem(
-          icon: Icons.directions_run_rounded,
-          label: strings.mRun,
-        ).expanded(),
-        _UtilityItem(
-          icon: Icons.event_rounded,
-          label: strings.events,
-        ).expanded(),
-        _UtilityItem(
-          icon: Icons.volunteer_activism_rounded,
-          label: strings.newMembers,
-        ).expanded(),
+        _UtilityItem(icon: Icons.access_time_filled_rounded, label: strings.timeManagement).expanded(),
+        _UtilityItem(icon: Icons.directions_run_rounded, label: strings.mRun).expanded(),
+        _UtilityItem(icon: Icons.event_rounded, label: strings.events).expanded(),
+        _UtilityItem(icon: Icons.volunteer_activism_rounded, label: strings.newMembers).expanded(),
       ],
     );
   }
@@ -976,19 +841,11 @@ class _UtilityItem extends StatelessWidget {
             width: 48.width,
             height: 48.width,
             alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: colors.iconBrand,
-              borderRadius: BorderRadius.circular(12),
-            ),
+            decoration: BoxDecoration(color: colors.iconBrand, borderRadius: BorderRadius.circular(12)),
             child: Icon(icon, size: 24.sp, color: colors.surfaceSecondary),
           ),
           8.height.heightBox,
-          IrhText.small(
-            label,
-            color: colors.textPrimary,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-          ),
+          IrhText.small(label, color: colors.textPrimary, textAlign: TextAlign.center, maxLines: 2),
         ],
       ),
     );
@@ -1022,10 +879,7 @@ class _CultureBanner extends StatelessWidget {
               height: 184.width,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: colors.iconBrand.withValues(alpha: .72),
-                  width: 20.width,
-                ),
+                border: Border.all(color: colors.iconBrand.withValues(alpha: .72), width: 20.width),
               ),
             ),
           ),
@@ -1033,20 +887,11 @@ class _CultureBanner extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IrhText.small(
-                strings.homeBannerEyebrow,
-                color: colors.surfaceSecondary,
-              ),
+              IrhText.small(strings.homeBannerEyebrow, color: colors.surfaceSecondary),
               12.height.heightBox,
-              IrhText.title(
-                strings.homeBannerTitle,
-                color: colors.surfaceSecondary,
-              ),
+              IrhText.title(strings.homeBannerTitle, color: colors.surfaceSecondary),
               8.height.heightBox,
-              IrhText.small(
-                strings.homeBannerSubtitle,
-                color: colors.surfaceSecondary.withValues(alpha: .76),
-              ),
+              IrhText.small(strings.homeBannerSubtitle, color: colors.surfaceSecondary.withValues(alpha: .76)),
             ],
           ).paddingSymmetric(horizontal: 20.width),
         ],
@@ -1067,20 +912,14 @@ class _BannerIndicator extends StatelessWidget {
         Container(
           width: 28.width,
           height: 4.height,
-          decoration: BoxDecoration(
-            color: colors.iconBrand,
-            borderRadius: BorderRadius.circular(2),
-          ),
+          decoration: BoxDecoration(color: colors.iconBrand, borderRadius: BorderRadius.circular(2)),
         ),
         8.width.widthBox,
         for (var index = 0; index < 2; index++) ...[
           Container(
             width: 8.width,
             height: 4.height,
-            decoration: BoxDecoration(
-              color: colors.borderPrimary,
-              borderRadius: BorderRadius.circular(2),
-            ),
+            decoration: BoxDecoration(color: colors.borderPrimary, borderRadius: BorderRadius.circular(2)),
           ),
           if (index == 0) 8.width.widthBox,
         ],
@@ -1103,10 +942,7 @@ class _FeaturedNews extends StatelessWidget {
         children: [
           _NewsCard(icon: Icons.groups_rounded, title: strings.newsRetailTitle),
           12.width.widthBox,
-          _NewsCard(
-            icon: Icons.laptop_mac_rounded,
-            title: strings.newsKnowledgeTitle,
-          ),
+          _NewsCard(icon: Icons.laptop_mac_rounded, title: strings.newsKnowledgeTitle),
         ],
       ),
     );
@@ -1132,9 +968,7 @@ class _NewsCard extends StatelessWidget {
             width: double.infinity,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [colors.surfaceTemary, colors.borderSecondary],
-              ),
+              gradient: LinearGradient(colors: [colors.surfaceTemary, colors.borderSecondary]),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, size: 40.sp, color: colors.iconSecondary),
@@ -1167,18 +1001,11 @@ class _HomeError extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IrhText.regular(
-              message,
-              textAlign: TextAlign.center,
-              color: context.appColorScheme.textSecondary,
-            ),
+            IrhText.regular(message, textAlign: TextAlign.center, color: context.appColorScheme.textSecondary),
             16.height.heightBox,
             SizedBox(
               width: 160.width,
-              child: IrhButton(
-                label: strings.retry,
-                onPressed: context.read<HomeCubit>().load,
-              ),
+              child: IrhButton(label: strings.retry, onPressed: context.read<HomeCubit>().load),
             ),
           ],
         ).paddingAll(24.width),

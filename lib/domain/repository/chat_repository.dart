@@ -15,7 +15,12 @@ abstract interface class ChatRepository {
 }
 
 class ChatRepositoryException implements Exception {
-  const ChatRepositoryException(this.message, {this.sessionExpired = false});
+  const ChatRepositoryException(
+    this.message, {
+    this.sessionExpired = false,
+    this.network = false,
+  });
   final String message;
   final bool sessionExpired;
+  final bool network;
 }

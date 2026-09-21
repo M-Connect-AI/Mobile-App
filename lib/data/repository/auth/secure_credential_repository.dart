@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -5,9 +6,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../domain/model/auth_session.dart';
 import '../../../domain/repository/auth_preference_repository.dart';
 import '../../../domain/repository/credential_repository.dart';
+import '../../../domain/service/session_expiry.dart';
+import '../../source/remote/client/dio_client_factory.dart';
 
 class SecureCredentialRepository
-    implements CredentialRepository, AuthPreferenceRepository {
+    implements CredentialRepository, AuthPreferenceRepository, SessionExpiry {
   SecureCredentialRepository({
     FlutterSecureStorage storage = const FlutterSecureStorage(),
   }) : _storage = storage;
@@ -15,11 +18,24 @@ class SecureCredentialRepository
   static const _sessionKey = 'auth_session';
   static const _lastEmailKey = 'last_login_email';
   static const _autoLoginEnabledKey = 'auto_login_enabled';
+  static const _aliceBubbleEnabledKey = 'alice_bubble_enabled';
   static const _legacyEmailKey = 'login_email';
   static const _legacyPasswordKey = 'login_password';
 
   final FlutterSecureStorage _storage;
   AuthSession? _currentSession;
+  final _expired = StreamController<void>.broadcast();
+
+  @override
+  Stream<void> get onSessionExpired => _expired.stream;
+
+  @override
+  Future<void> expireSession(String accessToken) async {
+    final current = await read();
+    if (current == null || current.accessToken != accessToken) return;
+    await clear();
+    _expired.add(null);
+  }
 
   @override
   Future<AuthSession?> read() async {
@@ -80,6 +96,19 @@ class SecureCredentialRepository
   @override
   Future<void> setAutoLoginEnabled(bool enabled) =>
       _storage.write(key: _autoLoginEnabledKey, value: enabled.toString());
+
+  @override
+  Future<bool> readAliceBubbleEnabled() async =>
+      await _storage.read(key: _aliceBubbleEnabledKey) == 'true';
+
+  @override
+  Future<void> setAliceBubbleEnabled(bool enabled) async {
+    await _storage.write(
+      key: _aliceBubbleEnabledKey,
+      value: enabled.toString(),
+    );
+    DioClientFactory.setBubbleEnabled(enabled);
+  }
 
   Future<void> _clearLegacyCredentials() async {
     await _storage.delete(key: _legacyEmailKey);

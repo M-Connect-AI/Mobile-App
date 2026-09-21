@@ -19,3 +19,8 @@ class SpeechTranscript {
 }
 
 enum SpeechSessionStatus { idle, listening, done }
+
+/// Implemented by recognizers that expose input sound level updates.
+abstract interface class SpeechInputLevel {
+  Stream<double> get inputLevels;
+}

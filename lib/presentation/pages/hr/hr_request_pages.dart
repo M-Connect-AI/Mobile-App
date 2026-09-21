@@ -2,12 +2,16 @@ import 'package:awesome_extensions/awesome_extensions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../common/components/irh_button.dart';
+import '../../../common/components/app_toast.dart';
 import '../../../common/components/irh_text.dart';
 import '../../../common/extensions/responsive_extension.dart';
 import '../../../common/themes/theme_extensions/app_color_scheme.dart';
 import '../../../domain/model/home_data.dart';
+import '../../../domain/repository/credential_repository.dart';
 import '../../../domain/model/hr_request.dart';
 import '../../../domain/repository/hr_request_repository.dart';
 import '../../../domain/service/data_refresh_coordinator.dart';
@@ -25,6 +29,7 @@ class HrRequestListPage extends StatelessWidget {
   Widget build(BuildContext context) => BlocProvider(
     create: (context) => HrRequestCubit(
       context.read<HrRequestRepository>(),
+      context.read<CredentialRepository>(),
       refreshCoordinator: context.read<DataRefreshCoordinator?>(),
     )..loadList(kind),
     child: _RequestScreen(kind: kind),
@@ -32,17 +37,32 @@ class HrRequestListPage extends StatelessWidget {
 }
 
 class HrRequestDetailPage extends StatelessWidget {
-  const HrRequestDetailPage({super.key, required this.kind, required this.id});
+  const HrRequestDetailPage({
+    super.key,
+    required this.kind,
+    required this.id,
+    this.employeeName,
+    this.initialTrip,
+  });
 
   final HrRequestKind kind;
   final String id;
+  final String? employeeName;
+  final TripRequest? initialTrip;
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-    create: (context) => HrRequestCubit(
-      context.read<HrRequestRepository>(),
-      refreshCoordinator: context.read<DataRefreshCoordinator?>(),
-    )..loadDetail(kind, id),
+    create: (context) =>
+        HrRequestCubit(
+          context.read<HrRequestRepository>(),
+          context.read<CredentialRepository>(),
+          refreshCoordinator: context.read<DataRefreshCoordinator?>(),
+        )..loadDetail(
+          kind,
+          id,
+          employeeName: employeeName,
+          initialTrip: initialTrip,
+        ),
     child: _RequestScreen(kind: kind, id: id),
   );
 }
@@ -60,12 +80,58 @@ class _RequestScreen extends StatelessWidget {
         ? strings.leaveRequest
         : strings.businessTrip;
     return BlocListener<HrRequestCubit, HrRequestState>(
-      listenWhen: (previous, current) =>
-          previous.failure != current.failure &&
-          current.failure == HrFailureType.sessionExpired,
-      listener: (context, state) => const LoginRoute().go(context),
+      listener: (context, state) {
+        if (state.failure == HrFailureType.sessionExpired ||
+            state.actionError?.type == HrFailureType.sessionExpired) {
+          const LoginRoute().go(context);
+        } else if (state.batchResult != null) {
+          final message = state.batchFailed == 0
+              ? strings.batchResult(state.batchResult!)
+              : strings.batchResultPartial(
+                  state.batchResult!,
+                  state.batchFailed,
+                );
+          if (state.batchFailed == 0) {
+            AppToast.showSuccess(context, message);
+          } else {
+            AppToast.showWarning(context, message);
+          }
+        } else if (state.actionError != null) {
+          AppToast.showError(
+            context,
+            state.actionError!.message ??
+                _failureMessage(context, state.actionError!.type),
+          );
+        } else if (state.actionSuccess != null) {
+          final message = switch ((kind, state.actionSuccess!)) {
+            (HrRequestKind.leave, HrAction.approve) =>
+              strings.approveLeavesSuccess,
+            (HrRequestKind.leave, HrAction.reject) =>
+              strings.rejectLeavesSuccess,
+            (HrRequestKind.trip, HrAction.approve) =>
+              strings.approveTripsSuccess,
+            _ => strings.rejectTripsSuccess,
+          };
+          AppToast.showSuccess(context, message);
+        }
+      },
       child: Scaffold(
         backgroundColor: context.appColorScheme.surfacePrimary,
+        bottomNavigationBar: id == null
+            ? null
+            : BlocBuilder<HrRequestCubit, HrRequestState>(
+                builder: (context, state) {
+                  final status = kind == HrRequestKind.leave
+                      ? state.leave?.status
+                      : state.trip?.status;
+                  if (state.status != HrRequestStatus.success ||
+                      !state.isManager ||
+                      status != RequestStatus.pending) {
+                    return const SizedBox.shrink();
+                  }
+                  return _ActionBar(kind: kind, action: state.action);
+                },
+              ),
         body: SafeArea(
           child: Column(
             children: [
@@ -74,7 +140,11 @@ class _RequestScreen extends StatelessWidget {
                   HomeBackButton(semanticLabel: strings.backToHome),
                   12.width.widthBox,
                   IrhText.title(
-                    id == null ? title : strings.requestDetailTitle(title),
+                    id == null
+                        ? title
+                        : kind == HrRequestKind.leave
+                        ? strings.leaveDetailTitle
+                        : strings.requestDetailTitle(title),
                   ).expanded(),
                 ],
               ).paddingSymmetric(horizontal: 16.width, vertical: 12.height),
@@ -130,31 +200,76 @@ class _RequestList extends StatelessWidget {
         ).paddingAll(24.width),
       );
     }
-    return RefreshIndicator(
-      onRefresh: () => context.read<HrRequestCubit>().loadList(kind),
-      child: ListView.separated(
-        padding: EdgeInsets.fromLTRB(16.width, 8.height, 16.width, 24.height),
-        itemCount: count,
-        separatorBuilder: (context, index) => 12.height.heightBox,
-        itemBuilder: (context, index) {
-          final leave = kind == HrRequestKind.leave
-              ? state.leaves[index]
-              : null;
-          final trip = kind == HrRequestKind.trip ? state.trips[index] : null;
-          return _RequestCard(
-            title: leave == null
-                ? trip!.destination
-                : _leaveType(context, leave.type),
-            subtitle: leave == null ? trip!.purpose : leave.reason,
-            from: leave?.from ?? trip!.from,
-            to: leave?.to ?? trip!.to,
-            status: leave?.status ?? trip!.status,
-            onPressed: () => kind == HrRequestKind.leave
-                ? LeaveDetailRoute(leave!.id).push(context)
-                : TripDetailRoute(trip!.id).push(context),
-          );
-        },
-      ),
+    return Column(
+      children: [
+        if (kind == HrRequestKind.leave &&
+            state.isManager &&
+            state.selectedIds.isNotEmpty)
+          IrhButton(
+            label: S.of(context).approveBatchCount(state.selectedIds.length),
+            loading: state.action == HrAction.batchApprove,
+            onPressed: state.action != null
+                ? null
+                : () => _confirmAction(context, HrAction.batchApprove, kind),
+          ).paddingSymmetric(horizontal: 16.width, vertical: 8.height),
+        RefreshIndicator(
+          onRefresh: () => context.read<HrRequestCubit>().loadList(kind),
+          child: ListView.separated(
+            padding: EdgeInsets.fromLTRB(
+              16.width,
+              8.height,
+              16.width,
+              24.height,
+            ),
+            itemCount: count,
+            separatorBuilder: (context, index) => 12.height.heightBox,
+            itemBuilder: (context, index) {
+              final leave = kind == HrRequestKind.leave
+                  ? state.leaves[index]
+                  : null;
+              final trip = kind == HrRequestKind.trip
+                  ? state.trips[index]
+                  : null;
+              return Row(
+                children: [
+                  if (leave != null &&
+                      state.isManager &&
+                      leave.status == RequestStatus.pending)
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: state.action != null
+                          ? null
+                          : () => context
+                                .read<HrRequestCubit>()
+                                .toggleSelection(leave.id),
+                      child: IrhText.medium(
+                        state.selectedIds.contains(leave.id) ? '☑' : '□',
+                        color: context.appColorScheme.textBrand,
+                      ),
+                    ),
+                  _RequestCard(
+                    title: leave == null
+                        ? trip!.destination
+                        : _leaveType(context, leave.type),
+                    subtitle: leave == null
+                        ? trip!.purpose
+                        : leave.employeeName ?? leave.reason,
+                    from: leave?.from ?? trip!.from,
+                    to: leave?.to ?? trip!.to,
+                    status: leave?.status ?? trip!.status,
+                    onPressed: () => kind == HrRequestKind.leave
+                        ? LeaveDetailRoute(
+                            leave!.id,
+                            $extra: leave.employeeName,
+                          ).push(context)
+                        : TripDetailRoute(trip!.id, $extra: trip).push(context),
+                  ).expanded(),
+                ],
+              );
+            },
+          ),
+        ).expanded(),
+      ],
     );
   }
 }
@@ -240,54 +355,86 @@ class _RequestDetail extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _RequestStatus(status: status),
+              Row(
+                children: [
+                  IrhText.medium(
+                    leave == null
+                        ? trip!.destination
+                        : _leaveType(context, leave.type),
+                  ).expanded(),
+                  8.width.widthBox,
+                  _RequestStatus(status: status),
+                ],
+              ),
               20.height.heightBox,
-              _DetailField(
-                label: strings.requestCode,
-                value: leave?.id ?? trip!.id,
+              IrhText.small(strings.requestCode),
+              Row(
+                children: [
+                  IrhText.regular(
+                    _shortId(leave?.id ?? trip!.id),
+                    maxLines: 1,
+                  ).expanded(),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () async {
+                      await Clipboard.setData(
+                        ClipboardData(text: leave?.id ?? trip!.id),
+                      );
+                      if (context.mounted) {
+                        AppToast.showSuccess(
+                          context,
+                          strings.requestCodeCopied,
+                        );
+                      }
+                    },
+                    child: Icon(
+                      CupertinoIcons.doc_on_doc,
+                      size: 20.sp,
+                      color: context.appColorScheme.iconBrand,
+                    ),
+                  ),
+                ],
               ),
-              _DetailField(
-                label: strings.employeeCode,
-                value: leave?.employeeCode ?? trip!.employeeCode,
+              16.height.heightBox,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _DetailField(
+                    label: strings.employeeCode,
+                    value: leave?.employeeCode ?? trip!.employeeCode,
+                  ).expanded(),
+                  12.width.widthBox,
+                  _DetailField(
+                    label: strings.requestCreatedAt,
+                    value: (leave?.createdAt ?? trip?.createdAt) == null
+                        ? strings.valueUnavailable
+                        : _formatDate(
+                            (leave?.createdAt ?? trip!.createdAt)!.toLocal(),
+                          ),
+                  ).expanded(),
+                ],
               ),
-              if (leave != null) ...[
-                _DetailField(
-                  label: strings.leaveType,
-                  value: _leaveType(context, leave.type),
-                ),
-                _DetailField(
-                  label: strings.requestFrom,
-                  value: _formatDate(leave.from),
-                ),
-                _DetailField(
-                  label: strings.requestTo,
-                  value: _formatDate(leave.to),
-                ),
-                _DetailField(
-                  label: strings.leaveDays,
-                  value: leave.days.toString(),
-                ),
-                _DetailField(label: strings.leaveReason, value: leave.reason),
-              ] else ...[
-                _DetailField(
-                  label: strings.tripDestination,
-                  value: trip!.destination,
-                ),
-                _DetailField(
-                  label: strings.requestFrom,
-                  value: _formatDate(trip.from),
-                ),
-                _DetailField(
-                  label: strings.requestTo,
-                  value: _formatDate(trip.to),
-                ),
-                _DetailField(label: strings.tripPurpose, value: trip.purpose),
+              if ((leave?.employeeName ?? trip?.employeeName)
+                  case final name?) ...[
+                _DetailField(label: strings.employeeName, value: name),
               ],
-              if ((leave?.createdAt ?? trip?.createdAt) case final createdAt?)
-                _DetailField(
-                  label: strings.requestCreatedAt,
-                  value: _formatDate(createdAt.toLocal()),
-                ),
+              _DetailField(
+                label: strings.requestPeriod,
+                value: leave == null
+                    ? _formatPeriod(trip!.from, trip.to)
+                    : _formatPeriod(
+                        leave.from,
+                        leave.to,
+                        days: leave.days,
+                        strings: strings,
+                      ),
+              ),
+              _DetailField(
+                label: leave == null
+                    ? strings.tripPurpose
+                    : strings.leaveReason,
+                value: leave?.reason ?? trip!.purpose,
+              ),
             ],
           ).paddingAll(20.width),
         ),
@@ -308,7 +455,7 @@ class _DetailField extends StatelessWidget {
     children: [
       IrhText.small(label),
       4.height.heightBox,
-      IrhText.regular(value),
+      IrhText.regular(value, color: context.appColorScheme.textPrimary),
       16.height.heightBox,
     ],
   );
@@ -324,7 +471,7 @@ class _RequestStatus extends StatelessWidget {
     final strings = S.of(context);
     final colors = context.appColorScheme;
     final label = switch (status) {
-      RequestStatus.pending => strings.statusPending,
+      RequestStatus.pending => strings.statusPendingShort,
       RequestStatus.approved => strings.statusApproved,
       RequestStatus.rejected => strings.statusRejected,
       RequestStatus.cancelled => strings.statusCancelled,
@@ -335,7 +482,16 @@ class _RequestStatus extends StatelessWidget {
       RequestStatus.pending => colors.textBrand,
       RequestStatus.cancelled => colors.textSecondary,
     };
-    return IrhText.small(label, color: color);
+    return Container(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: IrhText.small(
+        label,
+        color: color,
+      ).paddingSymmetric(horizontal: 8.width, vertical: 4.height),
+    );
   }
 }
 
@@ -353,14 +509,7 @@ class _RequestError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = S.of(context);
-    final message = switch (failure) {
-      HrFailureType.permissionDenied => strings.homePermissionError,
-      HrFailureType.notFound => strings.requestNotFound,
-      HrFailureType.network => strings.requestNetworkError,
-      HrFailureType.server => strings.homeServerError,
-      HrFailureType.invalidResponse => strings.requestInvalidResponse,
-      HrFailureType.sessionExpired => strings.homeSessionExpired,
-    };
+    final message = _failureMessage(context, failure);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -382,8 +531,132 @@ class _RequestError extends StatelessWidget {
   }
 }
 
+class _ActionBar extends StatelessWidget {
+  const _ActionBar({required this.kind, required this.action});
+
+  final HrRequestKind kind;
+  final HrAction? action;
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = S.of(context);
+    final colors = context.appColorScheme;
+    return SafeArea(
+      top: false,
+      child: Row(
+        children: [
+          IrhIconTextButton(
+            label: strings.rejectRequest,
+            icon: const SizedBox.shrink(),
+            foregroundColor: colors.textError,
+            borderColor: colors.textError,
+            loading: action == HrAction.reject,
+            onPressed: action == null
+                ? () => _confirmAction(context, HrAction.reject, kind)
+                : null,
+          ).expanded(),
+          12.width.widthBox,
+          IrhButton(
+            label: strings.approveRequest,
+            loading: action == HrAction.approve,
+            onPressed: action == null
+                ? () => _confirmAction(context, HrAction.approve, kind)
+                : null,
+          ).expanded(),
+        ],
+      ).paddingSymmetric(horizontal: 16.width, vertical: 12.height),
+    );
+  }
+}
+
+Future<void> _confirmAction(
+  BuildContext context,
+  HrAction action,
+  HrRequestKind kind,
+) async {
+  final strings = S.of(context);
+  final confirmed = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (dialogContext) => AlertDialog(
+      title: IrhText.medium(
+        action == HrAction.reject
+            ? kind == HrRequestKind.trip
+                  ? strings.rejectTripConfirmTitle
+                  : strings.rejectConfirmTitle
+            : action == HrAction.batchApprove
+            ? strings.approveBatchCount(
+                context.read<HrRequestCubit>().state.selectedIds.length,
+              )
+            : kind == HrRequestKind.trip
+            ? strings.approveTripConfirmTitle
+            : strings.approveConfirmTitle,
+      ),
+      content: IrhText.regular(
+        action == HrAction.reject
+            ? kind == HrRequestKind.trip
+                  ? strings.rejectTripConfirmBody
+                  : strings.rejectConfirmBody
+            : kind == HrRequestKind.trip
+            ? strings.approveTripConfirmBody
+            : strings.approveConfirmBody,
+      ),
+      actions: [
+        IrhTextButton(
+          label: strings.closeAssistant,
+          onPressed: () => GoRouterHelper(dialogContext).pop(false),
+        ),
+        IrhTextButton(
+          label: action == HrAction.reject
+              ? strings.rejectRequest
+              : strings.approveRequest,
+          onPressed: () => GoRouterHelper(dialogContext).pop(true),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true || !context.mounted) return;
+  final cubit = context.read<HrRequestCubit>();
+  if (action == HrAction.batchApprove) {
+    await cubit.approveSelected();
+  } else {
+    await cubit.setStatus(
+      kind,
+      action == HrAction.approve
+          ? RequestStatus.approved
+          : RequestStatus.rejected,
+    );
+  }
+}
+
 String _formatDate(DateTime date) =>
     '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+
+String _shortId(String id) => id.length <= 18
+    ? id
+    : '${id.substring(0, 8)}…${id.substring(id.length - 6)}';
+
+String _formatPeriod(DateTime from, DateTime to, {int? days, S? strings}) {
+  final range =
+      from.year == to.year && from.month == to.month && from.day == to.day
+      ? _formatDate(from)
+      : '${_formatDate(from)} → ${_formatDate(to)}';
+  return days == null || strings == null
+      ? range
+      : '$range · ${strings.leaveDayCount(days)}';
+}
+
+String _failureMessage(BuildContext context, HrFailureType failure) {
+  final strings = S.of(context);
+  return switch (failure) {
+    HrFailureType.permissionDenied => strings.homePermissionError,
+    HrFailureType.notFound => strings.requestNotFound,
+    HrFailureType.network => strings.requestNetworkError,
+    HrFailureType.server => strings.homeServerError,
+    HrFailureType.invalidResponse => strings.requestInvalidResponse,
+    HrFailureType.sessionExpired => strings.homeSessionExpired,
+  };
+}
 
 String _leaveType(BuildContext context, LeaveType type) => switch (type) {
   LeaveType.annual => S.of(context).leaveAnnualType,

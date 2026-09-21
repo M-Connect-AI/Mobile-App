@@ -10,6 +10,7 @@ List<RouteBase> get $appRoutes => [
   $loginRoute,
   $registerRoute,
   $homeRoute,
+  $chatSettingsRoute,
   $leaveListRoute,
   $leaveDetailRoute,
   $tripListRoute,
@@ -90,6 +91,32 @@ mixin $HomeRoute on GoRouteData {
   void replace(BuildContext context) => context.replace(location);
 }
 
+RouteBase get $chatSettingsRoute => GoRouteData.$route(
+  path: '/chat-settings',
+  factory: $ChatSettingsRoute._fromState,
+);
+
+mixin $ChatSettingsRoute on GoRouteData {
+  static ChatSettingsRoute _fromState(GoRouterState state) =>
+      const ChatSettingsRoute();
+
+  @override
+  String get location => GoRouteData.$location('/chat-settings');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
 RouteBase get $leaveListRoute =>
     GoRouteData.$route(path: '/leaves', factory: $LeaveListRoute._fromState);
 
@@ -120,8 +147,10 @@ RouteBase get $leaveDetailRoute => GoRouteData.$route(
 );
 
 mixin $LeaveDetailRoute on GoRouteData {
-  static LeaveDetailRoute _fromState(GoRouterState state) =>
-      LeaveDetailRoute(state.pathParameters['id']!);
+  static LeaveDetailRoute _fromState(GoRouterState state) => LeaveDetailRoute(
+    state.pathParameters['id']!,
+    $extra: state.extra as String?,
+  );
 
   LeaveDetailRoute get _self => this as LeaveDetailRoute;
 
@@ -130,17 +159,19 @@ mixin $LeaveDetailRoute on GoRouteData {
       GoRouteData.$location('/leaves/${Uri.encodeComponent(_self.id)}');
 
   @override
-  void go(BuildContext context) => context.go(location);
+  void go(BuildContext context) => context.go(location, extra: _self.$extra);
 
   @override
-  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(location, extra: _self.$extra);
 
   @override
   void pushReplacement(BuildContext context) =>
-      context.pushReplacement(location);
+      context.pushReplacement(location, extra: _self.$extra);
 
   @override
-  void replace(BuildContext context) => context.replace(location);
+  void replace(BuildContext context) =>
+      context.replace(location, extra: _self.$extra);
 }
 
 RouteBase get $tripListRoute =>
@@ -172,8 +203,10 @@ RouteBase get $tripDetailRoute => GoRouteData.$route(
 );
 
 mixin $TripDetailRoute on GoRouteData {
-  static TripDetailRoute _fromState(GoRouterState state) =>
-      TripDetailRoute(state.pathParameters['id']!);
+  static TripDetailRoute _fromState(GoRouterState state) => TripDetailRoute(
+    state.pathParameters['id']!,
+    $extra: state.extra as TripRequest?,
+  );
 
   TripDetailRoute get _self => this as TripDetailRoute;
 
@@ -182,17 +215,19 @@ mixin $TripDetailRoute on GoRouteData {
       GoRouteData.$location('/trips/${Uri.encodeComponent(_self.id)}');
 
   @override
-  void go(BuildContext context) => context.go(location);
+  void go(BuildContext context) => context.go(location, extra: _self.$extra);
 
   @override
-  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(location, extra: _self.$extra);
 
   @override
   void pushReplacement(BuildContext context) =>
-      context.pushReplacement(location);
+      context.pushReplacement(location, extra: _self.$extra);
 
   @override
-  void replace(BuildContext context) => context.replace(location);
+  void replace(BuildContext context) =>
+      context.replace(location, extra: _self.$extra);
 }
 
 RouteBase get $outlookConnectionRoute => GoRouteData.$route(

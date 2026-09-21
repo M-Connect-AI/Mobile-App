@@ -1,7 +1,8 @@
 import 'package:chatbot_project/common/extensions/responsive_extension.dart';
+import 'package:chatbot_project/common/navigation/pop_or_go.dart';
 import 'package:chatbot_project/common/themes/theme_extensions/app_color_scheme.dart';
+import 'package:chatbot_project/route/go_router.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:go_router/go_router.dart';
 
 class HomeBackButton extends StatelessWidget {
   const HomeBackButton({super.key, required this.semanticLabel});
@@ -19,7 +20,7 @@ class HomeBackButton extends StatelessWidget {
         padding: EdgeInsets.zero,
         borderRadius: BorderRadius.circular(24),
         color: colors.surfaceTemary,
-        onPressed: context.pop,
+        onPressed: () => popOrGo(context, const HomeRoute().location),
         child: SizedBox(
           width: 48.width,
           height: 48.width,

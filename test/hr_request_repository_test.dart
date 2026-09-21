@@ -17,9 +17,9 @@ void main() {
     final requests = <RequestOptions>[];
     final dio = Dio()
       ..httpClientAdapter = _MockAdapter((request) {
-      requests.add(request);
-      if (request.path.endsWith('/leaves/leave-1')) {
-        return _jsonResponse(200, {..._leave}..remove('employeeName'));
+        requests.add(request);
+        if (request.path.endsWith('/leaves/leave-1')) {
+          return _jsonResponse(200, {..._leave}..remove('employeeName'));
         }
         if (request.path.endsWith('/leaves')) {
           return _jsonResponse(200, [_leave]);
@@ -101,6 +101,61 @@ void main() {
       ),
     );
   });
+
+  test(
+    'manager endpoints use team scope, bearer JWT and status-only bodies',
+    () async {
+      final requests = <RequestOptions>[];
+      final repository = ApiHrRequestRepository(
+        HrRequestRemoteDataSource(
+          baseUrl: 'http://hr.test',
+          dio: Dio()
+            ..httpClientAdapter = _MockAdapter((request) {
+              requests.add(request);
+              if (request.path.endsWith('/approve-batch')) {
+                return _jsonResponse(201, {
+                  'count': 1,
+                  'items': [_leave],
+                });
+              }
+              if (request.path.endsWith('/leaves')) {
+                return _jsonResponse(200, [_leave]);
+              }
+              if (request.path.endsWith('/trips')) {
+                return _jsonResponse(200, [_trip]);
+              }
+              return _jsonResponse(
+                200,
+                request.path.contains('/trips/')
+                    ? {..._trip, 'status': 'REJECTED'}
+                    : {..._leave, 'status': 'APPROVED'},
+              );
+            }),
+        ),
+        _Sessions(),
+      );
+      await repository.getLeaves(team: true);
+      await repository.getTrips(team: true);
+      await repository.setLeaveStatus('leave-1', RequestStatus.approved);
+      await repository.setTripStatus('trip-1', RequestStatus.rejected);
+      await repository.approveLeaves(['leave-1']);
+      expect(
+        requests.take(2).map((r) => r.queryParameters['scope']),
+        everyElement('team'),
+      );
+      expect(requests[2].method, 'PATCH');
+      expect(requests[2].data, {'status': 'APPROVED'});
+      expect(requests[3].data, {'status': 'REJECTED'});
+      expect(requests[4].method, 'POST');
+      expect(requests[4].data, {
+        'ids': ['leave-1'],
+      });
+      expect(
+        requests.every((r) => r.headers['Authorization'] == 'Bearer jwt'),
+        isTrue,
+      );
+    },
+  );
 }
 
 ResponseBody _jsonResponse(int statusCode, Object body) =>

@@ -20,6 +20,7 @@ import '../../../generated/l10n.dart';
 import '../../../route/go_router.dart';
 import '../../server_config/server_config_dialog.dart';
 import 'bloc/login_cubit.dart';
+import '../../../common/navigation/external_action_handler.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -75,7 +76,15 @@ class _LoginViewState extends State<_LoginView> {
           _formKey.currentState?.fields['email']?.didChange(state.savedEmail);
         }
         if (state.status == LoginStatus.success) {
-          const HomeRoute().go(context);
+          final actions = context.read<ExternalActionHandler>();
+          actions.pending.peek().then((action) {
+            if (!context.mounted) return;
+            if (action == null) {
+              const HomeRoute().go(context);
+            } else {
+              actions.resumePending();
+            }
+          });
         } else if (state.status == LoginStatus.failure) {
           AppToast.failed(context, _failureMessage(strings, state));
         }

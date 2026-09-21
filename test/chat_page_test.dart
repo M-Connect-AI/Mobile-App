@@ -8,18 +8,22 @@ import 'package:chatbot_project/domain/model/hr_request.dart';
 import 'package:chatbot_project/domain/model/chat_message.dart';
 import 'package:chatbot_project/domain/model/chat_thread.dart';
 import 'package:chatbot_project/domain/repository/chat_repository.dart';
+import 'package:chatbot_project/domain/repository/chat_text_size_repository.dart';
 import 'package:chatbot_project/domain/repository/credential_repository.dart';
 import 'package:chatbot_project/domain/repository/speech_to_text_repository.dart';
 import 'package:chatbot_project/domain/service/data_refresh_coordinator.dart';
 import 'package:chatbot_project/presentation/pages/chat/bloc/chat_bloc.dart';
+import 'package:chatbot_project/presentation/pages/chat/bloc/chat_text_size_cubit.dart';
 import 'package:chatbot_project/presentation/pages/chat/chat_page.dart';
 import 'package:chatbot_project/presentation/pages/chat/widgets/chat_bubble.dart';
 import 'package:chatbot_project/generated/l10n.dart';
+import 'package:chatbot_project/route/go_router.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   testWidgets('sends text and shows streamed backend response', (tester) async {
@@ -42,8 +46,11 @@ void main() {
 
     await tester.tap(find.byKey(const Key('chat-action-button')));
     await tester.pump();
+    await tester.pump();
     expect(inputBeforeSend.focusNode?.hasFocus, isFalse);
-    expect(find.text(S.current.thinking), findsWidgets);
+    final chatBloc = tester.element(find.byType(ChatPage)).read<ChatBloc>();
+    expect(chatBloc.state.isLoading, isTrue);
+    expect(chatBloc.state.aiProcessingState, AiProcessingState.thinking);
     expect(find.byTooltip('Sao chép'), findsNothing);
 
     await tester.pump(const Duration(seconds: 1));
@@ -74,7 +81,7 @@ void main() {
     expect(find.textContaining('Tôi đã hiểu yêu cầu'), findsOneWidget);
   });
 
-  testWidgets('shows backend status label while a turn is running', (
+  testWidgets('tracks backend status label while a turn is running', (
     tester,
   ) async {
     await tester.pumpWidget(const _ChatTestApp());
@@ -84,12 +91,14 @@ void main() {
     await tester.tap(find.byKey(const Key('chat-action-button')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 30));
+    await tester.pump();
 
-    expect(find.text('Đang tra cứu task Jira…'), findsWidgets);
+    final chatBloc = tester.element(find.byType(ChatPage)).read<ChatBloc>();
+    expect(chatBloc.state.backendStatusLabel, 'Đang tra cứu task Jira…');
 
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pump(const Duration(milliseconds: 200));
-    expect(find.text('Đang tra cứu task Jira…'), findsNothing);
+    expect(chatBloc.state.backendStatusLabel, isNull);
   });
 
   testWidgets('reconciles done reply and sends exact suggestion text', (
@@ -675,6 +684,173 @@ void main() {
     expect(find.byType(IrhOptionChip), findsNothing);
   });
 
+  testWidgets('text size also scales result labels and rich blocks', (
+    tester,
+  ) async {
+    final cubit = ChatTextSizeCubit(_ChatTextSizeRepository());
+    addTearDown(cubit.close);
+    await tester.pumpWidget(
+      _BubbleTestApp(
+        textSizeCubit: cubit,
+        message: ChatMessage(
+          id: 'sized-result',
+          type: MessageType.text,
+          sender: MessageSender.assistant,
+          createdAt: DateTime(2026, 9, 20),
+          status: MessageStatus.success,
+          executedResult: const ChatResultEnvelope.leaveList([]),
+          blocks: const [
+            ChatRichBlock(
+              type: ChatBlockType.kpis,
+              items: [ChatBlockItem(label: 'Phép còn lại', value: 9)],
+            ),
+          ],
+        ),
+      ),
+    );
+
+    final result = find.text(S.current.chatLeaveListResult(0));
+    final richLabel = find.text('Phép còn lại');
+    double renderedSize(Finder finder) {
+      final text = tester.widget<Text>(finder);
+      return MediaQuery.textScalerOf(
+        tester.element(finder),
+      ).scale(text.style!.fontSize!);
+    }
+
+    final initialResultSize = renderedSize(result);
+    final initialRichSize = renderedSize(richLabel);
+    cubit.update(24);
+    await tester.pump();
+
+    expect(renderedSize(result), closeTo(initialResultSize * 1.5, .01));
+    expect(renderedSize(richLabel), closeTo(initialRichSize * 1.5, .01));
+  });
+
+  testWidgets('renders empty, single and multiple leave rich list items', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    ChatMessage messageFor(List<ChatBlockItem> items) => ChatMessage(
+      id: 'leave-list-layout',
+      type: MessageType.text,
+      sender: MessageSender.assistant,
+      content: 'Danh sách đơn nghỉ phép',
+      createdAt: DateTime(2026, 9, 20),
+      status: MessageStatus.success,
+      executedResult: const ChatResultEnvelope.leaveList([]),
+      blocks: [
+        const ChatRichBlock(
+          type: ChatBlockType.kpis,
+          items: [
+            ChatBlockItem(label: 'Tổng đơn', value: 2),
+            ChatBlockItem(label: 'Chờ duyệt', value: 1, tone: ChatTone.warn),
+            ChatBlockItem(label: 'Đã duyệt', value: 1),
+          ],
+        ),
+        ChatRichBlock(
+          type: ChatBlockType.list,
+          title: 'Đơn nghỉ phép',
+          items: items,
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(_BubbleTestApp(message: messageFor([])));
+    expect(find.text('Đơn nghỉ phép (0)'), findsOneWidget);
+    expect(find.text('Tổng đơn'), findsOneWidget);
+    expect(find.text('Phép ốm · Phạm T Thu Phương'), findsNothing);
+    expect(tester.takeException(), isNull);
+
+    const first = ChatBlockItem(
+      title: 'Phép ốm · Phạm T Thu Phương',
+      subtitle: '25/09/2026 → 25/09/2026 · 1 ngày · Nghỉ ốm không lương',
+      badge: 'Chờ duyệt',
+      tone: ChatTone.warn,
+    );
+    await tester.pumpWidget(_BubbleTestApp(message: messageFor([first])));
+    expect(find.text('Đơn nghỉ phép (1)'), findsOneWidget);
+    expect(find.text('25/09/2026 · 1 ngày'), findsOneWidget);
+    expect(find.text('Nghỉ ốm không lương'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    const second = ChatBlockItem(
+      title: 'Phép năm · Tên nhân viên rất dài để kiểm tra bố cục',
+      subtitle:
+          'Lý do nghỉ dài để kiểm tra nội dung trên hai dòng và dấu ba chấm',
+      kicker: '25/09/2026 → 27/09/2026 · 3 ngày',
+      badge: 'Đã duyệt',
+      tone: ChatTone.ok,
+    );
+    await tester.pumpWidget(
+      _BubbleTestApp(message: messageFor([first, second])),
+    );
+    expect(find.text('Đơn nghỉ phép (2)'), findsOneWidget);
+    expect(find.text('25/09/2026 · 1 ngày'), findsOneWidget);
+    expect(find.text('25/09/2026 → 27/09/2026 · 3 ngày'), findsOneWidget);
+    expect(find.text(second.subtitle!), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'aligns leave balance values with two-line labels at larger text scale',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(320, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      tester.binding.platformDispatcher.textScaleFactorTestValue = 1.5;
+      addTearDown(
+        tester.binding.platformDispatcher.clearTextScaleFactorTestValue,
+      );
+
+      await tester.pumpWidget(
+        _BubbleTestApp(
+          message: ChatMessage(
+            id: 'leave-balance-layout',
+            type: MessageType.text,
+            sender: MessageSender.assistant,
+            content: 'Số dư ngày phép',
+            createdAt: DateTime(2026, 9, 20),
+            status: MessageStatus.success,
+            blocks: const [
+              ChatRichBlock(
+                type: ChatBlockType.kpis,
+                items: [
+                  ChatBlockItem(label: 'Phép năm còn', value: '12 ngày'),
+                  ChatBlockItem(label: 'Phép năm tổng', value: '12 ngày'),
+                  ChatBlockItem(
+                    label: 'Khung phép ốm rất dài',
+                    value: '30 ngày',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+
+      final values = find.text('12 ngày');
+      expect(values, findsNWidgets(2));
+      expect(
+        tester.getTopLeft(values.at(0)).dy,
+        tester.getTopLeft(values.at(1)).dy,
+      );
+      expect(
+        tester.getTopLeft(values.at(0)).dy,
+        tester.getTopLeft(find.text('30 ngày')).dy,
+      );
+      final remainingColor = tester.widget<Text>(values.at(0)).style!.color;
+      final totalColor = tester.widget<Text>(values.at(1)).style!.color;
+      expect(remainingColor, isNot(totalColor));
+      expect(
+        totalColor,
+        tester.widget<Text>(find.text('30 ngày')).style!.color,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('shows suggestion chips only for the latest message', (
     tester,
   ) async {
@@ -845,9 +1021,7 @@ void main() {
     expect(input.focusNode?.hasFocus, isFalse);
   });
 
-  testWidgets('shows back, title and overflow actions in the app bar', (
-    tester,
-  ) async {
+  testWidgets('shows back, title and settings in the app bar', (tester) async {
     const longTitle =
         'Cuộc trò chuyện có tiêu đề rất dài cần được rút gọn trên một dòng';
     await tester.pumpWidget(const _ChatTestApp(title: longTitle));
@@ -856,13 +1030,91 @@ void main() {
     expect(find.byKey(const Key('assistant-logo')), findsNothing);
     expect(find.byKey(const Key('assistant-subtitle')), findsNothing);
     expect(find.byKey(const Key('chat-back-button')), findsOneWidget);
-    expect(find.byKey(const Key('chat-more-button')), findsOneWidget);
+    expect(find.byKey(const Key('chat-settings-button')), findsOneWidget);
     final title = tester.widget<Text>(find.text(longTitle));
     expect(title.maxLines, 1);
     expect(title.overflow, TextOverflow.ellipsis);
   });
 
-  testWidgets('moves request cancellation into the app bar menu', (
+  testWidgets(
+    'settings button opens text settings and keeps the chosen size on return',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final sizeRepository = _ChatTextSizeRepository();
+      final sizeCubit = ChatTextSizeCubit(sizeRepository);
+      final router = GoRouter(
+        initialLocation: ChatRoute.path,
+        routes: appRoutes,
+      );
+      addTearDown(sizeCubit.close);
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        MultiRepositoryProvider(
+          providers: [
+            RepositoryProvider<ChatRepository>.value(
+              value: _FakeChatRepository(),
+            ),
+            RepositoryProvider<SpeechToTextRepository>.value(
+              value: FakeSpeechToTextRepository(),
+            ),
+            RepositoryProvider<CredentialRepository>.value(
+              value: const _FakeCredentialRepository(),
+            ),
+          ],
+          child: BlocProvider.value(
+            value: sizeCubit,
+            child: ScreenUtilInit(
+              designSize: const Size(390, 844),
+              builder: (context, child) => MaterialApp.router(
+                locale: const Locale('vi'),
+                localizationsDelegates: const [
+                  S.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: S.delegate.supportedLocales,
+                routerConfig: router,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('chat-settings-button')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('chat-text-size-slider')), findsOneWidget);
+
+      final slider = tester.getRect(
+        find.byKey(const Key('chat-text-size-slider')),
+      );
+      await tester.dragFrom(
+        Offset(slider.left + slider.width / 3, slider.center.dy),
+        const Offset(300, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(sizeCubit.state, ChatTextSizeCubit.maxSize);
+      expect(sizeRepository.savedSize, ChatTextSizeCubit.maxSize);
+
+      await tester.tap(find.byKey(const Key('chat-settings-back-button')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('chat-list')), findsOneWidget);
+      expect(sizeCubit.state, ChatTextSizeCubit.maxSize);
+      final welcome = tester.widget<Text>(find.text(S.current.welcomeMessage));
+      expect(
+        welcome.style?.fontSize,
+        ScreenUtil().setSp(ChatTextSizeCubit.maxSize),
+      );
+    },
+  );
+
+  testWidgets('keeps request cancellation on the confirmation card', (
     tester,
   ) async {
     await tester.pumpWidget(const _ChatTestApp());
@@ -873,10 +1125,6 @@ void main() {
     );
     await tester.pump();
     await tester.tap(find.byKey(const Key('chat-action-button')));
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const Key('cancel-action')), findsNothing);
-    await tester.tap(find.byKey(const Key('chat-more-button')));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('cancel-request-action')), findsOneWidget);
@@ -1064,37 +1312,46 @@ class _ChatTestApp extends StatelessWidget {
 }
 
 class _BubbleTestApp extends StatelessWidget {
-  const _BubbleTestApp({required this.message, this.openExternalUrl});
+  const _BubbleTestApp({
+    required this.message,
+    this.openExternalUrl,
+    this.textSizeCubit,
+  });
 
   final ChatMessage message;
   final ExternalUrlOpener? openExternalUrl;
+  final ChatTextSizeCubit? textSizeCubit;
 
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(390, 844),
-      builder: (context, child) =>
-          RepositoryProvider<CredentialRepository>.value(
-            value: const _FakeCredentialRepository(),
-            child: MaterialApp(
-              locale: const Locale('vi'),
-              localizationsDelegates: const [
-                S.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: S.delegate.supportedLocales,
-              home: Scaffold(
-                body: SingleChildScrollView(
-                  child: ChatBubble(
-                    message: message,
-                    openExternalUrl: openExternalUrl ?? (_) async => true,
-                  ),
-                ),
+      builder: (context, child) {
+        final app = MaterialApp(
+          locale: const Locale('vi'),
+          localizationsDelegates: const [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: S.delegate.supportedLocales,
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ChatBubble(
+                message: message,
+                openExternalUrl: openExternalUrl ?? (_) async => true,
               ),
             ),
           ),
+        );
+        return RepositoryProvider<CredentialRepository>.value(
+          value: const _FakeCredentialRepository(),
+          child: textSizeCubit == null
+              ? app
+              : BlocProvider.value(value: textSizeCubit!, child: app),
+        );
+      },
     );
   }
 }
@@ -1349,4 +1606,16 @@ class FakeSpeechToTextRepository implements SpeechToTextRepository {
 
   @override
   Future<String> stopListening() async => '';
+}
+
+class _ChatTextSizeRepository implements ChatTextSizeRepository {
+  int? savedSize;
+
+  @override
+  Future<int?> read() async => savedSize;
+
+  @override
+  Future<void> save(int size) async {
+    savedSize = size;
+  }
 }

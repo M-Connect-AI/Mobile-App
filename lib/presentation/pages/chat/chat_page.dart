@@ -4,19 +4,17 @@ import 'package:awesome_extensions/awesome_extensions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../common/components/app_toast.dart';
+import '../../../common/components/assistant_header.dart';
 import '../../../common/components/irh_button.dart';
-import '../../../common/components/irh_text.dart';
+import '../../../common/navigation/pop_or_go.dart';
 import '../../../common/extensions/responsive_extension.dart';
 import '../../../common/themes/theme_extensions/app_color_scheme.dart';
 import '../../../domain/model/chat_message.dart';
 import '../../../domain/model/chat_result.dart';
 import '../../../domain/model/chat_rich_content.dart';
-import '../../../gen/assets.gen.dart';
 import '../../../generated/l10n.dart';
-import '../../../resources/app_constants.dart';
 import '../../../route/go_router.dart';
 import 'bloc/chat_bloc.dart';
 import 'widgets/chat_bubble.dart';
@@ -24,10 +22,9 @@ import 'widgets/chat_input.dart';
 import 'widgets/typing_indicator.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key, this.title, this.showCloseButton = false, this.autofocusInput = false});
+  const ChatPage({super.key, this.title, this.autofocusInput = false});
 
   final String? title;
-  final bool showCloseButton;
   final bool autofocusInput;
 
   @override
@@ -136,6 +133,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final extraBottomPadding = MediaQuery.paddingOf(context).bottom == 0 ? 16.height : 0.0;
     return BlocListener<ChatBloc, ChatState>(
       listenWhen: (previous, current) =>
           previous.messages != current.messages ||
@@ -217,17 +215,14 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                     color: context.appColorScheme.surfaceSecondary,
                     child: ChatInput(
                       autofocus: widget.autofocusInput,
-                    ).paddingLTRB(14.width, 12.height, 14.width, 12.height),
+                    ).paddingLTRB(14.width, 12.height, 14.width, 12.height + extraBottomPadding),
                   ),
                 ],
               ),
               ValueListenableBuilder<bool>(
                 valueListenable: _isHeaderScrolled,
-                builder: (context, isScrolled, child) => _FloatingChatNavigation(
-                  title: widget.title,
-                  showCloseButton: widget.showCloseButton,
-                  isScrolled: isScrolled,
-                ),
+                builder: (context, isScrolled, child) =>
+                    _FloatingChatNavigation(title: widget.title, isScrolled: isScrolled),
               ),
             ],
           ),
@@ -309,10 +304,9 @@ List<ChatSuggestion> _quickActions(BuildContext context, ChatState state) {
 }
 
 class _FloatingChatNavigation extends StatelessWidget {
-  const _FloatingChatNavigation({required this.title, required this.showCloseButton, required this.isScrolled});
+  const _FloatingChatNavigation({required this.title, required this.isScrolled});
 
   final String? title;
-  final bool showCloseButton;
   final bool isScrolled;
 
   @override
@@ -329,51 +323,16 @@ class _FloatingChatNavigation extends StatelessWidget {
           ),
           SafeArea(
             bottom: false,
-            child: SizedBox(
-              height: 72.height,
-              child: Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: _ScrollEdgeGradient(isScrolled: isScrolled),
-                  ),
-                  Row(
-                    children: [
-                      _AssistantIdentityCapsule(
-                        title: title,
-                        isCollapsed: isScrolled,
-                        useOpaqueFallback: useOpaqueFallback,
-                      ).expanded(),
-                      12.width.widthBox,
-                      SizedBox(
-                        width: 44.width,
-                        height: 44.height,
-                        child: _GlassSurface(
-                          isScrolled: isScrolled,
-                          useOpaqueFallback: useOpaqueFallback,
-                          height: 44.height,
-                          borderRadius: 24,
-                          child: Semantics(
-                            button: true,
-                            enabled: showCloseButton,
-                            label: S.of(context).closeAssistant,
-                            child: CupertinoButton(
-                              key: const Key('close-assistant'),
-                              minimumSize: Size.zero,
-                              padding: EdgeInsets.zero,
-                              borderRadius: BorderRadius.circular(24),
-                              onPressed: showCloseButton ? () => GoRouterHelper(context).pop() : null,
-                              child: Icon(CupertinoIcons.xmark, size: 20.sp, color: context.appColorScheme.iconPrimary),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ).paddingSymmetric(horizontal: 16.width, vertical: 8.height),
-                ],
-              ),
-            ),
+            child: AssistantHeader(
+              title: title?.trim().isNotEmpty == true ? title!.trim() : S.of(context).newConversationTitle,
+              backLabel: S.of(context).backToHome,
+              onBack: () => popOrGo(context, HomeChatAiRoute.path),
+              trailingLabel: S.of(context).chatSettingsTitle,
+              onTrailing: () => const ChatSettingsRoute().push(context),
+              trailingIcon: CupertinoIcons.settings,
+              backKey: const Key('chat-back-button'),
+              trailingKey: const Key('chat-settings-button'),
+            ).paddingSymmetric(horizontal: 16.width, vertical: 4.height),
           ),
         ],
       ),
@@ -411,153 +370,6 @@ class _NavigationBackdrop extends StatelessWidget {
         child: useOpaqueFallback
             ? overlay
             : BackdropFilter(filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4), child: overlay),
-      ),
-    );
-  }
-}
-
-class _AssistantIdentityCapsule extends StatelessWidget {
-  const _AssistantIdentityCapsule({required this.title, required this.isCollapsed, required this.useOpaqueFallback});
-
-  final String? title;
-  final bool isCollapsed;
-  final bool useOpaqueFallback;
-
-  @override
-  Widget build(BuildContext context) {
-    final normalizedTitle = title?.trim();
-    return _GlassSurface(
-      isScrolled: isCollapsed,
-      useOpaqueFallback: useOpaqueFallback,
-      height: (isCollapsed ? 48 : 56).height,
-      borderRadius: 28,
-      child: Row(
-        children: [
-          AnimatedContainer(
-            key: const Key('assistant-logo'),
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeOutCubic,
-            width: (isCollapsed ? 36 : 40).width,
-            height: (isCollapsed ? 36 : 40).height,
-            child: Assets.image.logo.svg(fit: BoxFit.cover, alignment: Alignment.topLeft, excludeFromSemantics: true),
-          ),
-          12.width.widthBox,
-          LayoutBuilder(
-            builder: (context, constraints) => FittedBox(
-              alignment: Alignment.centerLeft,
-              fit: BoxFit.scaleDown,
-              child: SizedBox(
-                width: constraints.maxWidth,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    IrhText.semibold(
-                      normalizedTitle?.isNotEmpty == true ? normalizedTitle! : S.of(context).newConversationTitle,
-                      maxLines: 1,
-                    ),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 180),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeInCubic,
-                      transitionBuilder: (child, animation) => SizeTransition(
-                        sizeFactor: animation,
-                        axisAlignment: -1,
-                        child: FadeTransition(opacity: animation, child: child),
-                      ),
-                      child: isCollapsed
-                          ? const SizedBox.shrink(key: Key('collapsed-subtitle'))
-                          : IrhText.small(AppConstants.chatbotName, key: const Key('assistant-subtitle'), maxLines: 1),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ).expanded(),
-        ],
-      ).paddingSymmetric(horizontal: 12.width),
-    );
-  }
-}
-
-class _GlassSurface extends StatelessWidget {
-  const _GlassSurface({
-    required this.isScrolled,
-    required this.useOpaqueFallback,
-    required this.height,
-    required this.borderRadius,
-    required this.child,
-  });
-
-  final bool isScrolled;
-  final bool useOpaqueFallback;
-  final double height;
-  final double borderRadius;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColorScheme;
-    final glassContent = AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
-      decoration: BoxDecoration(
-        color: colors.surfacePrimary.withValues(alpha: useOpaqueFallback ? .98 : (isScrolled ? .88 : .7)),
-        borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: colors.borderTertiary.withValues(alpha: isScrolled ? .9 : .6), width: .5),
-      ),
-      child: child,
-    );
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
-      height: height,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: colors.textPrimary.withValues(alpha: isScrolled ? .1 : .04),
-            blurRadius: isScrolled ? 16 : 8,
-            offset: Offset(0, isScrolled ? 6.height : 4.height),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: useOpaqueFallback
-            ? glassContent
-            : BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: isScrolled ? 12 : 10, sigmaY: isScrolled ? 12 : 10),
-                child: glassContent,
-              ),
-      ),
-    );
-  }
-}
-
-class _ScrollEdgeGradient extends StatelessWidget {
-  const _ScrollEdgeGradient({required this.isScrolled});
-
-  final bool isScrolled;
-
-  @override
-  Widget build(BuildContext context) {
-    final surface = context.appColorScheme.surfaceSecondary;
-    return IgnorePointer(
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        height: 28.height,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              surface.withValues(alpha: isScrolled ? .28 : .12),
-              surface.withValues(alpha: 0),
-            ],
-          ),
-        ),
       ),
     );
   }

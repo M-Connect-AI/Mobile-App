@@ -24,6 +24,9 @@ class HomeState extends Equatable {
     this.autoLoginEnabled = false,
     this.autoLoginPreferenceLoaded = false,
     this.isUpdatingAutoLogin = false,
+    this.aliceBubbleEnabled = false,
+    this.aliceBubblePreferenceLoaded = false,
+    this.isUpdatingAliceBubble = false,
   });
 
   final HomeStatus status;
@@ -34,6 +37,9 @@ class HomeState extends Equatable {
   final bool autoLoginEnabled;
   final bool autoLoginPreferenceLoaded;
   final bool isUpdatingAutoLogin;
+  final bool aliceBubbleEnabled;
+  final bool aliceBubblePreferenceLoaded;
+  final bool isUpdatingAliceBubble;
 
   HomeState copyWith({
     HomeStatus? status,
@@ -45,6 +51,9 @@ class HomeState extends Equatable {
     bool? autoLoginEnabled,
     bool? autoLoginPreferenceLoaded,
     bool? isUpdatingAutoLogin,
+    bool? aliceBubbleEnabled,
+    bool? aliceBubblePreferenceLoaded,
+    bool? isUpdatingAliceBubble,
   }) => HomeState(
     status: status ?? this.status,
     data: data ?? this.data,
@@ -55,6 +64,10 @@ class HomeState extends Equatable {
     autoLoginPreferenceLoaded:
         autoLoginPreferenceLoaded ?? this.autoLoginPreferenceLoaded,
     isUpdatingAutoLogin: isUpdatingAutoLogin ?? this.isUpdatingAutoLogin,
+    aliceBubbleEnabled: aliceBubbleEnabled ?? this.aliceBubbleEnabled,
+    aliceBubblePreferenceLoaded:
+        aliceBubblePreferenceLoaded ?? this.aliceBubblePreferenceLoaded,
+    isUpdatingAliceBubble: isUpdatingAliceBubble ?? this.isUpdatingAliceBubble,
   );
 
   @override
@@ -67,6 +80,9 @@ class HomeState extends Equatable {
     autoLoginEnabled,
     autoLoginPreferenceLoaded,
     isUpdatingAutoLogin,
+    aliceBubbleEnabled,
+    aliceBubblePreferenceLoaded,
+    isUpdatingAliceBubble,
   ];
 }
 
@@ -79,6 +95,7 @@ class HomeCubit extends Cubit<HomeState> {
   }) : _authPreferences = authPreferences,
        super(const HomeState()) {
     unawaited(_loadAutoLoginPreference());
+    unawaited(_loadAliceBubblePreference());
     _refreshSubscription = refreshCoordinator?.changes.listen((scopes) {
       if (scopes.contains(DataRefreshScope.home) && !isClosed) {
         unawaited(load());
@@ -90,6 +107,46 @@ class HomeCubit extends Cubit<HomeState> {
   final CredentialRepository _credentials;
   final AuthPreferenceRepository _authPreferences;
   StreamSubscription<Set<DataRefreshScope>>? _refreshSubscription;
+
+  Future<void> _loadAliceBubblePreference() async {
+    try {
+      final enabled = await _authPreferences.readAliceBubbleEnabled();
+      if (!isClosed) {
+        emit(
+          state.copyWith(
+            aliceBubbleEnabled: enabled,
+            aliceBubblePreferenceLoaded: true,
+          ),
+        );
+      }
+    } on Object {
+      if (!isClosed) {
+        emit(state.copyWith(aliceBubblePreferenceLoaded: true));
+      }
+    }
+  }
+
+  Future<void> setAliceBubbleEnabled(bool enabled) async {
+    if (state.isUpdatingAliceBubble || !state.aliceBubblePreferenceLoaded) {
+      return;
+    }
+    emit(state.copyWith(isUpdatingAliceBubble: true));
+    try {
+      await _authPreferences.setAliceBubbleEnabled(enabled);
+      if (!isClosed) {
+        emit(
+          state.copyWith(
+            aliceBubbleEnabled: enabled,
+            isUpdatingAliceBubble: false,
+          ),
+        );
+      }
+    } on Object {
+      if (!isClosed) {
+        emit(state.copyWith(isUpdatingAliceBubble: false));
+      }
+    }
+  }
 
   Future<void> _loadAutoLoginPreference() async {
     try {

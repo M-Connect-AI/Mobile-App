@@ -66,10 +66,33 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   bool _isStopping = false;
 
   Future<void> _onStarted(ChatStarted event, Emitter<ChatState> emit) async {
+    final voiceMessage = event.voiceMessage?.trim();
+    final voiceReply = event.voiceReply?.trim();
+    final voiceMessages = voiceMessage?.isNotEmpty == true
+        ? [
+            ChatMessage(
+              id: 'voice-user',
+              type: MessageType.text,
+              sender: MessageSender.user,
+              content: voiceMessage,
+              createdAt: DateTime.now(),
+              status: MessageStatus.sent,
+            ),
+            if (voiceReply?.isNotEmpty == true)
+              ChatMessage(
+                id: 'voice-reply',
+                type: MessageType.text,
+                sender: MessageSender.assistant,
+                content: voiceReply,
+                createdAt: DateTime.now(),
+                status: MessageStatus.success,
+              ),
+          ]
+        : null;
     if (event.threadId == null) {
       emit(
         ChatState(
-          messages: [_welcomeMessage()],
+          messages: voiceMessages ?? [_welcomeMessage()],
           inputText: event.initialMessage ?? '',
         ),
       );
@@ -85,6 +108,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(
       ChatState(
         activeThreadId: event.threadId,
+        messages: voiceMessages ?? const [],
         inputText: event.initialMessage ?? '',
         isLoading: true,
         isRestoring: true,
@@ -95,7 +119,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       emit(
         state.copyWith(
           messages: detail.messages.isEmpty
-              ? [_welcomeMessage()]
+              ? voiceMessages ?? [_welcomeMessage()]
               : detail.messages,
           activeThreadId: detail.threadId,
           isLoading: false,
